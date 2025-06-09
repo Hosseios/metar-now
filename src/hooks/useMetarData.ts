@@ -4,6 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 export interface WeatherData {
   metar: string;
   taf: string;
+  airport: string;
 }
 
 export const useMetarData = () => {
@@ -13,7 +14,7 @@ export const useMetarData = () => {
   const { toast } = useToast();
 
   const fetchWeatherData = async (icaoCode: string) => {
-    console.log(`Fetching real METAR and TAF data for ${icaoCode}`);
+    console.log(`Fetching real METAR, TAF, and Airport data for ${icaoCode}`);
     setIsLoading(true);
     setError(null);
 
@@ -46,26 +47,41 @@ export const useMetarData = () => {
         throw new Error(`Aviation Weather API returned error: ${tafData.status.http_code}`);
       }
 
+      // Fetch Airport data
+      const airportProxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(`https://aviationweather.gov/api/data/airport?ids=${icaoCode}`)}`;
+      const airportResponse = await fetch(airportProxyUrl);
+      
+      if (!airportResponse.ok) {
+        throw new Error(`Failed to fetch Airport data: ${airportResponse.status}`);
+      }
+      
+      const airportData = await airportResponse.json();
+      
+      if (airportData.status.http_code !== 200) {
+        throw new Error(`Aviation Weather API returned error: ${airportData.status.http_code}`);
+      }
+
       const weatherData: WeatherData = {
         metar: metarData.contents.trim() || `No METAR data available for ${icaoCode}`,
-        taf: tafData.contents.trim() || `No TAF data available for ${icaoCode}`
+        taf: tafData.contents.trim() || `No TAF data available for ${icaoCode}`,
+        airport: airportData.contents.trim() || `No Airport data available for ${icaoCode}`
       };
       
       setWeatherData(weatherData);
-      console.log(`Successfully fetched real weather data for ${icaoCode}`);
+      console.log(`Successfully fetched real weather and airport data for ${icaoCode}`);
       
       toast({
-        title: "Weather Data Updated",
-        description: `Successfully retrieved real METAR and TAF data for ${icaoCode}`,
+        title: "Data Updated",
+        description: `Successfully retrieved METAR, TAF, and Airport data for ${icaoCode}`,
       });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to fetch weather data";
       setError(errorMessage);
-      console.error(`Error fetching weather data for ${icaoCode}:`, errorMessage);
+      console.error(`Error fetching data for ${icaoCode}:`, errorMessage);
       
       toast({
         title: "Error",
-        description: `Failed to fetch weather data for ${icaoCode}: ${errorMessage}`,
+        description: `Failed to fetch data for ${icaoCode}: ${errorMessage}`,
         variant: "destructive",
       });
     } finally {
