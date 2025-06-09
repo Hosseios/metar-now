@@ -55,8 +55,8 @@ const Index = () => {
         {/* Hero Content */}
         <div className="flex items-center justify-center py-12 md:py-16">
           <div className="text-center space-y-2 md:space-y-3 px-4">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white drop-shadow-2xl">Global Airport Weather Data</h2>
-            <p className="text-base md:text-lg text-slate-200 max-w-2xl mx-auto drop-shadow-lg hidden sm:block">Live METAR & TAF reports from airports worldwide.</p>
+            
+            
           </div>
         </div>
 
