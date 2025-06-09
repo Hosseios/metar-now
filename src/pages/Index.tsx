@@ -46,8 +46,8 @@ const Index = () => {
               <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-cyan-400/20 to-blue-400/20"></div>
             </div>
             <div>
-              <h1 className="text-xl md:text-3xl font-bold text-white drop-shadow-lg">METAR Weather Viewer</h1>
-              <p className="text-sm md:text-base text-slate-200 drop-shadow hidden sm:block">Get weather data fast and simple</p>
+              <h1 className="text-xl md:text-3xl font-bold text-white drop-shadow-lg">Aviation METAR Weather Viewer</h1>
+              <p className="text-sm md:text-base text-slate-200 drop-shadow hidden sm:block">Get real-time METAR & TAF reports with ease.</p>
             </div>
           </div>
         </div>
