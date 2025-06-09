@@ -5,8 +5,6 @@ import FavoritesManager from "@/components/FavoritesManager";
 import { useMetarData } from "@/hooks/useMetarData";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
-import { Cloud, User, Settings } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 const Index = () => {
   const [icaoCode, setIcaoCode] = useState("");
@@ -17,9 +15,7 @@ const Index = () => {
     fetchWeatherData
   } = useMetarData();
   const {
-    loading: authLoading,
-    user,
-    signOut
+    loading: authLoading
   } = useAuth();
 
   const handleSearch = (code: string) => {
@@ -27,112 +23,66 @@ const Index = () => {
     fetchWeatherData(code);
   };
 
-  const handleSignOut = async () => {
-    await signOut();
-  };
-
   if (authLoading) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="flex items-center space-x-2 text-slate-600">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-          <span>Loading...</span>
-        </div>
-      </div>
-    );
+    return <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+        <div className="text-white text-lg">Loading...</div>
+      </div>;
   }
 
-  return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            {/* Logo and Title */}
-            <div className="flex items-center space-x-3">
-              <div className="flex items-center justify-center w-10 h-10 bg-blue-600 rounded-lg">
-                <Cloud className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-slate-900">METAR Weather</h1>
-                <p className="text-xs text-slate-500">Real-time aviation weather</p>
-              </div>
+  return <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col">
+      {/* Compact Hero Banner Section */}
+      <div className="relative h-32 md:h-40 overflow-hidden flex-shrink-0">
+        <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{
+        backgroundImage: `url('/lovable-uploads/a24c1d1e-db26-4943-baf9-119712ba820f.png')`
+      }} />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/70" />
+        
+        {/* Compact Header with Logo */}
+        <div className="relative z-10 flex items-center justify-between p-3 md:p-4">
+          <div className="flex items-center space-x-2 md:space-x-3">
+            <div className="relative">
+              <img src="/lovable-uploads/a0ba6b63-c16c-41d4-b45a-2ace5ac4b0b5.png" alt="Logo" className="w-10 h-10 md:w-12 md:h-12 rounded-full shadow-xl ring-2 ring-white/30 backdrop-blur-sm" />
+              <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-cyan-400/20 to-blue-400/20"></div>
             </div>
-
-            {/* User Menu */}
-            {user && (
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-2 text-sm text-slate-600">
-                  <User className="w-4 h-4" />
-                  <span>{user.email}</span>
-                </div>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={handleSignOut}
-                >
-                  Sign Out
-                </Button>
-              </div>
-            )}
+            <div>
+              <h1 className="text-lg md:text-2xl font-bold text-white drop-shadow-lg">METAR Weather Viewer</h1>
+              <p className="text-xs md:text-sm text-slate-200 drop-shadow hidden sm:block">Get weather data fast and simple</p>
+            </div>
           </div>
         </div>
-      </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Welcome Section */}
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-slate-900 mb-2">
-            Aviation Weather Reports
-          </h2>
-          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-            Get real-time METAR weather data for airports worldwide. Enter an ICAO code to view current conditions.
-          </p>
+        {/* Compact Hero Content */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-center space-y-1 md:space-y-2 px-3">
+            <h2 className="text-2xl md:text-3xl font-bold text-white drop-shadow-2xl">Get Weather Fast</h2>
+            <p className="text-sm md:text-base text-slate-200 max-w-lg mx-auto drop-shadow-lg hidden sm:block">
+              Quick access to real-time METAR weather reports for airports worldwide.
+            </p>
+          </div>
         </div>
+      </div>
 
+      {/* Main Content - Flex-grow to fill remaining space */}
+      <div className="flex-1 flex flex-col p-3 md:p-6 space-y-3 md:space-y-4 max-w-6xl mx-auto w-full">
         {/* Search Section */}
-        <div className="mb-8">
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-            <MetarSearch onSearch={handleSearch} isLoading={isLoading} />
-          </div>
+        <div className="bg-white/10 backdrop-blur-xl rounded-2xl md:rounded-3xl p-4 md:p-6 border border-white/20 shadow-2xl">
+          <MetarSearch onSearch={handleSearch} isLoading={isLoading} />
         </div>
 
-        {/* Results and Favorites Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Weather Results - Takes up 2 columns on large screens */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-              <div className="flex items-center space-x-2 mb-4">
-                <Cloud className="w-5 h-5 text-blue-600" />
-                <h3 className="text-lg font-semibold text-slate-900">Weather Report</h3>
-              </div>
-              <MetarDisplay 
-                weatherData={weatherData} 
-                isLoading={isLoading} 
-                error={error} 
-                icaoCode={icaoCode} 
-              />
-            </div>
+        {/* Two-column layout on larger screens */}
+        <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4">
+          {/* Result Display */}
+          <div className="bg-white/10 backdrop-blur-xl rounded-2xl md:rounded-3xl p-4 md:p-6 border border-white/20 shadow-2xl">
+            <MetarDisplay weatherData={weatherData} isLoading={isLoading} error={error} icaoCode={icaoCode} />
           </div>
 
-          {/* Favorites - Takes up 1 column */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-              <div className="flex items-center space-x-2 mb-4">
-                <Settings className="w-5 h-5 text-slate-600" />
-                <h3 className="text-lg font-semibold text-slate-900">Quick Access</h3>
-              </div>
-              <FavoritesManager 
-                currentIcao={icaoCode} 
-                onSelectFavorite={handleSearch} 
-              />
-            </div>
+          {/* Favorites Section */}
+          <div className="bg-white/10 backdrop-blur-xl rounded-2xl md:rounded-3xl p-4 md:p-6 border border-white/20 shadow-2xl">
+            <FavoritesManager currentIcao={icaoCode} onSelectFavorite={handleSearch} />
           </div>
         </div>
-      </main>
-    </div>
-  );
+      </div>
+    </div>;
 };
 
 export default Index;
