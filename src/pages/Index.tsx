@@ -64,7 +64,7 @@ const Index = () => {
       </div>
 
       {/* Main Content */}
-      <div className="relative -mt-20 z-20">
+      <div className="relative z-20 pt-8">
         <div className="max-w-6xl mx-auto px-6 space-y-8">
           {/* Search Section */}
           <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 shadow-2xl">
