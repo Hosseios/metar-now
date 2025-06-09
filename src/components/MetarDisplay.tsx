@@ -1,30 +1,40 @@
 
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CloudRain, AlertTriangle, Clock } from "lucide-react";
+import { CloudRain, AlertTriangle, Clock, Calendar } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { WeatherData } from "@/hooks/useMetarData";
 
 interface MetarDisplayProps {
-  metarData: string | null;
+  weatherData?: WeatherData | null;
+  metarData?: string | null; // Keep for backward compatibility
   isLoading: boolean;
   error: string | null;
   icaoCode: string;
 }
 
-const MetarDisplay = ({ metarData, isLoading, error, icaoCode }: MetarDisplayProps) => {
-  const getDisplayContent = () => {
+const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: MetarDisplayProps) => {
+  // Use new weatherData if available, fallback to old metarData for backward compatibility
+  const currentWeatherData = weatherData || (metarData ? { metar: metarData, taf: "" } : null);
+
+  const getDisplayContent = (type: 'metar' | 'taf') => {
     if (isLoading) {
-      return `Fetching METAR data for ${icaoCode}...\n\nPlease wait while we retrieve the latest weather information.`;
+      return `Fetching ${type.toUpperCase()} data for ${icaoCode}...\n\nPlease wait while we retrieve the latest weather information.`;
     }
     
     if (error) {
-      return `Error fetching METAR data for ${icaoCode}:\n\n${error}\n\nPlease check the ICAO code and try again.`;
+      return `Error fetching ${type.toUpperCase()} data for ${icaoCode}:\n\n${error}\n\nPlease check the ICAO code and try again.`;
     }
     
-    if (metarData) {
-      return metarData;
+    if (currentWeatherData && currentWeatherData[type]) {
+      return currentWeatherData[type];
     }
     
-    return "Enter an ICAO code above to view real-time weather data.\n\nMETAR (Meteorological Aerodrome Report) provides current weather conditions at airports worldwide.";
+    if (type === 'metar') {
+      return "Enter an ICAO code above to view real-time weather data.\n\nMETAR (Meteorological Aerodrome Report) provides current weather conditions at airports worldwide.";
+    } else {
+      return "Enter an ICAO code above to view forecast data.\n\nTAF (Terminal Aerodrome Forecast) provides weather forecasts for airports, typically covering 24-30 hours.";
+    }
   };
 
   return (
@@ -36,7 +46,7 @@ const MetarDisplay = ({ metarData, isLoading, error, icaoCode }: MetarDisplayPro
         <div>
           <h2 className="text-xl font-bold text-white">Weather Report</h2>
           <p className="text-slate-300">
-            Raw METAR data and weather conditions
+            Current conditions and forecasts
           </p>
         </div>
       </div>
@@ -50,25 +60,60 @@ const MetarDisplay = ({ metarData, isLoading, error, icaoCode }: MetarDisplayPro
         </Alert>
       )}
 
-      <div className="relative">
-        <Textarea
-          value={getDisplayContent()}
-          readOnly
-          className="min-h-[250px] font-mono text-sm bg-black/40 border-white/20 text-white resize-none focus:ring-0 focus:border-cyan-400/50 backdrop-blur-sm rounded-xl p-6"
-          placeholder="METAR data will appear here..."
-        />
+      <Tabs defaultValue="metar" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 bg-black/40 backdrop-blur-sm">
+          <TabsTrigger value="metar" className="flex items-center gap-2 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-200">
+            <CloudRain className="w-4 h-4" />
+            METAR
+          </TabsTrigger>
+          <TabsTrigger value="taf" className="flex items-center gap-2 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-200">
+            <Calendar className="w-4 h-4" />
+            TAF
+          </TabsTrigger>
+        </TabsList>
         
-        {isLoading && (
-          <div className="absolute inset-0 bg-black/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-            <div className="flex items-center space-x-3 text-white">
-              <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              <span>Loading weather data...</span>
-            </div>
+        <TabsContent value="metar" className="mt-4">
+          <div className="relative">
+            <Textarea
+              value={getDisplayContent('metar')}
+              readOnly
+              className="min-h-[200px] font-mono text-sm bg-black/40 border-white/20 text-white resize-none focus:ring-0 focus:border-cyan-400/50 backdrop-blur-sm rounded-xl p-6"
+              placeholder="METAR data will appear here..."
+            />
+            
+            {isLoading && (
+              <div className="absolute inset-0 bg-black/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                <div className="flex items-center space-x-3 text-white">
+                  <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <span>Loading METAR data...</span>
+                </div>
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </TabsContent>
+        
+        <TabsContent value="taf" className="mt-4">
+          <div className="relative">
+            <Textarea
+              value={getDisplayContent('taf')}
+              readOnly
+              className="min-h-[200px] font-mono text-sm bg-black/40 border-white/20 text-white resize-none focus:ring-0 focus:border-cyan-400/50 backdrop-blur-sm rounded-xl p-6"
+              placeholder="TAF data will appear here..."
+            />
+            
+            {isLoading && (
+              <div className="absolute inset-0 bg-black/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                <div className="flex items-center space-x-3 text-white">
+                  <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <span>Loading TAF data...</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </TabsContent>
+      </Tabs>
       
-      {metarData && (
+      {currentWeatherData && (
         <div className="flex items-center space-x-2 text-sm text-slate-300">
           <Clock className="w-4 h-4" />
           <span>Last updated: {new Date().toLocaleString()}</span>

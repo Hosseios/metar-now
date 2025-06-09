@@ -9,10 +9,10 @@ import { useState } from "react";
 const Index = () => {
   const [icaoCode, setIcaoCode] = useState("");
   const {
-    metarData,
+    weatherData,
     isLoading,
     error,
-    fetchMetar
+    fetchWeatherData
   } = useMetarData();
   const {
     loading: authLoading
@@ -20,7 +20,7 @@ const Index = () => {
 
   const handleSearch = (code: string) => {
     setIcaoCode(code);
-    fetchMetar(code);
+    fetchWeatherData(code);
   };
 
   if (authLoading) {
@@ -73,7 +73,7 @@ const Index = () => {
         <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4">
           {/* Result Display */}
           <div className="bg-white/10 backdrop-blur-xl rounded-2xl md:rounded-3xl p-4 md:p-6 border border-white/20 shadow-2xl">
-            <MetarDisplay metarData={metarData} isLoading={isLoading} error={error} icaoCode={icaoCode} />
+            <MetarDisplay weatherData={weatherData} isLoading={isLoading} error={error} icaoCode={icaoCode} />
           </div>
 
           {/* Favorites Section */}
