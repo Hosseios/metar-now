@@ -119,7 +119,7 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
               <DialogHeader>
                 <DialogTitle className="text-orange-400 font-mono">Decoded Weather Report - {icaoCode}</DialogTitle>
               </DialogHeader>
-              <ScrollArea className="h-[60vh] w-full">
+              <div className="h-[60vh] w-full overflow-auto scrollbar-hide">
                 {decodedError ? (
                   <Alert className="bg-red-500/20 border-red-400/50 text-red-100">
                     <AlertTriangle className="h-4 w-4" />
@@ -139,7 +139,7 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
                     dangerouslySetInnerHTML={{ __html: decodedHtml }}
                   />
                 )}
-              </ScrollArea>
+              </div>
             </DialogContent>
           </Dialog>
         )}
@@ -173,52 +173,43 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
           
           <TabsContent value="metar" className="mt-4">
             <div className="relative">
-              <Textarea
-                value={getDisplayContent('metar')}
-                readOnly
-                className="min-h-[200px] font-mono text-sm bg-black border-0 text-orange-400 resize-none focus:ring-0 focus:border-0 rounded-none p-6 shadow-inner avionics-display"
-                placeholder="METAR data will appear here..."
+              <div className="min-h-[200px] max-h-[400px] overflow-auto scrollbar-hide bg-black border-0 text-orange-400 p-6 shadow-inner avionics-display rounded-none"
                 style={{
                   fontFamily: 'Monaco, "Courier New", monospace',
                   textShadow: '0 0 8px rgba(255, 165, 0, 0.6)',
                   letterSpacing: '0.5px',
                   lineHeight: '1.6'
-                }}
-              />
+                }}>
+                <pre className="whitespace-pre-wrap font-mono">{getDisplayContent('metar')}</pre>
+              </div>
             </div>
           </TabsContent>
           
           <TabsContent value="taf" className="mt-4">
             <div className="relative">
-              <Textarea
-                value={getDisplayContent('taf')}
-                readOnly
-                className="min-h-[200px] font-mono text-sm bg-black border-0 text-orange-400 resize-none focus:ring-0 focus:border-0 rounded-none p-6 shadow-inner avionics-display"
-                placeholder="TAF data will appear here..."
+              <div className="min-h-[200px] max-h-[400px] overflow-auto scrollbar-hide bg-black border-0 text-orange-400 p-6 shadow-inner avionics-display rounded-none"
                 style={{
                   fontFamily: 'Monaco, "Courier New", monospace',
                   textShadow: '0 0 8px rgba(255, 165, 0, 0.6)',
                   letterSpacing: '0.5px',
                   lineHeight: '1.6'
-                }}
-              />
+                }}>
+                <pre className="whitespace-pre-wrap font-mono">{getDisplayContent('taf')}</pre>
+              </div>
             </div>
           </TabsContent>
 
           <TabsContent value="airport" className="mt-4">
             <div className="relative">
-              <Textarea
-                value={getDisplayContent('airport')}
-                readOnly
-                className="min-h-[200px] font-mono text-sm bg-black border-0 text-orange-400 resize-none focus:ring-0 focus:border-0 rounded-none p-6 shadow-inner avionics-display"
-                placeholder="Airport data will appear here..."
+              <div className="min-h-[200px] max-h-[400px] overflow-auto scrollbar-hide bg-black border-0 text-orange-400 p-6 shadow-inner avionics-display rounded-none"
                 style={{
                   fontFamily: 'Monaco, "Courier New", monospace',
                   textShadow: '0 0 8px rgba(255, 165, 0, 0.6)',
                   letterSpacing: '0.5px',
                   lineHeight: '1.6'
-                }}
-              />
+                }}>
+                <pre className="whitespace-pre-wrap font-mono">{getDisplayContent('airport')}</pre>
+              </div>
             </div>
           </TabsContent>
         </Tabs>
