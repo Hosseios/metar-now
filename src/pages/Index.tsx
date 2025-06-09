@@ -55,8 +55,8 @@ const Index = () => {
         {/* Hero Content */}
         <div className="flex items-center justify-center py-12 md:py-16">
           <div className="text-center space-y-2 md:space-y-3 px-4">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white drop-shadow-2xl">Get METAR & TAF Data</h2>
-            <p className="text-base md:text-lg text-slate-200 max-w-2xl mx-auto drop-shadow-lg hidden sm:block">Quick access to real-time METAR & TAF weather reports for airports worldwide.</p>
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white drop-shadow-2xl">Aviation Weather METAR & TAF</h2>
+            <p className="text-base md:text-lg text-slate-200 max-w-2xl mx-auto drop-shadow-lg hidden sm:block">METAR & TAF reports - standardized aviation weather data from airports worldwide.</p>
           </div>
         </div>
 
