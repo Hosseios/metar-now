@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -27,21 +28,28 @@ const Auth = () => {
 
   // Check for password reset flow on component mount
   useEffect(() => {
+    // Check both hash and search params for recovery tokens
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
-    const accessToken = hashParams.get('access_token');
-    const type = hashParams.get('type');
+    const searchParams = new URLSearchParams(window.location.search);
+    
+    const accessToken = hashParams.get('access_token') || searchParams.get('access_token');
+    const type = hashParams.get('type') || searchParams.get('type');
+    
+    console.log('Auth useEffect - checking for recovery:', { accessToken: !!accessToken, type });
     
     if (accessToken && type === 'recovery') {
+      console.log('Recovery token detected, showing update password form');
       setShowUpdatePassword(true);
+      // Don't redirect if we're in recovery mode
+      return;
     }
-  }, []);
-
-  // Redirect to home if already authenticated
-  useEffect(() => {
-    if (user) {
+    
+    // Only redirect to home if authenticated AND not in recovery mode
+    if (user && !showUpdatePassword) {
+      console.log('User authenticated and not in recovery, redirecting to home');
       navigate("/");
     }
-  }, [user, navigate]);
+  }, [user, navigate, showUpdatePassword]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -156,6 +164,7 @@ const Auth = () => {
       });
       // Clear the URL hash and redirect to home
       window.location.hash = '';
+      setShowUpdatePassword(false);
       navigate("/");
     }
 
