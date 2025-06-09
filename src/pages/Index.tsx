@@ -1,4 +1,3 @@
-
 import MetarSearch from "@/components/MetarSearch";
 import MetarDisplay from "@/components/MetarDisplay";
 import FavoritesManager from "@/components/FavoritesManager";
@@ -57,13 +56,7 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Reduced Hero Content spacing */}
-        <div className="flex items-center justify-center py-4 md:py-8">
-          <div className="text-center space-y-2 md:space-y-3 px-4">
-            
-            
-          </div>
-        </div>
+        {/* Minimal spacing - removed the hero content section completely */}
 
         {/* Main Content - Flex-grow to fill remaining space */}
         <div className="flex-1 flex flex-col p-3 md:p-6 space-y-3 md:space-y-4 max-w-6xl mx-auto w-full">
