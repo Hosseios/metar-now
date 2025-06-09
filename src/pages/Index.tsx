@@ -30,12 +30,15 @@ const Index = () => {
   }
 
   return <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col">
-      {/* Wider Hero Banner Section */}
+      {/* Wider Hero Banner Section with Smooth Fade */}
       <div className="relative h-48 md:h-64 lg:h-72 overflow-hidden flex-shrink-0">
         <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{
         backgroundImage: `url('/lovable-uploads/a24c1d1e-db26-4943-baf9-119712ba820f.png')`
       }} />
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/70" />
+        
+        {/* Smooth fade transition at the bottom */}
+        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-slate-900 via-slate-900/80 to-transparent"></div>
         
         {/* Header with Logo */}
         <div className="relative z-10 flex items-center justify-between p-4 md:p-6">
