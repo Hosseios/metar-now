@@ -1,4 +1,3 @@
-
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CloudRain, AlertTriangle, Clock, Calendar } from "lucide-react";
@@ -79,8 +78,14 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
               <Textarea
                 value={getDisplayContent('metar')}
                 readOnly
-                className="min-h-[200px] font-mono text-sm bg-black/40 border-white/20 text-white resize-none focus:ring-0 focus:border-cyan-400/50 backdrop-blur-sm rounded-xl p-6"
+                className="min-h-[200px] font-mono text-sm bg-black border-2 border-orange-600/50 text-orange-400 resize-none focus:ring-0 focus:border-orange-500 rounded-none p-6 shadow-inner avionics-display"
                 placeholder="METAR data will appear here..."
+                style={{
+                  fontFamily: 'Monaco, "Courier New", monospace',
+                  textShadow: '0 0 8px rgba(255, 165, 0, 0.6)',
+                  letterSpacing: '0.5px',
+                  lineHeight: '1.6'
+                }}
               />
             </div>
           </TabsContent>
@@ -90,8 +95,14 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
               <Textarea
                 value={getDisplayContent('taf')}
                 readOnly
-                className="min-h-[200px] font-mono text-sm bg-black/40 border-white/20 text-white resize-none focus:ring-0 focus:border-cyan-400/50 backdrop-blur-sm rounded-xl p-6"
+                className="min-h-[200px] font-mono text-sm bg-black border-2 border-orange-600/50 text-orange-400 resize-none focus:ring-0 focus:border-orange-500 rounded-none p-6 shadow-inner avionics-display"
                 placeholder="TAF data will appear here..."
+                style={{
+                  fontFamily: 'Monaco, "Courier New", monospace',
+                  textShadow: '0 0 8px rgba(255, 165, 0, 0.6)',
+                  letterSpacing: '0.5px',
+                  lineHeight: '1.6'
+                }}
               />
             </div>
           </TabsContent>
