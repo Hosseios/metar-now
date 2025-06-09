@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -153,8 +154,18 @@ const generateMockWeatherData = (icaoCode: string): WeatherData => {
 TEMPO ${day}${(parseInt(hour) + 2).toString().padStart(2, '0')}/${day}${(parseInt(hour) + 6).toString().padStart(2, '0')} ${winds[Math.floor(Math.random() * winds.length)]} ${visibility[Math.floor(Math.random() * visibility.length)]} ${weather[Math.floor(Math.random() * weather.length)]}
 FM${day}${(parseInt(hour) + 6).toString().padStart(2, '0')}00 ${winds[Math.floor(Math.random() * winds.length)]} ${vis} ${weather[Math.floor(Math.random() * weather.length)]}`;
 
+  // Generate basic airport data
+  const airport = `Airport: ${icaoCode}
+Type: Public Use Airport
+Coordinates: ${(Math.random() * 180 - 90).toFixed(4)}°, ${(Math.random() * 360 - 180).toFixed(4)}°
+Elevation: ${Math.floor(Math.random() * 5000)} ft MSL
+Runways: ${Math.floor(Math.random() * 3) + 1}
+Control Tower: ${Math.random() > 0.5 ? 'Yes' : 'No'}`;
+
   return {
     metar,
-    taf
+    taf,
+    airport
   };
 };
+
