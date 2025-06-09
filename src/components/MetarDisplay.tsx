@@ -79,7 +79,7 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
               <Textarea
                 value={getDisplayContent('metar')}
                 readOnly
-                className="min-h-[200px] font-mono text-sm bg-black border-2 border-orange-600/50 text-orange-400 resize-none focus:ring-0 focus:border-orange-500 rounded-none p-6 shadow-inner avionics-display"
+                className="min-h-[200px] font-mono text-sm bg-black border-0 text-orange-400 resize-none focus:ring-0 focus:border-0 rounded-none p-6 shadow-inner avionics-display"
                 placeholder="METAR data will appear here..."
                 style={{
                   fontFamily: 'Monaco, "Courier New", monospace',
@@ -96,7 +96,7 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
               <Textarea
                 value={getDisplayContent('taf')}
                 readOnly
-                className="min-h-[200px] font-mono text-sm bg-black border-2 border-orange-600/50 text-orange-400 resize-none focus:ring-0 focus:border-orange-500 rounded-none p-6 shadow-inner avionics-display"
+                className="min-h-[200px] font-mono text-sm bg-black border-0 text-orange-400 resize-none focus:ring-0 focus:border-0 rounded-none p-6 shadow-inner avionics-display"
                 placeholder="TAF data will appear here..."
                 style={{
                   fontFamily: 'Monaco, "Courier New", monospace',
