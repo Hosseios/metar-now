@@ -1,11 +1,9 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 export interface WeatherData {
   metar: string;
   taf: string;
-  notam: string;
 }
 
 export const useMetarData = () => {
@@ -15,7 +13,7 @@ export const useMetarData = () => {
   const { toast } = useToast();
 
   const fetchWeatherData = async (icaoCode: string) => {
-    console.log(`Fetching real METAR, TAF, and NOTAM data for ${icaoCode}`);
+    console.log(`Fetching real METAR and TAF data for ${icaoCode}`);
     setIsLoading(true);
     setError(null);
 
@@ -48,32 +46,17 @@ export const useMetarData = () => {
         throw new Error(`Aviation Weather API returned error: ${tafData.status.http_code}`);
       }
 
-      // Fetch NOTAM data
-      const notamProxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(`https://aviationweather.gov/api/data/notam?ids=${icaoCode}&format=raw`)}`;
-      const notamResponse = await fetch(notamProxyUrl);
-      
-      if (!notamResponse.ok) {
-        throw new Error(`Failed to fetch NOTAM data: ${notamResponse.status}`);
-      }
-      
-      const notamData = await notamResponse.json();
-      
-      if (notamData.status.http_code !== 200) {
-        throw new Error(`Aviation Weather API returned error: ${notamData.status.http_code}`);
-      }
-
       const weatherData: WeatherData = {
         metar: metarData.contents.trim() || `No METAR data available for ${icaoCode}`,
-        taf: tafData.contents.trim() || `No TAF data available for ${icaoCode}`,
-        notam: notamData.contents.trim() || `No NOTAM data available for ${icaoCode}`
+        taf: tafData.contents.trim() || `No TAF data available for ${icaoCode}`
       };
       
       setWeatherData(weatherData);
-      console.log(`Successfully fetched real weather and NOTAM data for ${icaoCode}`);
+      console.log(`Successfully fetched real weather data for ${icaoCode}`);
       
       toast({
         title: "Weather Data Updated",
-        description: `Successfully retrieved real METAR, TAF, and NOTAM data for ${icaoCode}`,
+        description: `Successfully retrieved real METAR and TAF data for ${icaoCode}`,
       });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to fetch weather data";
