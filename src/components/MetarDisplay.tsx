@@ -1,7 +1,6 @@
-
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CloudRain, AlertTriangle, Clock, Calendar, Info } from "lucide-react";
+import { CloudRain, AlertTriangle, Clock, Calendar, Info, Bell } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -25,7 +24,7 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // Use new weatherData if available, fallback to old metarData for backward compatibility
-  const currentWeatherData = weatherData || (metarData ? { metar: metarData, taf: "" } : null);
+  const currentWeatherData = weatherData || (metarData ? { metar: metarData, taf: "", notam: "" } : null);
 
   const fetchDecodedWeather = async () => {
     if (!icaoCode) return;
@@ -62,9 +61,9 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
     }
   };
 
-  const getDisplayContent = (type: 'metar' | 'taf') => {
+  const getDisplayContent = (type: 'metar' | 'taf' | 'notam') => {
     if (isLoading) {
-      return `Fetching ${type.toUpperCase()} data for ${icaoCode}...\n\nPlease wait while we retrieve the latest weather information.`;
+      return `Fetching ${type.toUpperCase()} data for ${icaoCode}...\n\nPlease wait while we retrieve the latest ${type === 'notam' ? 'notices' : 'weather'} information.`;
     }
     
     if (error) {
@@ -77,8 +76,10 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
     
     if (type === 'metar') {
       return "Enter an ICAO code above to view real-time weather data.\n\nMETAR (Meteorological Aerodrome Report) provides current weather conditions at airports worldwide.";
-    } else {
+    } else if (type === 'taf') {
       return "Enter an ICAO code above to view forecast data.\n\nTAF (Terminal Aerodrome Forecast) provides weather forecasts for airports, typically covering 24-30 hours.";
+    } else {
+      return "Enter an ICAO code above to view notices.\n\nNOTAM (Notice to Airmen) provides important operational information affecting airports and airspace.";
     }
   };
 
@@ -92,7 +93,7 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
           <div>
             <h2 className="text-xl font-bold text-white">Weather Report</h2>
             <p className="text-slate-300">
-              Current conditions and forecasts
+              Current conditions, forecasts, and notices
             </p>
           </div>
         </div>
@@ -153,7 +154,7 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
 
       <div className="relative">
         <Tabs defaultValue="metar" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 bg-black/40 backdrop-blur-sm">
+          <TabsList className="grid w-full grid-cols-3 bg-black/40 backdrop-blur-sm">
             <TabsTrigger value="metar" className="flex items-center gap-2 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-200">
               <CloudRain className="w-4 h-4" />
               METAR
@@ -161,6 +162,10 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
             <TabsTrigger value="taf" className="flex items-center gap-2 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-200">
               <Calendar className="w-4 h-4" />
               TAF
+            </TabsTrigger>
+            <TabsTrigger value="notam" className="flex items-center gap-2 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-200">
+              <Bell className="w-4 h-4" />
+              NOTAM
             </TabsTrigger>
           </TabsList>
           
@@ -188,6 +193,23 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
                 readOnly
                 className="min-h-[200px] font-mono text-sm bg-black border-0 text-orange-400 resize-none focus:ring-0 focus:border-0 rounded-none p-6 shadow-inner avionics-display"
                 placeholder="TAF data will appear here..."
+                style={{
+                  fontFamily: 'Monaco, "Courier New", monospace',
+                  textShadow: '0 0 8px rgba(255, 165, 0, 0.6)',
+                  letterSpacing: '0.5px',
+                  lineHeight: '1.6'
+                }}
+              />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="notam" className="mt-4">
+            <div className="relative">
+              <Textarea
+                value={getDisplayContent('notam')}
+                readOnly
+                className="min-h-[200px] font-mono text-sm bg-black border-0 text-orange-400 resize-none focus:ring-0 focus:border-0 rounded-none p-6 shadow-inner avionics-display"
+                placeholder="NOTAM data will appear here..."
                 style={{
                   fontFamily: 'Monaco, "Courier New", monospace',
                   textShadow: '0 0 8px rgba(255, 165, 0, 0.6)',
