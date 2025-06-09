@@ -1,10 +1,14 @@
 
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CloudRain, AlertTriangle, Clock, Calendar } from "lucide-react";
+import { CloudRain, AlertTriangle, Clock, Calendar, Info } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { WeatherData } from "@/hooks/useMetarData";
 import RetroRadar from "./RetroRadar";
+import { useState } from "react";
 
 interface MetarDisplayProps {
   weatherData?: WeatherData | null;
@@ -15,8 +19,38 @@ interface MetarDisplayProps {
 }
 
 const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: MetarDisplayProps) => {
+  const [decodedHtml, setDecodedHtml] = useState<string>("");
+  const [isLoadingDecoded, setIsLoadingDecoded] = useState(false);
+  const [decodedError, setDecodedError] = useState<string | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
   // Use new weatherData if available, fallback to old metarData for backward compatibility
   const currentWeatherData = weatherData || (metarData ? { metar: metarData, taf: "" } : null);
+
+  const fetchDecodedWeather = async () => {
+    if (!icaoCode) return;
+    
+    setIsLoadingDecoded(true);
+    setDecodedError(null);
+    
+    try {
+      const response = await fetch(`https://aviationweather.gov/api/data/taf?ids=${icaoCode}&format=html&metar=true`);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch decoded weather: ${response.status}`);
+      }
+      
+      const html = await response.text();
+      setDecodedHtml(html);
+      setIsDialogOpen(true);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to fetch decoded weather";
+      setDecodedError(errorMessage);
+      console.error('Error fetching decoded weather:', errorMessage);
+    } finally {
+      setIsLoadingDecoded(false);
+    }
+  };
 
   const getDisplayContent = (type: 'metar' | 'taf') => {
     if (isLoading) {
@@ -40,16 +74,56 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
 
   return (
     <div className="space-y-6 relative">
-      <div className="flex items-center space-x-3">
-        <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-500 rounded-2xl shadow-lg">
-          <CloudRain className="w-6 h-6 text-white" />
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-500 rounded-2xl shadow-lg">
+            <CloudRain className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-white">Weather Report</h2>
+            <p className="text-slate-300">
+              Current conditions and forecasts
+            </p>
+          </div>
         </div>
-        <div>
-          <h2 className="text-xl font-bold text-white">Weather Report</h2>
-          <p className="text-slate-300">
-            Current conditions and forecasts
-          </p>
-        </div>
+
+        {/* Decoded Weather Button */}
+        {currentWeatherData && icaoCode && (
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={fetchDecodedWeather}
+                disabled={isLoadingDecoded}
+                className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+              >
+                <Info className="w-4 h-4 mr-2" />
+                {isLoadingDecoded ? "Loading..." : "View Decoded Weather"}
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl max-h-[80vh] bg-white">
+              <DialogHeader>
+                <DialogTitle>Decoded Weather Report - {icaoCode}</DialogTitle>
+              </DialogHeader>
+              <ScrollArea className="h-[60vh] w-full">
+                {decodedError ? (
+                  <Alert className="bg-red-50 border-red-200">
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertDescription className="text-red-800">
+                      {decodedError}
+                    </AlertDescription>
+                  </Alert>
+                ) : (
+                  <div 
+                    className="prose prose-sm max-w-none p-4"
+                    dangerouslySetInnerHTML={{ __html: decodedHtml }}
+                  />
+                )}
+              </ScrollArea>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
 
       {error && (
