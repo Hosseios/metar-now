@@ -101,7 +101,7 @@ const FavoritesManager = ({ currentIcao, onSelectFavorite }: FavoritesManagerPro
       </div>
 
       {user ? (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="space-y-4">
           {/* Favorites Dropdown */}
           <div className="space-y-3">
             <label className="text-sm font-medium text-slate-300">
@@ -130,7 +130,7 @@ const FavoritesManager = ({ currentIcao, onSelectFavorite }: FavoritesManagerPro
             <label className="text-sm font-medium text-slate-300">
               Actions
             </label>
-            <div className="flex gap-2">
+            <div className="flex gap-3 pr-2">
               <Button
                 onClick={handleAddFavorite}
                 disabled={!currentIcao || currentIcao.length !== 4 || loading}
