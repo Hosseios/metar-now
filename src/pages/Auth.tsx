@@ -9,11 +9,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [resetEmail, setResetEmail] = useState("");
   const [loading, setLoading] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const { signIn, signUp, user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -70,6 +74,80 @@ const Auth = () => {
     setLoading(false);
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setResetLoading(true);
+
+    const redirectUrl = `${window.location.origin}/auth`;
+
+    const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+      redirectTo: redirectUrl,
+    });
+
+    if (error) {
+      toast({
+        title: "Reset Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Reset Email Sent",
+        description: "Check your email for password reset instructions.",
+      });
+      setShowForgotPassword(false);
+      setResetEmail("");
+    }
+
+    setResetLoading(false);
+  };
+
+  if (showForgotPassword) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-6">
+        <Card className="w-full max-w-md bg-slate-800/50 backdrop-blur-sm border-slate-700/50">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl font-bold text-white">Reset Password</CardTitle>
+            <CardDescription className="text-slate-400">
+              Enter your email to receive reset instructions
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleForgotPassword} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="reset-email" className="text-white">Email</Label>
+                <Input
+                  id="reset-email"
+                  type="email"
+                  value={resetEmail}
+                  onChange={(e) => setResetEmail(e.target.value)}
+                  required
+                  className="bg-slate-700/50 border-slate-600 text-white"
+                  placeholder="Enter your email"
+                />
+              </div>
+              <Button 
+                type="submit" 
+                disabled={resetLoading}
+                className="w-full bg-blue-600 hover:bg-blue-700"
+              >
+                {resetLoading ? "Sending..." : "Send Reset Email"}
+              </Button>
+              <Button 
+                type="button" 
+                variant="ghost"
+                onClick={() => setShowForgotPassword(false)}
+                className="w-full text-slate-300 hover:text-white"
+              >
+                Back to Sign In
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-6">
       <Card className="w-full max-w-md bg-slate-800/50 backdrop-blur-sm border-slate-700/50">
@@ -118,6 +196,14 @@ const Auth = () => {
                   className="w-full bg-blue-600 hover:bg-blue-700"
                 >
                   {loading ? "Signing In..." : "Sign In"}
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="ghost"
+                  onClick={() => setShowForgotPassword(true)}
+                  className="w-full text-slate-400 hover:text-white text-sm"
+                >
+                  Forgot your password?
                 </Button>
               </form>
             </TabsContent>
