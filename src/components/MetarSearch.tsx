@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -63,7 +62,10 @@ const MetarSearch = ({ onSearch, isLoading }: MetarSearchProps) => {
           className="h-14 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white px-8 disabled:opacity-50 transition-all duration-300 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105"
         >
           {isLoading ? (
-            <RetroRadar isActive={true} />
+            <div className="flex items-center gap-3">
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              Searching...
+            </div>
           ) : (
             <div className="flex items-center gap-3">
               <Search className="w-5 h-5" />

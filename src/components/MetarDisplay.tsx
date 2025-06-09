@@ -4,6 +4,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CloudRain, AlertTriangle, Clock, Calendar } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WeatherData } from "@/hooks/useMetarData";
+import RetroRadar from "./RetroRadar";
 
 interface MetarDisplayProps {
   weatherData?: WeatherData | null;
@@ -38,7 +39,7 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
       <div className="flex items-center space-x-3">
         <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-500 rounded-2xl shadow-lg">
           <CloudRain className="w-6 h-6 text-white" />
@@ -60,58 +61,49 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
         </Alert>
       )}
 
-      <Tabs defaultValue="metar" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 bg-black/40 backdrop-blur-sm">
-          <TabsTrigger value="metar" className="flex items-center gap-2 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-200">
-            <CloudRain className="w-4 h-4" />
-            METAR
-          </TabsTrigger>
-          <TabsTrigger value="taf" className="flex items-center gap-2 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-200">
-            <Calendar className="w-4 h-4" />
-            TAF
-          </TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="metar" className="mt-4">
-          <div className="relative">
-            <Textarea
-              value={getDisplayContent('metar')}
-              readOnly
-              className="min-h-[200px] font-mono text-sm bg-black/40 border-white/20 text-white resize-none focus:ring-0 focus:border-cyan-400/50 backdrop-blur-sm rounded-xl p-6"
-              placeholder="METAR data will appear here..."
-            />
-            
-            {isLoading && (
-              <div className="absolute inset-0 bg-black/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                <div className="flex items-center space-x-3 text-white">
-                  <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  <span>Loading METAR data...</span>
-                </div>
-              </div>
-            )}
+      <div className="relative">
+        <Tabs defaultValue="metar" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 bg-black/40 backdrop-blur-sm">
+            <TabsTrigger value="metar" className="flex items-center gap-2 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-200">
+              <CloudRain className="w-4 h-4" />
+              METAR
+            </TabsTrigger>
+            <TabsTrigger value="taf" className="flex items-center gap-2 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-200">
+              <Calendar className="w-4 h-4" />
+              TAF
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="metar" className="mt-4">
+            <div className="relative">
+              <Textarea
+                value={getDisplayContent('metar')}
+                readOnly
+                className="min-h-[200px] font-mono text-sm bg-black/40 border-white/20 text-white resize-none focus:ring-0 focus:border-cyan-400/50 backdrop-blur-sm rounded-xl p-6"
+                placeholder="METAR data will appear here..."
+              />
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="taf" className="mt-4">
+            <div className="relative">
+              <Textarea
+                value={getDisplayContent('taf')}
+                readOnly
+                className="min-h-[200px] font-mono text-sm bg-black/40 border-white/20 text-white resize-none focus:ring-0 focus:border-cyan-400/50 backdrop-blur-sm rounded-xl p-6"
+                placeholder="TAF data will appear here..."
+              />
+            </div>
+          </TabsContent>
+        </Tabs>
+
+        {/* Radar Overlay */}
+        {isLoading && (
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-xl flex items-center justify-center z-10">
+            <RetroRadar isActive={true} />
           </div>
-        </TabsContent>
-        
-        <TabsContent value="taf" className="mt-4">
-          <div className="relative">
-            <Textarea
-              value={getDisplayContent('taf')}
-              readOnly
-              className="min-h-[200px] font-mono text-sm bg-black/40 border-white/20 text-white resize-none focus:ring-0 focus:border-cyan-400/50 backdrop-blur-sm rounded-xl p-6"
-              placeholder="TAF data will appear here..."
-            />
-            
-            {isLoading && (
-              <div className="absolute inset-0 bg-black/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                <div className="flex items-center space-x-3 text-white">
-                  <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  <span>Loading TAF data...</span>
-                </div>
-              </div>
-            )}
-          </div>
-        </TabsContent>
-      </Tabs>
+        )}
+      </div>
       
       {currentWeatherData && (
         <div className="flex items-center space-x-2 text-sm text-slate-300">
