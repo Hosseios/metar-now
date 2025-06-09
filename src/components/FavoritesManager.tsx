@@ -1,9 +1,11 @@
 
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Star, Trash } from "lucide-react";
-import { useFavorites } from "@/hooks/useFavorites";
+import { Star, Trash, LogIn, LogOut } from "lucide-react";
+import { useSupabaseFavorites } from "@/hooks/useSupabaseFavorites";
+import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface FavoritesManagerProps {
   currentIcao: string;
@@ -11,8 +13,10 @@ interface FavoritesManagerProps {
 }
 
 const FavoritesManager = ({ currentIcao, onSelectFavorite }: FavoritesManagerProps) => {
-  const { favorites, addFavorite, removeFavorite, selectedFavorite, setSelectedFavorite } = useFavorites();
+  const { favorites, addFavorite, removeFavorite, selectedFavorite, setSelectedFavorite, loading } = useSupabaseFavorites();
+  const { user, signOut } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleAddFavorite = () => {
     if (!currentIcao || currentIcao.length !== 4) {
@@ -24,20 +28,7 @@ const FavoritesManager = ({ currentIcao, onSelectFavorite }: FavoritesManagerPro
       return;
     }
 
-    if (favorites.includes(currentIcao)) {
-      toast({
-        title: "Already in Favorites",
-        description: `${currentIcao} is already in your favorites list.`,
-        variant: "destructive",
-      });
-      return;
-    }
-
     addFavorite(currentIcao);
-    toast({
-      title: "Added to Favorites",
-      description: `${currentIcao} has been added to your favorites.`,
-    });
   };
 
   const handleRemoveFavorite = () => {
@@ -63,67 +54,118 @@ const FavoritesManager = ({ currentIcao, onSelectFavorite }: FavoritesManagerPro
     onSelectFavorite(value);
   };
 
+  const handleSignOut = async () => {
+    await signOut();
+    toast({
+      title: "Signed Out",
+      description: "You have been successfully signed out.",
+    });
+  };
+
   return (
     <div className="space-y-6">
-      <div className="space-y-2">
-        <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-          <Star className="w-5 h-5 text-yellow-400" />
-          Favorite Airports
-        </h2>
-        <p className="text-sm text-slate-400">
-          Manage your frequently checked airports
-        </p>
+      <div className="flex items-center justify-between">
+        <div className="space-y-2">
+          <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+            <Star className="w-5 h-5 text-yellow-400" />
+            Favorite Airports
+          </h2>
+          <p className="text-sm text-slate-400">
+            {user ? `Signed in as ${user.email}` : "Sign in to save favorites"}
+          </p>
+        </div>
+        
+        <div className="flex gap-2">
+          {user ? (
+            <Button
+              onClick={handleSignOut}
+              variant="outline"
+              size="sm"
+              className="border-slate-600 text-slate-300 hover:bg-slate-700"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Sign Out
+            </Button>
+          ) : (
+            <Button
+              onClick={() => navigate("/auth")}
+              variant="outline"
+              size="sm"
+              className="border-slate-600 text-slate-300 hover:bg-slate-700"
+            >
+              <LogIn className="w-4 h-4 mr-2" />
+              Sign In
+            </Button>
+          )}
+        </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        {/* Favorites Dropdown */}
-        <div className="space-y-3">
-          <label className="text-sm font-medium text-slate-300">
-            Select Favorite
-          </label>
-          <Select value={selectedFavorite} onValueChange={handleSelectFavorite}>
-            <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white">
-              <SelectValue placeholder={favorites.length === 0 ? "No favorites yet" : "Choose an airport"} />
-            </SelectTrigger>
-            <SelectContent className="bg-slate-800 border-slate-600">
-              {favorites.map((icao) => (
-                <SelectItem key={icao} value={icao} className="text-white hover:bg-slate-700">
-                  {icao}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+      {user ? (
+        <div className="grid gap-4 md:grid-cols-2">
+          {/* Favorites Dropdown */}
+          <div className="space-y-3">
+            <label className="text-sm font-medium text-slate-300">
+              Select Favorite
+            </label>
+            <Select value={selectedFavorite} onValueChange={handleSelectFavorite} disabled={loading}>
+              <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white">
+                <SelectValue placeholder={
+                  loading ? "Loading..." : 
+                  favorites.length === 0 ? "No favorites yet" : 
+                  "Choose an airport"
+                } />
+              </SelectTrigger>
+              <SelectContent className="bg-slate-800 border-slate-600">
+                {favorites.map((icao) => (
+                  <SelectItem key={icao} value={icao} className="text-white hover:bg-slate-700">
+                    {icao}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-        {/* Action Buttons */}
-        <div className="space-y-3">
-          <label className="text-sm font-medium text-slate-300">
-            Actions
-          </label>
-          <div className="flex gap-2">
-            <Button
-              onClick={handleAddFavorite}
-              disabled={!currentIcao || currentIcao.length !== 4}
-              className="flex-1 bg-green-600 hover:bg-green-700 text-white"
-            >
-              <Star className="w-4 h-4 mr-2" />
-              Add Current
-            </Button>
-            
-            <Button
-              onClick={handleRemoveFavorite}
-              disabled={!selectedFavorite}
-              variant="destructive"
-              className="flex-1"
-            >
-              <Trash className="w-4 h-4 mr-2" />
-              Remove
-            </Button>
+          {/* Action Buttons */}
+          <div className="space-y-3">
+            <label className="text-sm font-medium text-slate-300">
+              Actions
+            </label>
+            <div className="flex gap-2">
+              <Button
+                onClick={handleAddFavorite}
+                disabled={!currentIcao || currentIcao.length !== 4 || loading}
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+              >
+                <Star className="w-4 h-4 mr-2" />
+                Add Current
+              </Button>
+              
+              <Button
+                onClick={handleRemoveFavorite}
+                disabled={!selectedFavorite || loading}
+                variant="destructive"
+                className="flex-1"
+              >
+                <Trash className="w-4 h-4 mr-2" />
+                Remove
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
+      ) : (
+        <div className="text-center py-8 text-slate-400">
+          <LogIn className="w-8 h-8 mx-auto mb-2 opacity-50" />
+          <p>Sign in to save and manage your favorite airports.</p>
+          <Button
+            onClick={() => navigate("/auth")}
+            className="mt-4 bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            Sign In to Get Started
+          </Button>
+        </div>
+      )}
 
-      {favorites.length === 0 && (
+      {user && favorites.length === 0 && !loading && (
         <div className="text-center py-8 text-slate-400">
           <Star className="w-8 h-8 mx-auto mb-2 opacity-50" />
           <p>No favorite airports yet.</p>

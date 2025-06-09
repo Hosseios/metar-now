@@ -3,16 +3,26 @@ import MetarSearch from "@/components/MetarSearch";
 import MetarDisplay from "@/components/MetarDisplay";
 import FavoritesManager from "@/components/FavoritesManager";
 import { useMetarData } from "@/hooks/useMetarData";
+import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
 
 const Index = () => {
   const [icaoCode, setIcaoCode] = useState("");
   const { metarData, isLoading, error, fetchMetar } = useMetarData();
+  const { loading: authLoading } = useAuth();
 
   const handleSearch = (code: string) => {
     setIcaoCode(code);
     fetchMetar(code);
   };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+        <div className="text-white text-lg">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
