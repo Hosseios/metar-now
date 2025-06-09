@@ -34,15 +34,25 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
     setDecodedError(null);
     
     try {
-      const response = await fetch(`https://aviationweather.gov/api/data/taf?ids=${icaoCode}&format=html&metar=true`);
+      // Use a CORS proxy to access the Aviation Weather API
+      const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(`https://aviationweather.gov/api/data/taf?ids=${icaoCode}&format=html&metar=true`)}`;
+      
+      console.log(`Fetching decoded weather for ${icaoCode} via CORS proxy`);
+      const response = await fetch(proxyUrl);
       
       if (!response.ok) {
         throw new Error(`Failed to fetch decoded weather: ${response.status}`);
       }
       
-      const html = await response.text();
-      setDecodedHtml(html);
+      const data = await response.json();
+      
+      if (data.status.http_code !== 200) {
+        throw new Error(`Aviation Weather API returned error: ${data.status.http_code}`);
+      }
+      
+      setDecodedHtml(data.contents);
       setIsDialogOpen(true);
+      console.log(`Successfully fetched decoded weather for ${icaoCode}`);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to fetch decoded weather";
       setDecodedError(errorMessage);
