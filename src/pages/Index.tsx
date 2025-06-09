@@ -1,9 +1,11 @@
+
 import MetarSearch from "@/components/MetarSearch";
 import MetarDisplay from "@/components/MetarDisplay";
 import FavoritesManager from "@/components/FavoritesManager";
 import { useMetarData } from "@/hooks/useMetarData";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
+
 const Index = () => {
   const [icaoCode, setIcaoCode] = useState("");
   const {
@@ -15,15 +17,18 @@ const Index = () => {
   const {
     loading: authLoading
   } = useAuth();
+
   const handleSearch = (code: string) => {
     setIcaoCode(code);
     fetchWeatherData(code);
   };
+
   if (authLoading) {
     return <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
         <div className="text-white text-lg">Loading...</div>
       </div>;
   }
+
   return <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative">
       {/* Large Background Banner */}
       <div className="absolute inset-0 overflow-hidden">
@@ -47,13 +52,13 @@ const Index = () => {
             </div>
             <div>
               <h1 className="text-xl md:text-3xl font-bold text-white drop-shadow-lg">Aviation METAR Weather Viewer</h1>
-              <p className="text-sm md:text-base text-slate-200 drop-shadow hidden sm:block">Get real-time METAR & TAF reports with ease.</p>
+              <p className="text-sm md:text-base text-slate-200 drop-shadow">Get real-time METAR & TAF reports with ease.</p>
             </div>
           </div>
         </div>
 
-        {/* Hero Content */}
-        <div className="flex items-center justify-center py-12 md:py-16">
+        {/* Reduced Hero Content spacing */}
+        <div className="flex items-center justify-center py-4 md:py-8">
           <div className="text-center space-y-2 md:space-y-3 px-4">
             
             
@@ -83,4 +88,5 @@ const Index = () => {
       </div>
     </div>;
 };
+
 export default Index;
