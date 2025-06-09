@@ -112,21 +112,27 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
                 {isLoadingDecoded ? "Loading..." : "View Decoded Weather"}
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[80vh] bg-white">
+            <DialogContent className="max-w-4xl max-h-[80vh] bg-black border-orange-400/50">
               <DialogHeader>
-                <DialogTitle>Decoded Weather Report - {icaoCode}</DialogTitle>
+                <DialogTitle className="text-orange-400 font-mono">Decoded Weather Report - {icaoCode}</DialogTitle>
               </DialogHeader>
               <ScrollArea className="h-[60vh] w-full">
                 {decodedError ? (
-                  <Alert className="bg-red-50 border-red-200">
+                  <Alert className="bg-red-500/20 border-red-400/50 text-red-100">
                     <AlertTriangle className="h-4 w-4" />
-                    <AlertDescription className="text-red-800">
+                    <AlertDescription className="text-red-100">
                       {decodedError}
                     </AlertDescription>
                   </Alert>
                 ) : (
                   <div 
-                    className="prose prose-sm max-w-none p-4"
+                    className="p-6 bg-black text-orange-400 font-mono text-sm avionics-display min-h-full"
+                    style={{
+                      fontFamily: 'Monaco, "Courier New", monospace',
+                      textShadow: '0 0 8px rgba(255, 165, 0, 0.6)',
+                      letterSpacing: '0.5px',
+                      lineHeight: '1.6'
+                    }}
                     dangerouslySetInnerHTML={{ __html: decodedHtml }}
                   />
                 )}
