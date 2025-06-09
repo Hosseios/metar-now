@@ -1,4 +1,5 @@
 
+
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CloudRain, AlertTriangle, Clock, Calendar, Info, Plane } from "lucide-react";
@@ -171,8 +172,8 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
           </TabsList>
           
           <TabsContent value="metar" className="mt-4">
-            <div className="relative min-h-[200px] max-h-[400px] avionics-display rounded-none overflow-hidden">
-              <div className="h-full overflow-auto scrollbar-hide bg-black text-orange-400 p-6"
+            <div className="relative">
+              <div className="min-h-[200px] max-h-[400px] overflow-auto scrollbar-hide bg-black border-0 text-orange-400 p-6 shadow-inner avionics-display rounded-none"
                 style={{
                   fontFamily: 'Monaco, "Courier New", monospace',
                   textShadow: '0 0 8px rgba(255, 165, 0, 0.6)',
@@ -185,8 +186,8 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
           </TabsContent>
           
           <TabsContent value="taf" className="mt-4">
-            <div className="relative min-h-[200px] max-h-[400px] avionics-display rounded-none overflow-hidden">
-              <div className="h-full overflow-auto scrollbar-hide bg-black text-orange-400 p-6"
+            <div className="relative">
+              <div className="min-h-[200px] max-h-[400px] overflow-auto scrollbar-hide bg-black border-0 text-orange-400 p-6 shadow-inner avionics-display rounded-none"
                 style={{
                   fontFamily: 'Monaco, "Courier New", monospace',
                   textShadow: '0 0 8px rgba(255, 165, 0, 0.6)',
@@ -199,8 +200,8 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
           </TabsContent>
 
           <TabsContent value="airport" className="mt-4">
-            <div className="relative min-h-[200px] max-h-[400px] avionics-display rounded-none overflow-hidden">
-              <div className="h-full overflow-auto scrollbar-hide bg-black text-orange-400 p-6"
+            <div className="relative">
+              <div className="min-h-[200px] max-h-[400px] overflow-auto scrollbar-hide bg-black border-0 text-orange-400 p-6 shadow-inner avionics-display rounded-none"
                 style={{
                   fontFamily: 'Monaco, "Courier New", monospace',
                   textShadow: '0 0 8px rgba(255, 165, 0, 0.6)',
@@ -232,3 +233,4 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
 };
 
 export default MetarDisplay;
+
