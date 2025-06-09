@@ -25,35 +25,71 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
-      <div className="max-w-4xl mx-auto space-y-8">
-        {/* Header */}
-        <div className="text-center space-y-2">
-          <h1 className="text-4xl font-bold text-white">METAR Weather Viewer</h1>
-          <p className="text-slate-400">Real-time aviation weather reports</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      {/* Hero Banner Section */}
+      <div className="relative h-96 overflow-hidden">
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: `url('/lovable-uploads/a24c1d1e-db26-4943-baf9-119712ba820f.png')`,
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/70" />
+        
+        {/* Header with Logo */}
+        <div className="relative z-10 flex items-center justify-between p-6">
+          <div className="flex items-center space-x-4">
+            <img 
+              src="/lovable-uploads/a0ba6b63-c16c-41d4-b45a-2ace5ac4b0b5.png" 
+              alt="Logo" 
+              className="w-16 h-16 rounded-full shadow-lg ring-2 ring-white/20"
+            />
+            <div>
+              <h1 className="text-3xl font-bold text-white drop-shadow-lg">METAR Weather Viewer</h1>
+              <p className="text-slate-200 drop-shadow">Real-time aviation weather reports</p>
+            </div>
+          </div>
         </div>
 
-        {/* Search Section */}
-        <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50 shadow-2xl">
-          <MetarSearch onSearch={handleSearch} isLoading={isLoading} />
+        {/* Hero Content */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-center space-y-6 px-6">
+            <h2 className="text-5xl md:text-6xl font-bold text-white drop-shadow-2xl">
+              Professional Weather Data
+            </h2>
+            <p className="text-xl text-slate-200 max-w-2xl mx-auto drop-shadow-lg">
+              Access real-time METAR weather reports for airports worldwide. 
+              Built for aviation professionals and enthusiasts.
+            </p>
+          </div>
         </div>
+      </div>
 
-        {/* Result Display */}
-        <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50 shadow-2xl">
-          <MetarDisplay 
-            metarData={metarData} 
-            isLoading={isLoading} 
-            error={error}
-            icaoCode={icaoCode}
-          />
-        </div>
+      {/* Main Content */}
+      <div className="relative -mt-20 z-20">
+        <div className="max-w-6xl mx-auto px-6 space-y-8">
+          {/* Search Section */}
+          <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 shadow-2xl">
+            <MetarSearch onSearch={handleSearch} isLoading={isLoading} />
+          </div>
 
-        {/* Favorites Section */}
-        <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-700/50 shadow-2xl">
-          <FavoritesManager 
-            currentIcao={icaoCode} 
-            onSelectFavorite={handleSearch}
-          />
+          {/* Result Display */}
+          <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 shadow-2xl">
+            <MetarDisplay 
+              metarData={metarData} 
+              isLoading={isLoading} 
+              error={error}
+              icaoCode={icaoCode}
+            />
+          </div>
+
+          {/* Favorites Section */}
+          <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 shadow-2xl mb-12">
+            <FavoritesManager 
+              currentIcao={icaoCode} 
+              onSelectFavorite={handleSearch}
+            />
+          </div>
         </div>
       </div>
     </div>
