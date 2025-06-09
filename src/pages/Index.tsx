@@ -33,7 +33,7 @@ const Index = () => {
       {/* Hero Banner Section */}
       <div className="relative h-96 overflow-hidden">
         <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{
-        backgroundImage: `url('/lovable-uploads/a0ba6b63-c16c-41d4-b45a-2ace5ac4b0b5.png')`
+        backgroundImage: `url('/lovable-uploads/a24c1d1e-db26-4943-baf9-119712ba820f.png')`
       }} />
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/70" />
         
@@ -41,7 +41,7 @@ const Index = () => {
         <div className="relative z-10 flex items-center justify-between p-6">
           <div className="flex items-center space-x-4">
             <div className="relative">
-              <img src="/lovable-uploads/a24c1d1e-db26-4943-baf9-119712ba820f.png" alt="Logo" className="w-16 h-16 rounded-full shadow-xl ring-4 ring-white/30 backdrop-blur-sm" />
+              <img src="/lovable-uploads/a0ba6b63-c16c-41d4-b45a-2ace5ac4b0b5.png" alt="Logo" className="w-16 h-16 rounded-full shadow-xl ring-4 ring-white/30 backdrop-blur-sm" />
               <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-cyan-400/20 to-blue-400/20"></div>
             </div>
             <div>
