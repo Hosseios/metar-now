@@ -1,3 +1,4 @@
+
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CloudRain, AlertTriangle, Clock, Calendar, Info, Plane } from "lucide-react";
@@ -79,29 +80,34 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
     }
     
     if (error) {
-      return `Error fetching ${type.toUpperCase()} data for ${icaoCode}:\n\n${error}\n\nPlease check the ICAO code and try again.`;
+      return `Unable to connect to weather services for ${icaoCode}\n\nPlease check your internet connection and try again.`;
     }
     
     if (currentWeatherData && currentWeatherData[type]) {
-      // Check if it's an error message and clean it up
       const data = currentWeatherData[type];
-      if (data.includes('Error fetching')) {
-        const typeUpper = type.toUpperCase();
-        return `No ${typeUpper} data available for ${icaoCode}\n\nThis station may not provide ${typeUpper} reports or the data may be temporarily unavailable.`;
+      
+      // Handle error messages with user-friendly text
+      if (data.includes('Error fetching') || (data.includes('No ') && data.includes(' data available'))) {
+        if (type === 'metar') {
+          return `No current weather report available for ${icaoCode}\n\nThis airport may not provide real-time weather updates, or the data is temporarily unavailable.\n\nTry checking the TAF (forecast) or Airport info tabs for other available information.`;
+        } else if (type === 'taf') {
+          return `No weather forecast available for ${icaoCode}\n\nThis airport may not issue forecasts, or the forecast data is temporarily unavailable.\n\nCheck the METAR tab for current conditions or Airport info for facility details.`;
+        } else {
+          return `No airport information available for ${icaoCode}\n\nThe airport database may not have details for this facility, or the information is temporarily unavailable.\n\nTry the METAR or TAF tabs for weather data.`;
+        }
       }
-      if (data.includes('No ') && data.includes(' data available')) {
-        const typeUpper = type.toUpperCase();
-        return `No ${typeUpper} data available for ${icaoCode}\n\nThis station may not provide ${typeUpper} reports.`;
-      }
+      
+      // Return actual data if available
       return data;
     }
     
+    // Default messages when no data is loaded yet
     if (type === 'metar') {
-      return "Enter an ICAO code above to view real-time weather data.\n\nMETAR (Meteorological Aerodrome Report) provides current weather conditions at airports worldwide.";
+      return "Enter an ICAO code above to view real-time weather conditions\n\nMETAR provides current weather observations from airports worldwide, including wind, visibility, clouds, and temperature.";
     } else if (type === 'taf') {
-      return "Enter an ICAO code above to view forecast data.\n\nTAF (Terminal Aerodrome Forecast) provides weather forecasts for airports, typically covering 24-30 hours.";
+      return "Enter an ICAO code above to view weather forecasts\n\nTAF provides detailed weather forecasts for airports, typically covering the next 24-30 hours with expected conditions and changes.";
     } else {
-      return "Enter an ICAO code above to view airport information.\n\nAirport data includes facility information, coordinates, elevation, and operational details.";
+      return "Enter an ICAO code above to view airport information\n\nAirport data includes facility details, coordinates, elevation, runway information, and operational status.";
     }
   };
 
