@@ -1,4 +1,5 @@
 
+
 import MetarSearch from "@/components/MetarSearch";
 import MetarDisplay from "@/components/MetarDisplay";
 import FavoritesManager from "@/components/FavoritesManager";
@@ -47,8 +48,7 @@ const Index = () => {
         <div className="flex items-center justify-between p-4 md:p-6">
           <div className="flex items-center space-x-3 md:space-x-4">
             <div className="relative">
-              <img src="/lovable-uploads/81ee7fc3-3cd9-4ad4-9af8-178b7988fb4c.png" alt="METAR Now Logo" className="w-12 h-12 md:w-16 md:h-16 rounded-full shadow-xl ring-2 ring-white/30 backdrop-blur-sm" />
-              <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-cyan-400/20 to-blue-400/20"></div>
+              <img src="/lovable-uploads/81ee7fc3-3cd9-4ad4-9af8-178b7988fb4c.png" alt="METAR Now Logo" className="w-12 h-12 md:w-16 md:h-16" />
             </div>
             <div>
               <h1 className="text-xl md:text-3xl font-bold text-white drop-shadow-lg">Aviation METAR Weather Viewer</h1>
@@ -84,3 +84,4 @@ const Index = () => {
 };
 
 export default Index;
+
