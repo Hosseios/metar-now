@@ -1,5 +1,3 @@
-
-
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CloudRain, AlertTriangle, Clock, Calendar, Info, Plane } from "lucide-react";
@@ -27,6 +25,18 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
 
   // Use new weatherData if available, fallback to old metarData for backward compatibility
   const currentWeatherData = weatherData || (metarData ? { metar: metarData, taf: "", airport: "" } : null);
+
+  // Check if data is available (not an error message and not empty)
+  const isDataAvailable = (data: string) => {
+    if (!data || data.trim() === '') return false;
+    if (data.includes('Error fetching')) return false;
+    if (data.includes('No ') && data.includes(' data available')) return false;
+    return true;
+  };
+
+  const hasMetarData = currentWeatherData ? isDataAvailable(currentWeatherData.metar) : false;
+  const hasTafData = currentWeatherData ? isDataAvailable(currentWeatherData.taf) : false;
+  const hasAirportData = currentWeatherData ? isDataAvailable(currentWeatherData.airport) : false;
 
   const fetchDecodedWeather = async () => {
     if (!icaoCode) return;
@@ -73,7 +83,17 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
     }
     
     if (currentWeatherData && currentWeatherData[type]) {
-      return currentWeatherData[type];
+      // Check if it's an error message and clean it up
+      const data = currentWeatherData[type];
+      if (data.includes('Error fetching')) {
+        const typeUpper = type.toUpperCase();
+        return `No ${typeUpper} data available for ${icaoCode}\n\nThis station may not provide ${typeUpper} reports or the data may be temporarily unavailable.`;
+      }
+      if (data.includes('No ') && data.includes(' data available')) {
+        const typeUpper = type.toUpperCase();
+        return `No ${typeUpper} data available for ${icaoCode}\n\nThis station may not provide ${typeUpper} reports.`;
+      }
+      return data;
     }
     
     if (type === 'metar') {
@@ -160,14 +180,23 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
             <TabsTrigger value="metar" className="flex items-center gap-2 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-200">
               <CloudRain className="w-4 h-4" />
               METAR
+              {hasMetarData && (
+                <div className="w-2 h-2 bg-orange-400 rounded-full ml-1 shadow-sm shadow-orange-400/50"></div>
+              )}
             </TabsTrigger>
             <TabsTrigger value="taf" className="flex items-center gap-2 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-200">
               <Calendar className="w-4 h-4" />
               TAF
+              {hasTafData && (
+                <div className="w-2 h-2 bg-orange-400 rounded-full ml-1 shadow-sm shadow-orange-400/50"></div>
+              )}
             </TabsTrigger>
             <TabsTrigger value="airport" className="flex items-center gap-2 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-200">
               <Plane className="w-4 h-4" />
               Airport
+              {hasAirportData && (
+                <div className="w-2 h-2 bg-orange-400 rounded-full ml-1 shadow-sm shadow-orange-400/50"></div>
+              )}
             </TabsTrigger>
           </TabsList>
           
@@ -233,4 +262,3 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
 };
 
 export default MetarDisplay;
-
