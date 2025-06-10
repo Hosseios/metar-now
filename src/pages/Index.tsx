@@ -1,3 +1,4 @@
+
 import MetarSearch from "@/components/MetarSearch";
 import MetarDisplay from "@/components/MetarDisplay";
 import FavoritesManager from "@/components/FavoritesManager";
@@ -46,7 +47,7 @@ const Index = () => {
         <div className="flex items-center justify-between p-4 md:p-6">
           <div className="flex items-center space-x-3 md:space-x-4">
             <div className="relative">
-              <img src="/lovable-uploads/a0ba6b63-c16c-41d4-b45a-2ace5ac4b0b5.png" alt="Logo" className="w-12 h-12 md:w-16 md:h-16 rounded-full shadow-xl ring-2 ring-white/30 backdrop-blur-sm" />
+              <img src="/lovable-uploads/81ee7fc3-3cd9-4ad4-9af8-178b7988fb4c.png" alt="METAR Now Logo" className="w-12 h-12 md:w-16 md:h-16 rounded-full shadow-xl ring-2 ring-white/30 backdrop-blur-sm" />
               <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-cyan-400/20 to-blue-400/20"></div>
             </div>
             <div>
