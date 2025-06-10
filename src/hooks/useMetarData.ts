@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -8,11 +7,56 @@ export interface WeatherData {
   airport: string;
 }
 
+interface DataFetchResult {
+  data: string;
+  error: string | null;
+}
+
 export const useMetarData = () => {
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+
+  const fetchSingleDataSource = async (url: string, dataType: string): Promise<DataFetchResult> => {
+    try {
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        return {
+          data: "",
+          error: `Failed to fetch ${dataType} data: ${response.status}`
+        };
+      }
+      
+      const data = await response.json();
+      
+      if (data.status.http_code !== 200) {
+        return {
+          data: "",
+          error: `Aviation Weather API returned error for ${dataType}: ${data.status.http_code}`
+        };
+      }
+
+      const content = data.contents.trim();
+      if (!content) {
+        return {
+          data: `No ${dataType} data available for this station`,
+          error: null
+        };
+      }
+
+      return {
+        data: content,
+        error: null
+      };
+    } catch (err) {
+      return {
+        data: "",
+        error: err instanceof Error ? err.message : `Failed to fetch ${dataType} data`
+      };
+    }
+  };
 
   const fetchWeatherData = async (icaoCode: string) => {
     console.log(`Fetching real METAR, TAF, and Airport data for ${icaoCode}`);
@@ -20,61 +64,49 @@ export const useMetarData = () => {
     setError(null);
 
     try {
-      // Fetch METAR data
+      // Prepare URLs for all data sources
       const metarProxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(`https://aviationweather.gov/api/data/metar?ids=${icaoCode}&format=raw`)}`;
-      const metarResponse = await fetch(metarProxyUrl);
-      
-      if (!metarResponse.ok) {
-        throw new Error(`Failed to fetch METAR data: ${metarResponse.status}`);
-      }
-      
-      const metarData = await metarResponse.json();
-      
-      if (metarData.status.http_code !== 200) {
-        throw new Error(`Aviation Weather API returned error: ${metarData.status.http_code}`);
-      }
-
-      // Fetch TAF data
       const tafProxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(`https://aviationweather.gov/api/data/taf?ids=${icaoCode}&format=raw`)}`;
-      const tafResponse = await fetch(tafProxyUrl);
-      
-      if (!tafResponse.ok) {
-        throw new Error(`Failed to fetch TAF data: ${tafResponse.status}`);
-      }
-      
-      const tafData = await tafResponse.json();
-      
-      if (tafData.status.http_code !== 200) {
-        throw new Error(`Aviation Weather API returned error: ${tafData.status.http_code}`);
-      }
-
-      // Fetch Airport data
       const airportProxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(`https://aviationweather.gov/api/data/airport?ids=${icaoCode}`)}`;
-      const airportResponse = await fetch(airportProxyUrl);
-      
-      if (!airportResponse.ok) {
-        throw new Error(`Failed to fetch Airport data: ${airportResponse.status}`);
-      }
-      
-      const airportData = await airportResponse.json();
-      
-      if (airportData.status.http_code !== 200) {
-        throw new Error(`Aviation Weather API returned error: ${airportData.status.http_code}`);
-      }
 
+      // Fetch all data sources in parallel, but handle each independently
+      const [metarResult, tafResult, airportResult] = await Promise.all([
+        fetchSingleDataSource(metarProxyUrl, 'METAR'),
+        fetchSingleDataSource(tafProxyUrl, 'TAF'),
+        fetchSingleDataSource(airportProxyUrl, 'Airport')
+      ]);
+
+      // Collect any errors that occurred
+      const errors = [
+        metarResult.error,
+        tafResult.error,
+        airportResult.error
+      ].filter(Boolean);
+
+      // Create weather data object with available data
       const weatherData: WeatherData = {
-        metar: metarData.contents.trim() || `No METAR data available for ${icaoCode}`,
-        taf: tafData.contents.trim() || `No TAF data available for ${icaoCode}`,
-        airport: airportData.contents.trim() || `No Airport data available for ${icaoCode}`
+        metar: metarResult.data || `Error fetching METAR: ${metarResult.error}`,
+        taf: tafResult.data || `Error fetching TAF: ${tafResult.error}`,
+        airport: airportResult.data || `Error fetching Airport data: ${airportResult.error}`
       };
       
       setWeatherData(weatherData);
-      console.log(`Successfully fetched real weather and airport data for ${icaoCode}`);
+      console.log(`Successfully fetched available data for ${icaoCode}`);
       
-      toast({
-        title: "Data Updated",
-        description: `Successfully retrieved METAR, TAF, and Airport data for ${icaoCode}`,
-      });
+      // Show toast based on success/partial success
+      if (errors.length === 0) {
+        toast({
+          title: "Data Updated",
+          description: `Successfully retrieved METAR, TAF, and Airport data for ${icaoCode}`,
+        });
+      } else if (errors.length < 3) {
+        toast({
+          title: "Partial Data Retrieved",
+          description: `Retrieved available data for ${icaoCode}. Some data sources may be unavailable.`,
+        });
+      } else {
+        throw new Error("Failed to fetch any data");
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to fetch weather data";
       setError(errorMessage);
@@ -168,4 +200,3 @@ Control Tower: ${Math.random() > 0.5 ? 'Yes' : 'No'}`;
     airport
   };
 };
-
