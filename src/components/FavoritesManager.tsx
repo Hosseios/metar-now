@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Star, Trash, LogIn, LogOut } from "lucide-react";
@@ -131,7 +132,7 @@ const FavoritesManager = ({ currentIcao, onSelectFavorite }: FavoritesManagerPro
               <Button
                 onClick={handleAddFavorite}
                 disabled={!currentIcao || currentIcao.length !== 4 || loading}
-                className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                className="flex-1 bg-slate-800/50 backdrop-blur-sm border border-green-500/30 text-white hover:bg-green-900/20 hover:border-green-400/50 transition-all duration-200"
               >
                 <Star className="w-4 h-4 mr-2" />
                 Add Current
@@ -140,8 +141,7 @@ const FavoritesManager = ({ currentIcao, onSelectFavorite }: FavoritesManagerPro
               <Button
                 onClick={handleRemoveFavorite}
                 disabled={!selectedFavorite || loading}
-                variant="destructive"
-                className="flex-1"
+                className="flex-1 bg-slate-800/50 backdrop-blur-sm border border-red-500/30 text-white hover:bg-red-900/20 hover:border-red-400/50 transition-all duration-200"
               >
                 <Trash className="w-4 h-4 mr-2" />
                 Remove
