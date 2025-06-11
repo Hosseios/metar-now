@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,7 +60,7 @@ const MetarSearch = ({ onSearch, isLoading }: MetarSearchProps) => {
         <Button 
           type="submit" 
           disabled={!isValidIcao || isLoading}
-          className="h-14 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white px-8 disabled:opacity-50 transition-all duration-300 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105"
+          className="h-14 bg-slate-800/50 backdrop-blur-sm border border-blue-500/30 text-white hover:bg-blue-900/20 hover:border-blue-400/50 transition-all duration-200 px-8 disabled:opacity-50 rounded-xl shadow-lg"
         >
           {isLoading ? (
             <div className="flex items-center gap-3">
