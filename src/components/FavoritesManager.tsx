@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Star, Trash, LogIn, LogOut } from "lucide-react";
@@ -79,9 +78,8 @@ const FavoritesManager = ({ currentIcao, onSelectFavorite }: FavoritesManagerPro
           {user ? (
             <Button
               onClick={handleSignOut}
-              variant="outline"
               size="sm"
-              className="border-slate-600 text-slate-300 hover:bg-slate-700"
+              className="bg-slate-800/50 backdrop-blur-sm border border-red-500/30 text-white hover:bg-red-900/20 hover:border-red-400/50 transition-all duration-200"
             >
               <LogOut className="w-4 h-4 mr-2" />
               Sign Out
@@ -89,9 +87,8 @@ const FavoritesManager = ({ currentIcao, onSelectFavorite }: FavoritesManagerPro
           ) : (
             <Button
               onClick={() => navigate("/auth")}
-              variant="outline"
               size="sm"
-              className="border-slate-600 text-slate-300 hover:bg-slate-700"
+              className="bg-slate-800/50 backdrop-blur-sm border border-green-500/30 text-white hover:bg-green-900/20 hover:border-green-400/50 transition-all duration-200"
             >
               <LogIn className="w-4 h-4 mr-2" />
               Sign In
@@ -158,7 +155,7 @@ const FavoritesManager = ({ currentIcao, onSelectFavorite }: FavoritesManagerPro
           <p>Sign in to save and manage your favorite airports.</p>
           <Button
             onClick={() => navigate("/auth")}
-            className="mt-4 bg-blue-600 hover:bg-blue-700 text-white"
+            className="mt-4 bg-slate-800/50 backdrop-blur-sm border border-green-500/30 text-white hover:bg-green-900/20 hover:border-green-400/50 transition-all duration-200"
           >
             Sign In to Get Started
           </Button>
