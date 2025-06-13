@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { MapPin, Key } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -163,6 +162,7 @@ interface FavoritesMapProps {
 const FavoritesMap = ({ favorites, onAirportClick }: FavoritesMapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<any>(null);
+  const markersRef = useRef<any[]>([]);
   const [mapboxToken, setMapboxToken] = useState<string>('');
   const [inputToken, setInputToken] = useState<string>('');
   const [mapboxLoaded, setMapboxLoaded] = useState<boolean>(false);
@@ -176,14 +176,6 @@ const FavoritesMap = ({ favorites, onAirportClick }: FavoritesMapProps) => {
       try {
         const mapboxModule = await import('mapbox-gl');
         mapboxgl = mapboxModule.default;
-        
-        // Disable telemetry to prevent postMessage conflicts
-        if (mapboxgl.prewarm) {
-          mapboxgl.prewarm = () => {};
-        }
-        if (mapboxgl.clearPrewarmedResources) {
-          mapboxgl.clearPrewarmedResources = () => {};
-        }
         
         // Import CSS
         await import('mapbox-gl/dist/mapbox-gl.css');
@@ -214,37 +206,45 @@ const FavoritesMap = ({ favorites, onAirportClick }: FavoritesMapProps) => {
 
     console.log('Initializing map with token:', mapboxToken.substring(0, 20) + '...');
 
-    // Initialize map with telemetry disabled
+    // Clean up existing map first
+    if (map.current) {
+      map.current.remove();
+      map.current = null;
+    }
+
+    // Clear existing markers
+    markersRef.current.forEach(marker => {
+      if (marker && marker.remove) {
+        marker.remove();
+      }
+    });
+    markersRef.current = [];
+
+    // Initialize map
     mapboxgl.accessToken = mapboxToken;
     
     try {
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/dark-v11',
+        style: 'mapbox://styles/mapbox/streets-v12', // Changed to a more reliable style
         zoom: 2,
         center: [10, 30], // Center on Europe/Middle East
         projection: 'mercator' as any,
-        // Disable telemetry and tracking
-        trackResize: false,
-        preserveDrawingBuffer: true,
-        collectResourceTiming: false,
+        antialias: true,
+        optimizeForTerrain: false,
       });
-
-      // Disable all telemetry and tracking
-      if (map.current._requestManager) {
-        map.current._requestManager.transformRequest = (url: string, resourceType: string) => {
-          // Block telemetry requests
-          if (url.includes('events.mapbox.com') || url.includes('api.mapbox.com/events')) {
-            return { url: '' };
-          }
-          return { url };
-        };
-      }
 
       map.current.on('load', () => {
         console.log('Map loaded and ready');
         setMapReady(true);
         setLoadError('');
+        
+        // Force a resize to ensure proper rendering
+        setTimeout(() => {
+          if (map.current) {
+            map.current.resize();
+          }
+        }, 100);
       });
 
       map.current.on('error', (e: any) => {
@@ -275,6 +275,14 @@ const FavoritesMap = ({ favorites, onAirportClick }: FavoritesMapProps) => {
 
     // Cleanup
     return () => {
+      // Clear markers
+      markersRef.current.forEach(marker => {
+        if (marker && marker.remove) {
+          marker.remove();
+        }
+      });
+      markersRef.current = [];
+      
       if (map.current) {
         try {
           map.current.remove();
@@ -301,13 +309,12 @@ const FavoritesMap = ({ favorites, onAirportClick }: FavoritesMapProps) => {
     console.log('Adding markers for favorites:', favorites);
 
     // Clear existing markers
-    const existingMarkers = document.querySelectorAll('.airport-marker');
-    existingMarkers.forEach(marker => {
-      const parent = marker.parentNode;
-      if (parent) {
-        parent.removeChild(marker);
+    markersRef.current.forEach(marker => {
+      if (marker && marker.remove) {
+        marker.remove();
       }
     });
+    markersRef.current = [];
 
     // Add markers for each favorite airport
     const bounds = new mapboxgl.LngLatBounds();
@@ -337,12 +344,12 @@ const FavoritesMap = ({ favorites, onAirportClick }: FavoritesMapProps) => {
       markerElement.className = 'airport-marker cursor-pointer';
       markerElement.innerHTML = `
         <div class="relative group">
-          <div class="w-8 h-8 ${isApproximate ? 'bg-orange-500' : 'bg-blue-500'} rounded-full border-2 border-white shadow-lg flex items-center justify-center hover:scale-110 transition-transform">
+          <div class="w-8 h-8 ${isApproximate ? 'bg-orange-500' : 'bg-blue-500'} rounded-full border-2 border-white shadow-lg flex items-center justify-center hover:scale-110 transition-transform z-10">
             <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
               <path d="M10 12L8 10l4-8 4 8-2 2-4-2z"/>
             </svg>
           </div>
-          <div class="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+          <div class="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
             ${icao}${isApproximate ? ' (approx)' : ''}
           </div>
         </div>
@@ -356,9 +363,15 @@ const FavoritesMap = ({ favorites, onAirportClick }: FavoritesMapProps) => {
 
       // Create and add marker
       try {
-        const marker = new mapboxgl.Marker(markerElement)
+        const marker = new mapboxgl.Marker({
+          element: markerElement,
+          anchor: 'center'
+        })
           .setLngLat(coordinates)
           .addTo(map.current!);
+        
+        // Store marker reference for cleanup
+        markersRef.current.push(marker);
         
         console.log(`Marker added for ${icao}`);
       } catch (error) {
@@ -370,10 +383,21 @@ const FavoritesMap = ({ favorites, onAirportClick }: FavoritesMapProps) => {
     if (validAirports > 0) {
       console.log(`Fitting map bounds for ${validAirports} airports`);
       try {
-        map.current.fitBounds(bounds, {
-          padding: 50,
-          maxZoom: 8,
-        });
+        // Add some delay to ensure map is fully rendered
+        setTimeout(() => {
+          if (map.current && bounds) {
+            map.current.fitBounds(bounds, {
+              padding: {
+                top: 50,
+                bottom: 50,
+                left: 50,
+                right: 50
+              },
+              maxZoom: 10,
+              duration: 1000
+            });
+          }
+        }, 500);
       } catch (error) {
         console.error('Error fitting bounds:', error);
       }
@@ -462,11 +486,11 @@ const FavoritesMap = ({ favorites, onAirportClick }: FavoritesMapProps) => {
       <div className="relative h-64 rounded-lg overflow-hidden border border-slate-600">
         <div ref={mapContainer} className="absolute inset-0" />
         {!mapReady && (
-          <div className="absolute inset-0 bg-slate-800/90 flex items-center justify-center">
+          <div className="absolute inset-0 bg-slate-800/90 flex items-center justify-center z-30">
             <div className="text-slate-300">Initializing map...</div>
           </div>
         )}
-        <div className="absolute top-2 left-2 bg-slate-800/90 text-slate-300 text-xs px-2 py-1 rounded">
+        <div className="absolute top-2 left-2 bg-slate-800/90 text-slate-300 text-xs px-2 py-1 rounded z-20">
           <div className="flex items-center space-x-2">
             <div className="flex items-center space-x-1">
               <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
