@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { MapPin, Key } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -227,13 +228,13 @@ const FavoritesMap = ({ favorites, onAirportClick }: FavoritesMapProps) => {
       mapboxgl.config.API_URL = 'https://api.mapbox.com';
     }
 
-    // Initialize map
+    // Initialize map with aviation dark theme
     mapboxgl.accessToken = mapboxToken;
     
     try {
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/light-v11',
+        style: 'mapbox://styles/mapbox/dark-v11', // Changed to dark theme for aviation feel
         zoom: 2,
         center: [10, 50], // Center on Europe where most favorites are
         antialias: true,
@@ -265,14 +266,23 @@ const FavoritesMap = ({ favorites, onAirportClick }: FavoritesMapProps) => {
         setMapReady(false);
       });
 
-      // Add navigation controls
-      map.current.addControl(
-        new mapboxgl.NavigationControl({
-          showCompass: false,
-          showZoom: true,
-        }),
-        'top-right'
-      );
+      // Add navigation controls with aviation styling
+      const nav = new mapboxgl.NavigationControl({
+        showCompass: false,
+        showZoom: true,
+      });
+      map.current.addControl(nav, 'top-right');
+
+      // Style the navigation controls to match aviation theme
+      setTimeout(() => {
+        const navButtons = document.querySelectorAll('.mapboxgl-ctrl-group button');
+        navButtons.forEach((button: any) => {
+          button.style.backgroundColor = '#000000';
+          button.style.border = '1px solid #f97316';
+          button.style.color = '#f97316';
+          button.style.boxShadow = '0 0 8px rgba(255, 165, 0, 0.3)';
+        });
+      }, 500);
 
     } catch (error) {
       console.error('Error initializing map:', error);
@@ -349,42 +359,138 @@ const FavoritesMap = ({ favorites, onAirportClick }: FavoritesMapProps) => {
       validAirports++;
       bounds.extend([lng, lat]);
 
+      // Create custom aviation-style marker element
+      const markerElement = document.createElement('div');
+      markerElement.className = 'aviation-marker';
+      markerElement.style.cssText = `
+        position: relative;
+        cursor: pointer;
+        z-index: 1000;
+        font-family: Monaco, "Courier New", monospace;
+      `;
+      
+      markerElement.innerHTML = `
+        <div style="position: relative; display: inline-block;">
+          <div style="
+            width: 24px;
+            height: 24px;
+            background-color: #ff6600;
+            border: 2px solid #ff6600;
+            border-radius: 50%;
+            box-shadow: 
+              0 0 12px rgba(255, 102, 0, 0.8),
+              inset 0 0 6px rgba(255, 165, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            z-index: 1001;
+            position: relative;
+          " class="aviation-marker-circle">
+            <div style="
+              width: 8px;
+              height: 8px;
+              background-color: #ffffff;
+              border-radius: 50%;
+              box-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
+            "></div>
+          </div>
+          <div style="
+            position: absolute;
+            top: -45px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #000000;
+            color: #ff6600;
+            padding: 6px 10px;
+            border: 1px solid #ff6600;
+            border-radius: 4px;
+            font-size: 11px;
+            font-family: Monaco, 'Courier New', monospace;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            pointer-events: none;
+            z-index: 1002;
+            text-shadow: 0 0 6px rgba(255, 165, 0, 0.6);
+            box-shadow: 
+              0 0 8px rgba(255, 102, 0, 0.4),
+              inset 0 0 4px rgba(255, 165, 0, 0.2);
+          " class="aviation-marker-tooltip">
+            ${icao}${isApproximate ? ' (APPROX)' : ''}
+          </div>
+          <div style="
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            border: 1px solid rgba(255, 102, 0, 0.3);
+            border-radius: 50%;
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 999;
+          " class="aviation-marker-pulse"></div>
+        </div>
+      `;
+
+      // Add aviation-style hover effects
+      const markerCircle = markerElement.querySelector('.aviation-marker-circle') as HTMLElement;
+      const tooltip = markerElement.querySelector('.aviation-marker-tooltip') as HTMLElement;
+      const pulse = markerElement.querySelector('.aviation-marker-pulse') as HTMLElement;
+      
+      markerElement.addEventListener('mouseenter', () => {
+        if (markerCircle) {
+          markerCircle.style.transform = 'scale(1.3)';
+          markerCircle.style.boxShadow = '0 0 20px rgba(255, 102, 0, 1), inset 0 0 8px rgba(255, 165, 0, 0.7)';
+        }
+        if (tooltip) tooltip.style.opacity = '1';
+        if (pulse) {
+          pulse.style.opacity = '1';
+          pulse.style.transform = 'translate(-50%, -50%) scale(1.2)';
+        }
+      });
+      
+      markerElement.addEventListener('mouseleave', () => {
+        if (markerCircle) {
+          markerCircle.style.transform = 'scale(1)';
+          markerCircle.style.boxShadow = '0 0 12px rgba(255, 102, 0, 0.8), inset 0 0 6px rgba(255, 165, 0, 0.5)';
+        }
+        if (tooltip) tooltip.style.opacity = '0';
+        if (pulse) {
+          pulse.style.opacity = '0';
+          pulse.style.transform = 'translate(-50%, -50%) scale(1)';
+        }
+      });
+
+      // Add click handler
+      markerElement.addEventListener('click', () => {
+        console.log(`Clicked on airport: ${icao}`);
+        onAirportClick(icao);
+        
+        // Add click animation
+        if (markerCircle) {
+          markerCircle.style.transform = 'scale(0.9)';
+          setTimeout(() => {
+            if (markerCircle) markerCircle.style.transform = 'scale(1)';
+          }, 150);
+        }
+      });
+
       // Create and add marker
       try {
         const marker = new mapboxgl.Marker({
-          color: isApproximate ? '#f97316' : '#3b82f6'
+          element: markerElement,
+          anchor: 'center'
         })
           .setLngLat([lng, lat])
           .addTo(map.current!);
         
-        // Add click handler to the marker element
-        marker.getElement().addEventListener('click', () => {
-          console.log(`Clicked on airport: ${icao}`);
-          onAirportClick(icao);
-        });
-        
-        // Add tooltip
-        const popup = new mapboxgl.Popup({
-          offset: 25,
-          closeButton: false,
-          closeOnClick: false
-        }).setText(`${icao}${isApproximate ? ' (approx)' : ''}`);
-        
-        marker.setPopup(popup);
-        
-        // Show popup on hover
-        marker.getElement().addEventListener('mouseenter', () => {
-          popup.addTo(map.current!);
-        });
-        
-        marker.getElement().addEventListener('mouseleave', () => {
-          popup.remove();
-        });
-        
         // Store marker reference for cleanup
         markersRef.current.push(marker);
         
-        console.log(`Marker added for ${icao} successfully`);
+        console.log(`Aviation marker added for ${icao} successfully`);
       } catch (error) {
         console.error(`Error adding marker for ${icao}:`, error);
       }
@@ -399,10 +505,10 @@ const FavoritesMap = ({ favorites, onAirportClick }: FavoritesMapProps) => {
           if (map.current && bounds) {
             map.current.fitBounds(bounds, {
               padding: {
-                top: 60,
-                bottom: 60,
-                left: 60,
-                right: 60
+                top: 80,
+                bottom: 80,
+                left: 80,
+                right: 80
               },
               maxZoom: 8,
               duration: 1500
@@ -420,11 +526,15 @@ const FavoritesMap = ({ favorites, onAirportClick }: FavoritesMapProps) => {
 
   if (loadError) {
     return (
-      <div className="h-64 bg-slate-700/50 rounded-lg flex items-center justify-center">
-        <div className="text-center text-slate-400">
-          <p className="mb-2">Error: {loadError}</p>
-          <Button onClick={() => setShowTokenInput(true)} size="sm">
-            Try Again
+      <div className="h-64 bg-black border border-orange-400/50 rounded-lg flex items-center justify-center avionics-display">
+        <div className="text-center text-orange-400 font-mono">
+          <p className="mb-2 text-shadow-orange">ERROR: {loadError}</p>
+          <Button 
+            onClick={() => setShowTokenInput(true)} 
+            size="sm"
+            className="bg-orange-500/20 border border-orange-400/50 text-orange-400 hover:bg-orange-500/30 font-mono"
+          >
+            RETRY
           </Button>
         </div>
       </div>
@@ -433,8 +543,10 @@ const FavoritesMap = ({ favorites, onAirportClick }: FavoritesMapProps) => {
 
   if (!mapboxLoaded) {
     return (
-      <div className="h-64 bg-slate-700/50 rounded-lg flex items-center justify-center">
-        <div className="text-slate-400">Loading map...</div>
+      <div className="h-64 bg-black border border-orange-400/50 rounded-lg flex items-center justify-center avionics-display">
+        <div className="text-orange-400 font-mono" style={{ textShadow: '0 0 8px rgba(255, 165, 0, 0.6)' }}>
+          INITIALIZING MAP SYSTEMS...
+        </div>
       </div>
     );
   }
@@ -443,24 +555,30 @@ const FavoritesMap = ({ favorites, onAirportClick }: FavoritesMapProps) => {
     return (
       <div className="space-y-3">
         <h3 className="text-sm font-medium text-slate-300">Favorites Map</h3>
-        <div className="h-64 bg-slate-700/50 rounded-lg flex flex-col items-center justify-center p-6">
-          <Key className="w-8 h-8 mb-4 text-slate-400" />
-          <p className="text-slate-300 mb-4 text-center">Enter your Mapbox public token to display the map</p>
+        <div className="h-64 bg-black border border-orange-400/50 rounded-lg flex flex-col items-center justify-center p-6 avionics-display">
+          <Key className="w-8 h-8 mb-4 text-orange-400" style={{ filter: 'drop-shadow(0 0 8px rgba(255, 165, 0, 0.6))' }} />
+          <p className="text-orange-400 mb-4 text-center font-mono" style={{ textShadow: '0 0 8px rgba(255, 165, 0, 0.6)' }}>
+            ENTER MAPBOX ACCESS TOKEN
+          </p>
           <div className="w-full max-w-sm space-y-3">
             <Input
               type="text"
               placeholder="pk.eyJ1IjoieW91ci11c2VybmFtZSI..."
               value={inputToken}
               onChange={(e) => setInputToken(e.target.value)}
-              className="bg-slate-600 border-slate-500 text-white"
+              className="bg-black border-orange-400/50 text-orange-400 placeholder:text-orange-400/50 font-mono focus:border-orange-400 focus:ring-orange-400/50"
+              style={{ textShadow: '0 0 4px rgba(255, 165, 0, 0.4)' }}
             />
-            <Button onClick={handleTokenSubmit} className="w-full">
-              Load Map
+            <Button 
+              onClick={handleTokenSubmit} 
+              className="w-full bg-orange-500/20 border border-orange-400/50 text-orange-400 hover:bg-orange-500/30 font-mono"
+            >
+              INITIALIZE MAP
             </Button>
           </div>
-          <p className="text-xs text-slate-400 mt-3 text-center">
-            Get your free token at{' '}
-            <a href="https://mapbox.com/" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">
+          <p className="text-xs text-orange-400/70 mt-3 text-center font-mono">
+            Get token at{' '}
+            <a href="https://mapbox.com/" target="_blank" rel="noopener noreferrer" className="text-orange-400 hover:text-orange-300 underline">
               mapbox.com
             </a>
           </p>
@@ -473,10 +591,10 @@ const FavoritesMap = ({ favorites, onAirportClick }: FavoritesMapProps) => {
     return (
       <div className="space-y-3">
         <h3 className="text-sm font-medium text-slate-300">Favorites Map</h3>
-        <div className="h-64 bg-slate-700/50 rounded-lg flex flex-col items-center justify-center text-slate-400">
-          <MapPin className="w-8 h-8 mb-2 opacity-50" />
-          <p>No favorites to display on map</p>
-          <p className="text-sm">Add some airports to see them here</p>
+        <div className="h-64 bg-black border border-orange-400/50 rounded-lg flex flex-col items-center justify-center text-orange-400 avionics-display">
+          <MapPin className="w-8 h-8 mb-2 opacity-50" style={{ filter: 'drop-shadow(0 0 8px rgba(255, 165, 0, 0.3))' }} />
+          <p className="font-mono" style={{ textShadow: '0 0 8px rgba(255, 165, 0, 0.6)' }}>NO AIRPORTS IN FAVORITES</p>
+          <p className="text-sm font-mono text-orange-400/70">ADD STATIONS TO DISPLAY ON MAP</p>
         </div>
       </div>
     );
@@ -490,33 +608,52 @@ const FavoritesMap = ({ favorites, onAirportClick }: FavoritesMapProps) => {
           onClick={() => setShowTokenInput(true)} 
           size="sm" 
           variant="ghost" 
-          className="text-xs text-slate-400 hover:text-slate-300"
+          className="text-xs text-orange-400/70 hover:text-orange-400 font-mono"
         >
-          Change Token
+          CHANGE TOKEN
         </Button>
       </div>
-      <div className="relative h-64 rounded-lg overflow-hidden border border-slate-600">
-        <div ref={mapContainer} className="absolute inset-0" style={{ minHeight: '256px' }} />
+      <div className="relative h-64 rounded-lg overflow-hidden border-2 border-orange-400/50 avionics-display">
+        <div 
+          ref={mapContainer} 
+          className="absolute inset-0" 
+          style={{ 
+            minHeight: '256px',
+            filter: 'contrast(1.1) brightness(0.9) saturate(1.2)'
+          }} 
+        />
         {!mapReady && (
-          <div className="absolute inset-0 bg-slate-800/90 flex items-center justify-center z-30">
-            <div className="text-slate-300">Initializing map...</div>
+          <div className="absolute inset-0 bg-black/90 flex items-center justify-center z-30 avionics-display">
+            <div className="text-orange-400 font-mono" style={{ textShadow: '0 0 8px rgba(255, 165, 0, 0.6)' }}>
+              LOADING NAVIGATION SYSTEM...
+            </div>
           </div>
         )}
-        <div className="absolute top-2 left-2 bg-slate-800/90 text-slate-300 text-xs px-2 py-1 rounded z-20">
-          <div className="flex items-center space-x-2">
+        <div className="absolute top-2 left-2 bg-black/90 border border-orange-400/50 text-orange-400 text-xs px-3 py-2 rounded z-20 font-mono avionics-display"
+          style={{ textShadow: '0 0 6px rgba(255, 165, 0, 0.6)' }}>
+          <div className="flex items-center space-x-3">
             <div className="flex items-center space-x-1">
-              <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-              <span>Exact location</span>
+              <div className="w-3 h-3 bg-orange-500 rounded-full shadow-orange"></div>
+              <span>EXACT POS</span>
             </div>
             <div className="flex items-center space-x-1">
-              <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-              <span>City/Region</span>
+              <div className="w-3 h-3 bg-orange-400 rounded-full shadow-orange"></div>
+              <span>APPROX POS</span>
             </div>
           </div>
         </div>
+        <div className="absolute inset-0 pointer-events-none"
+          style={{
+            background: `
+              radial-gradient(ellipse at center, transparent 60%, rgba(255, 102, 0, 0.03) 100%),
+              linear-gradient(0deg, transparent 0%, rgba(255, 165, 0, 0.01) 50%, transparent 100%)
+            `,
+            boxShadow: 'inset 0 0 30px rgba(255, 102, 0, 0.1)'
+          }}
+        />
       </div>
-      <p className="text-xs text-slate-400">
-        Click on any airport marker to load its weather data. Orange markers show approximate city locations.
+      <p className="text-xs text-orange-400/70 font-mono">
+        SELECT AIRPORT MARKER TO LOAD WEATHER DATA • AVIATION NAVIGATION SYSTEM
       </p>
     </div>
   );
