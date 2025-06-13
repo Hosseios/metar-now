@@ -220,18 +220,23 @@ const FavoritesMap = ({ favorites, onAirportClick }: FavoritesMapProps) => {
     });
     markersRef.current = [];
 
+    // Disable telemetry to prevent errors
+    if (mapboxgl.config) {
+      mapboxgl.config.EVENT_URL = null;
+      mapboxgl.config.API_URL = 'https://api.mapbox.com';
+    }
+
     // Initialize map
     mapboxgl.accessToken = mapboxToken;
     
     try {
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/streets-v12', // Changed to a more reliable style
+        style: 'mapbox://styles/mapbox/light-v11',
         zoom: 2,
-        center: [10, 30], // Center on Europe/Middle East
-        projection: 'mercator' as any,
+        center: [10, 50], // Center on Europe where most favorites are
         antialias: true,
-        optimizeForTerrain: false,
+        preserveDrawingBuffer: true,
       });
 
       map.current.on('load', () => {
@@ -243,6 +248,7 @@ const FavoritesMap = ({ favorites, onAirportClick }: FavoritesMapProps) => {
         setTimeout(() => {
           if (map.current) {
             map.current.resize();
+            console.log('Map resized after load');
           }
         }, 100);
       });
@@ -339,21 +345,68 @@ const FavoritesMap = ({ favorites, onAirportClick }: FavoritesMapProps) => {
       validAirports++;
       bounds.extend(coordinates);
 
-      // Create custom marker element
+      // Create custom marker element with improved visibility
       const markerElement = document.createElement('div');
-      markerElement.className = 'airport-marker cursor-pointer';
+      markerElement.className = 'airport-marker';
+      markerElement.style.cssText = `
+        position: relative;
+        cursor: pointer;
+        z-index: 1000;
+      `;
+      
       markerElement.innerHTML = `
-        <div class="relative group">
-          <div class="w-8 h-8 ${isApproximate ? 'bg-orange-500' : 'bg-blue-500'} rounded-full border-2 border-white shadow-lg flex items-center justify-center hover:scale-110 transition-transform z-10">
-            <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+        <div style="position: relative; display: inline-block;">
+          <div style="
+            width: 32px;
+            height: 32px;
+            background-color: ${isApproximate ? '#f97316' : '#3b82f6'};
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s ease;
+            z-index: 1001;
+          " class="marker-circle">
+            <svg style="width: 16px; height: 16px; color: white;" fill="currentColor" viewBox="0 0 20 20">
               <path d="M10 12L8 10l4-8 4 8-2 2-4-2z"/>
             </svg>
           </div>
-          <div class="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
+          <div style="
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0,0,0,0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            pointer-events: none;
+            z-index: 1002;
+          " class="marker-tooltip">
             ${icao}${isApproximate ? ' (approx)' : ''}
           </div>
         </div>
       `;
+
+      // Add hover effects
+      const markerCircle = markerElement.querySelector('.marker-circle') as HTMLElement;
+      const tooltip = markerElement.querySelector('.marker-tooltip') as HTMLElement;
+      
+      markerElement.addEventListener('mouseenter', () => {
+        if (markerCircle) markerCircle.style.transform = 'scale(1.2)';
+        if (tooltip) tooltip.style.opacity = '1';
+      });
+      
+      markerElement.addEventListener('mouseleave', () => {
+        if (markerCircle) markerCircle.style.transform = 'scale(1)';
+        if (tooltip) tooltip.style.opacity = '0';
+      });
 
       // Add click handler
       markerElement.addEventListener('click', () => {
@@ -373,7 +426,11 @@ const FavoritesMap = ({ favorites, onAirportClick }: FavoritesMapProps) => {
         // Store marker reference for cleanup
         markersRef.current.push(marker);
         
-        console.log(`Marker added for ${icao}`);
+        console.log(`Marker added for ${icao} - element dimensions:`, {
+          width: markerElement.offsetWidth,
+          height: markerElement.offsetHeight,
+          visible: markerElement.offsetParent !== null
+        });
       } catch (error) {
         console.error(`Error adding marker for ${icao}:`, error);
       }
@@ -388,14 +445,15 @@ const FavoritesMap = ({ favorites, onAirportClick }: FavoritesMapProps) => {
           if (map.current && bounds) {
             map.current.fitBounds(bounds, {
               padding: {
-                top: 50,
-                bottom: 50,
-                left: 50,
-                right: 50
+                top: 60,
+                bottom: 60,
+                left: 60,
+                right: 60
               },
-              maxZoom: 10,
-              duration: 1000
+              maxZoom: 8,
+              duration: 1500
             });
+            console.log('Map bounds fitted successfully');
           }
         }, 500);
       } catch (error) {
@@ -484,7 +542,7 @@ const FavoritesMap = ({ favorites, onAirportClick }: FavoritesMapProps) => {
         </Button>
       </div>
       <div className="relative h-64 rounded-lg overflow-hidden border border-slate-600">
-        <div ref={mapContainer} className="absolute inset-0" />
+        <div ref={mapContainer} className="absolute inset-0" style={{ minHeight: '256px' }} />
         {!mapReady && (
           <div className="absolute inset-0 bg-slate-800/90 flex items-center justify-center z-30">
             <div className="text-slate-300">Initializing map...</div>
