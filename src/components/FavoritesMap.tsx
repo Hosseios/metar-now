@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { MapPin, Key } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -46,6 +47,7 @@ const AIRPORT_COORDINATES: Record<string, [number, number]> = {
   'EDDM': [11.7861, 48.3538], // Munich
   'EHAM': [4.7683, 52.3105], // Amsterdam
   'EBBR': [4.4844, 50.9014], // Brussels
+  'EBLG': [5.4432, 50.6374], // Liège
   'LIRF': [12.2389, 41.8003], // Rome Fiumicino
   'LIMC': [8.7231, 45.6306], // Milan Malpensa
   'LEMD': [-3.5676, 40.4983], // Madrid
@@ -58,6 +60,14 @@ const AIRPORT_COORDINATES: Record<string, [number, number]> = {
   'EKCH': [12.6561, 55.6181], // Copenhagen
   'EFHK': [24.9633, 60.3172], // Helsinki
   'EIDW': [-6.2499, 53.4213], // Dublin
+  
+  // Middle East & Africa
+  'OLBA': [35.4883, 33.8209], // Beirut
+  'OMDB': [55.3648, 25.2532], // Dubai
+  'OERK': [46.6977, 24.9576], // Riyadh
+  'OTHH': [51.6081, 25.2731], // Doha
+  'HECA': [31.4056, 30.1219], // Cairo
+  'FACT': [18.6017, -33.9715], // Cape Town
   
   // Asia Pacific
   'RJTT': [139.7811, 35.5494], // Tokyo Haneda
@@ -72,13 +82,6 @@ const AIRPORT_COORDINATES: Record<string, [number, number]> = {
   'NZAA': [174.7850, -36.9985], // Auckland
   'ZBAA': [116.5974, 40.0801], // Beijing Capital
   'ZSPD': [121.8057, 31.1443], // Shanghai Pudong
-  
-  // Middle East & Africa
-  'OMDB': [55.3648, 25.2532], // Dubai
-  'OERK': [46.6977, 24.9576], // Riyadh
-  'OTHH': [51.6081, 25.2731], // Doha
-  'HECA': [31.4056, 30.1219], // Cairo
-  'FACT': [18.6017, -33.9715], // Cape Town
   
   // Canada
   'CYYZ': [-79.6306, 43.6777], // Toronto
@@ -133,6 +136,7 @@ const getCityCoordinates = (icaoCode: string): [number, number] | null => {
     'OM': [55.3, 25.3], // UAE
     'OE': [46.7, 24.6], // Saudi Arabia
     'OT': [51.5, 25.3], // Qatar
+    'OL': [35.5, 33.9], // Lebanon/Syria
     
     // Africa
     'FA': [24.0, -29.0], // South Africa
@@ -165,6 +169,7 @@ const FavoritesMap = ({ favorites, onAirportClick }: FavoritesMapProps) => {
   const [mapboxLoaded, setMapboxLoaded] = useState<boolean>(false);
   const [loadError, setLoadError] = useState<string>('');
   const [showTokenInput, setShowTokenInput] = useState<boolean>(true);
+  const [mapReady, setMapReady] = useState<boolean>(false);
 
   useEffect(() => {
     // Load mapbox-gl dynamically
@@ -208,13 +213,14 @@ const FavoritesMap = ({ favorites, onAirportClick }: FavoritesMapProps) => {
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/dark-v11',
-      zoom: 1.5,
-      center: [0, 20],
+      zoom: 2,
+      center: [10, 30], // Center on Europe/Middle East
       projection: 'mercator' as any,
     });
 
     map.current.on('load', () => {
-      console.log('Map loaded successfully');
+      console.log('Map loaded and ready');
+      setMapReady(true);
       setLoadError('');
     });
 
@@ -222,6 +228,7 @@ const FavoritesMap = ({ favorites, onAirportClick }: FavoritesMapProps) => {
       console.error('Map error:', e);
       setLoadError('Invalid Mapbox token or map failed to load');
       setShowTokenInput(true);
+      setMapReady(false);
     });
 
     // Add navigation controls
@@ -235,12 +242,24 @@ const FavoritesMap = ({ favorites, onAirportClick }: FavoritesMapProps) => {
 
     // Cleanup
     return () => {
-      map.current?.remove();
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
+      setMapReady(false);
     };
   }, [mapboxToken, mapboxLoaded]);
 
   useEffect(() => {
-    if (!map.current || !favorites.length || !mapboxgl) return;
+    if (!map.current || !mapReady || !favorites.length || !mapboxgl) {
+      console.log('Map not ready for markers:', { 
+        hasMap: !!map.current, 
+        mapReady, 
+        favoritesCount: favorites.length,
+        hasMapboxgl: !!mapboxgl 
+      });
+      return;
+    }
 
     console.log('Adding markers for favorites:', favorites);
 
@@ -267,7 +286,7 @@ const FavoritesMap = ({ favorites, onAirportClick }: FavoritesMapProps) => {
         return;
       }
 
-      console.log(`Adding marker for ${icao} at`, coordinates, isApproximate ? '(approximate)' : '(exact)');
+      console.log(`Adding marker for ${icao} at [${coordinates[0]}, ${coordinates[1]}]`, isApproximate ? '(approximate)' : '(exact)');
       validAirports++;
       bounds.extend(coordinates);
 
@@ -276,12 +295,12 @@ const FavoritesMap = ({ favorites, onAirportClick }: FavoritesMapProps) => {
       markerElement.className = 'airport-marker cursor-pointer';
       markerElement.innerHTML = `
         <div class="relative group">
-          <div class="w-8 h-8 ${isApproximate ? 'bg-orange-600' : 'bg-blue-600'} rounded-full border-2 border-white shadow-lg flex items-center justify-center hover:${isApproximate ? 'bg-orange-500' : 'bg-blue-500'} transition-colors">
+          <div class="w-8 h-8 ${isApproximate ? 'bg-orange-500' : 'bg-blue-500'} rounded-full border-2 border-white shadow-lg flex items-center justify-center hover:scale-110 transition-transform">
             <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
               <path d="M10 12L8 10l4-8 4 8-2 2-4-2z"/>
             </svg>
           </div>
-          <div class="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+          <div class="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
             ${icao}${isApproximate ? ' (approx)' : ''}
           </div>
         </div>
@@ -289,23 +308,29 @@ const FavoritesMap = ({ favorites, onAirportClick }: FavoritesMapProps) => {
 
       // Add click handler
       markerElement.addEventListener('click', () => {
+        console.log(`Clicked on airport: ${icao}`);
         onAirportClick(icao);
       });
 
       // Create and add marker
-      new mapboxgl.Marker(markerElement)
+      const marker = new mapboxgl.Marker(markerElement)
         .setLngLat(coordinates)
         .addTo(map.current!);
+      
+      console.log(`Marker added for ${icao}:`, marker);
     });
 
     // Fit map to show all airports if there are valid coordinates
     if (validAirports > 0) {
+      console.log(`Fitting map bounds for ${validAirports} airports`);
       map.current.fitBounds(bounds, {
         padding: 50,
         maxZoom: 8,
       });
+    } else {
+      console.log('No valid airports found to display on map');
     }
-  }, [favorites, onAirportClick, mapboxLoaded, mapboxToken]);
+  }, [favorites, onAirportClick, mapReady]);
 
   if (loadError) {
     return (
@@ -386,14 +411,19 @@ const FavoritesMap = ({ favorites, onAirportClick }: FavoritesMapProps) => {
       </div>
       <div className="relative h-64 rounded-lg overflow-hidden border border-slate-600">
         <div ref={mapContainer} className="absolute inset-0" />
+        {!mapReady && (
+          <div className="absolute inset-0 bg-slate-800/90 flex items-center justify-center">
+            <div className="text-slate-300">Initializing map...</div>
+          </div>
+        )}
         <div className="absolute top-2 left-2 bg-slate-800/90 text-slate-300 text-xs px-2 py-1 rounded">
           <div className="flex items-center space-x-2">
             <div className="flex items-center space-x-1">
-              <div className="w-3 h-3 bg-blue-600 rounded-full"></div>
+              <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
               <span>Exact location</span>
             </div>
             <div className="flex items-center space-x-1">
-              <div className="w-3 h-3 bg-orange-600 rounded-full"></div>
+              <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
               <span>City/Region</span>
             </div>
           </div>
