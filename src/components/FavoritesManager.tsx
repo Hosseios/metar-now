@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Star, Trash, LogIn, LogOut } from "lucide-react";
@@ -6,6 +5,7 @@ import { useSupabaseFavorites } from "@/hooks/useSupabaseFavorites";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import FavoritesMap from "./FavoritesMap";
 
 interface FavoritesManagerProps {
   currentIcao: string;
@@ -148,6 +148,14 @@ const FavoritesManager = ({ currentIcao, onSelectFavorite }: FavoritesManagerPro
               </Button>
             </div>
           </div>
+
+          {/* Favorites Map */}
+          {favorites.length > 0 && (
+            <FavoritesMap 
+              favorites={favorites} 
+              onAirportClick={onSelectFavorite}
+            />
+          )}
         </div>
       ) : (
         <div className="text-center py-8 text-slate-400">
