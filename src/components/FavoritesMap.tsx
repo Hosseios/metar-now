@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 let mapboxgl: any = null;
 
 // Airport coordinates database (major airports and city fallbacks)
+// Format: [longitude, latitude] for Mapbox GL JS
 const AIRPORT_COORDINATES: Record<string, [number, number]> = {
   // US Airports
   'KJFK': [-73.7781, 40.6413], // JFK
@@ -341,96 +342,49 @@ const FavoritesMap = ({ favorites, onAirportClick }: FavoritesMapProps) => {
         return;
       }
 
-      console.log(`Adding marker for ${icao} at [${coordinates[0]}, ${coordinates[1]}]`, isApproximate ? '(approximate)' : '(exact)');
+      // Ensure coordinates are in correct [lng, lat] format for Mapbox
+      const [lng, lat] = coordinates;
+      
+      console.log(`Adding marker for ${icao} at [${lng}, ${lat}]`, isApproximate ? '(approximate)' : '(exact)');
       validAirports++;
-      bounds.extend(coordinates);
-
-      // Create custom marker element with improved visibility
-      const markerElement = document.createElement('div');
-      markerElement.className = 'airport-marker';
-      markerElement.style.cssText = `
-        position: relative;
-        cursor: pointer;
-        z-index: 1000;
-      `;
-      
-      markerElement.innerHTML = `
-        <div style="position: relative; display: inline-block;">
-          <div style="
-            width: 32px;
-            height: 32px;
-            background-color: ${isApproximate ? '#f97316' : '#3b82f6'};
-            border-radius: 50%;
-            border: 3px solid white;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.2s ease;
-            z-index: 1001;
-          " class="marker-circle">
-            <svg style="width: 16px; height: 16px; color: white;" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M10 12L8 10l4-8 4 8-2 2-4-2z"/>
-            </svg>
-          </div>
-          <div style="
-            position: absolute;
-            top: -40px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: rgba(0,0,0,0.8);
-            color: white;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            white-space: nowrap;
-            opacity: 0;
-            transition: opacity 0.2s ease;
-            pointer-events: none;
-            z-index: 1002;
-          " class="marker-tooltip">
-            ${icao}${isApproximate ? ' (approx)' : ''}
-          </div>
-        </div>
-      `;
-
-      // Add hover effects
-      const markerCircle = markerElement.querySelector('.marker-circle') as HTMLElement;
-      const tooltip = markerElement.querySelector('.marker-tooltip') as HTMLElement;
-      
-      markerElement.addEventListener('mouseenter', () => {
-        if (markerCircle) markerCircle.style.transform = 'scale(1.2)';
-        if (tooltip) tooltip.style.opacity = '1';
-      });
-      
-      markerElement.addEventListener('mouseleave', () => {
-        if (markerCircle) markerCircle.style.transform = 'scale(1)';
-        if (tooltip) tooltip.style.opacity = '0';
-      });
-
-      // Add click handler
-      markerElement.addEventListener('click', () => {
-        console.log(`Clicked on airport: ${icao}`);
-        onAirportClick(icao);
-      });
+      bounds.extend([lng, lat]);
 
       // Create and add marker
       try {
         const marker = new mapboxgl.Marker({
-          element: markerElement,
-          anchor: 'center'
+          color: isApproximate ? '#f97316' : '#3b82f6'
         })
-          .setLngLat(coordinates)
+          .setLngLat([lng, lat])
           .addTo(map.current!);
+        
+        // Add click handler to the marker element
+        marker.getElement().addEventListener('click', () => {
+          console.log(`Clicked on airport: ${icao}`);
+          onAirportClick(icao);
+        });
+        
+        // Add tooltip
+        const popup = new mapboxgl.Popup({
+          offset: 25,
+          closeButton: false,
+          closeOnClick: false
+        }).setText(`${icao}${isApproximate ? ' (approx)' : ''}`);
+        
+        marker.setPopup(popup);
+        
+        // Show popup on hover
+        marker.getElement().addEventListener('mouseenter', () => {
+          popup.addTo(map.current!);
+        });
+        
+        marker.getElement().addEventListener('mouseleave', () => {
+          popup.remove();
+        });
         
         // Store marker reference for cleanup
         markersRef.current.push(marker);
         
-        console.log(`Marker added for ${icao} - element dimensions:`, {
-          width: markerElement.offsetWidth,
-          height: markerElement.offsetHeight,
-          visible: markerElement.offsetParent !== null
-        });
+        console.log(`Marker added for ${icao} successfully`);
       } catch (error) {
         console.error(`Error adding marker for ${icao}:`, error);
       }
