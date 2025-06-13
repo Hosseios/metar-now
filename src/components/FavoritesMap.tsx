@@ -1,8 +1,9 @@
 
 import React, { useEffect, useRef, useState } from 'react';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
 import { MapPin } from 'lucide-react';
+
+// Dynamic import for mapbox-gl to handle build issues
+let mapboxgl: any = null;
 
 // Airport coordinates database (major airports)
 const AIRPORT_COORDINATES: Record<string, [number, number]> = {
@@ -52,18 +53,38 @@ interface FavoritesMapProps {
 
 const FavoritesMap = ({ favorites, onAirportClick }: FavoritesMapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
+  const map = useRef<any>(null);
   const [mapboxToken, setMapboxToken] = useState<string>('');
+  const [mapboxLoaded, setMapboxLoaded] = useState<boolean>(false);
+  const [loadError, setLoadError] = useState<string>('');
 
   useEffect(() => {
-    // For now, we'll use a placeholder for the Mapbox token
-    // In production, this should come from Supabase Edge Function Secrets
-    const token = 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw';
-    setMapboxToken(token);
+    // Load mapbox-gl dynamically
+    const loadMapbox = async () => {
+      try {
+        const mapboxModule = await import('mapbox-gl');
+        mapboxgl = mapboxModule.default;
+        
+        // Import CSS
+        await import('mapbox-gl/dist/mapbox-gl.css');
+        
+        setMapboxLoaded(true);
+        
+        // For now, we'll use a placeholder for the Mapbox token
+        // In production, this should come from Supabase Edge Function Secrets
+        const token = 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw';
+        setMapboxToken(token);
+      } catch (error) {
+        console.error('Failed to load Mapbox:', error);
+        setLoadError('Failed to load map library');
+      }
+    };
+
+    loadMapbox();
   }, []);
 
   useEffect(() => {
-    if (!mapContainer.current || !mapboxToken) return;
+    if (!mapContainer.current || !mapboxToken || !mapboxLoaded || !mapboxgl) return;
 
     // Initialize map
     mapboxgl.accessToken = mapboxToken;
@@ -89,10 +110,10 @@ const FavoritesMap = ({ favorites, onAirportClick }: FavoritesMapProps) => {
     return () => {
       map.current?.remove();
     };
-  }, [mapboxToken]);
+  }, [mapboxToken, mapboxLoaded]);
 
   useEffect(() => {
-    if (!map.current || !favorites.length) return;
+    if (!map.current || !favorites.length || !mapboxgl) return;
 
     // Clear existing markers
     const existingMarkers = document.querySelectorAll('.airport-marker');
@@ -143,9 +164,17 @@ const FavoritesMap = ({ favorites, onAirportClick }: FavoritesMapProps) => {
         maxZoom: 8,
       });
     }
-  }, [favorites, onAirportClick]);
+  }, [favorites, onAirportClick, mapboxLoaded]);
 
-  if (!mapboxToken) {
+  if (loadError) {
+    return (
+      <div className="h-64 bg-slate-700/50 rounded-lg flex items-center justify-center">
+        <div className="text-slate-400">Error loading map: {loadError}</div>
+      </div>
+    );
+  }
+
+  if (!mapboxLoaded || !mapboxToken) {
     return (
       <div className="h-64 bg-slate-700/50 rounded-lg flex items-center justify-center">
         <div className="text-slate-400">Loading map...</div>
