@@ -14,7 +14,6 @@ const AIRPORT_COORDINATES: Record<string, [number, number]> = {
   'KLAX': [-118.4085, 33.9425], // LAX
   'KORD': [-87.9048, 41.9786], // ORD
   'KDEN': [-104.6737, 39.8617], // DEN
-  'KIAH': [-95.3414, 29.9844], // IAH Houston Intercontinental
   'KHOU': [-95.2789, 29.6454], // Houston Hobby
   'KBOS': [-71.0096, 42.3656], // BOS
   'KSEA': [-122.3088, 47.4502], // SEA
@@ -178,6 +177,14 @@ const FavoritesMap = ({ favorites, onAirportClick }: FavoritesMapProps) => {
         const mapboxModule = await import('mapbox-gl');
         mapboxgl = mapboxModule.default;
         
+        // Disable telemetry to prevent postMessage conflicts
+        if (mapboxgl.prewarm) {
+          mapboxgl.prewarm = () => {};
+        }
+        if (mapboxgl.clearPrewarmedResources) {
+          mapboxgl.clearPrewarmedResources = () => {};
+        }
+        
         // Import CSS
         await import('mapbox-gl/dist/mapbox-gl.css');
         
@@ -207,43 +214,73 @@ const FavoritesMap = ({ favorites, onAirportClick }: FavoritesMapProps) => {
 
     console.log('Initializing map with token:', mapboxToken.substring(0, 20) + '...');
 
-    // Initialize map
+    // Initialize map with telemetry disabled
     mapboxgl.accessToken = mapboxToken;
     
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/dark-v11',
-      zoom: 2,
-      center: [10, 30], // Center on Europe/Middle East
-      projection: 'mercator' as any,
-    });
+    try {
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: 'mapbox://styles/mapbox/dark-v11',
+        zoom: 2,
+        center: [10, 30], // Center on Europe/Middle East
+        projection: 'mercator' as any,
+        // Disable telemetry and tracking
+        trackResize: false,
+        preserveDrawingBuffer: true,
+        collectResourceTiming: false,
+      });
 
-    map.current.on('load', () => {
-      console.log('Map loaded and ready');
-      setMapReady(true);
-      setLoadError('');
-    });
+      // Disable all telemetry and tracking
+      if (map.current._requestManager) {
+        map.current._requestManager.transformRequest = (url: string, resourceType: string) => {
+          // Block telemetry requests
+          if (url.includes('events.mapbox.com') || url.includes('api.mapbox.com/events')) {
+            return { url: '' };
+          }
+          return { url };
+        };
+      }
 
-    map.current.on('error', (e: any) => {
-      console.error('Map error:', e);
-      setLoadError('Invalid Mapbox token or map failed to load');
+      map.current.on('load', () => {
+        console.log('Map loaded and ready');
+        setMapReady(true);
+        setLoadError('');
+      });
+
+      map.current.on('error', (e: any) => {
+        console.error('Map error:', e);
+        if (e.error && e.error.message && e.error.message.includes('token')) {
+          setLoadError('Invalid Mapbox token. Please check your token and try again.');
+        } else {
+          setLoadError('Map failed to load. Please try again.');
+        }
+        setShowTokenInput(true);
+        setMapReady(false);
+      });
+
+      // Add navigation controls
+      map.current.addControl(
+        new mapboxgl.NavigationControl({
+          showCompass: false,
+          showZoom: true,
+        }),
+        'top-right'
+      );
+
+    } catch (error) {
+      console.error('Error initializing map:', error);
+      setLoadError('Failed to initialize map');
       setShowTokenInput(true);
-      setMapReady(false);
-    });
-
-    // Add navigation controls
-    map.current.addControl(
-      new mapboxgl.NavigationControl({
-        showCompass: false,
-        showZoom: true,
-      }),
-      'top-right'
-    );
+    }
 
     // Cleanup
     return () => {
       if (map.current) {
-        map.current.remove();
+        try {
+          map.current.remove();
+        } catch (e) {
+          console.warn('Error removing map:', e);
+        }
         map.current = null;
       }
       setMapReady(false);
@@ -265,7 +302,12 @@ const FavoritesMap = ({ favorites, onAirportClick }: FavoritesMapProps) => {
 
     // Clear existing markers
     const existingMarkers = document.querySelectorAll('.airport-marker');
-    existingMarkers.forEach(marker => marker.remove());
+    existingMarkers.forEach(marker => {
+      const parent = marker.parentNode;
+      if (parent) {
+        parent.removeChild(marker);
+      }
+    });
 
     // Add markers for each favorite airport
     const bounds = new mapboxgl.LngLatBounds();
@@ -313,20 +355,28 @@ const FavoritesMap = ({ favorites, onAirportClick }: FavoritesMapProps) => {
       });
 
       // Create and add marker
-      const marker = new mapboxgl.Marker(markerElement)
-        .setLngLat(coordinates)
-        .addTo(map.current!);
-      
-      console.log(`Marker added for ${icao}:`, marker);
+      try {
+        const marker = new mapboxgl.Marker(markerElement)
+          .setLngLat(coordinates)
+          .addTo(map.current!);
+        
+        console.log(`Marker added for ${icao}`);
+      } catch (error) {
+        console.error(`Error adding marker for ${icao}:`, error);
+      }
     });
 
     // Fit map to show all airports if there are valid coordinates
     if (validAirports > 0) {
       console.log(`Fitting map bounds for ${validAirports} airports`);
-      map.current.fitBounds(bounds, {
-        padding: 50,
-        maxZoom: 8,
-      });
+      try {
+        map.current.fitBounds(bounds, {
+          padding: 50,
+          maxZoom: 8,
+        });
+      } catch (error) {
+        console.error('Error fitting bounds:', error);
+      }
     } else {
       console.log('No valid airports found to display on map');
     }
