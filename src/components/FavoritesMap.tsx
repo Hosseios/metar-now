@@ -1,6 +1,7 @@
-
 import React, { useEffect, useRef, useState } from 'react';
-import { MapPin } from 'lucide-react';
+import { MapPin, Key } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 // Dynamic import for mapbox-gl to handle build issues
 let mapboxgl: any = null;
@@ -160,8 +161,10 @@ const FavoritesMap = ({ favorites, onAirportClick }: FavoritesMapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<any>(null);
   const [mapboxToken, setMapboxToken] = useState<string>('');
+  const [inputToken, setInputToken] = useState<string>('');
   const [mapboxLoaded, setMapboxLoaded] = useState<boolean>(false);
   const [loadError, setLoadError] = useState<string>('');
+  const [showTokenInput, setShowTokenInput] = useState<boolean>(true);
 
   useEffect(() => {
     // Load mapbox-gl dynamically
@@ -174,11 +177,6 @@ const FavoritesMap = ({ favorites, onAirportClick }: FavoritesMapProps) => {
         await import('mapbox-gl/dist/mapbox-gl.css');
         
         setMapboxLoaded(true);
-        
-        // For now, we'll use a placeholder for the Mapbox token
-        // In production, this should come from Supabase Edge Function Secrets
-        const token = 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw';
-        setMapboxToken(token);
         console.log('Mapbox loaded successfully');
       } catch (error) {
         console.error('Failed to load Mapbox:', error);
@@ -188,6 +186,16 @@ const FavoritesMap = ({ favorites, onAirportClick }: FavoritesMapProps) => {
 
     loadMapbox();
   }, []);
+
+  const handleTokenSubmit = () => {
+    if (!inputToken.trim()) {
+      setLoadError('Please enter a valid Mapbox token');
+      return;
+    }
+    setMapboxToken(inputToken.trim());
+    setShowTokenInput(false);
+    setLoadError('');
+  };
 
   useEffect(() => {
     if (!mapContainer.current || !mapboxToken || !mapboxLoaded || !mapboxgl) return;
@@ -207,11 +215,13 @@ const FavoritesMap = ({ favorites, onAirportClick }: FavoritesMapProps) => {
 
     map.current.on('load', () => {
       console.log('Map loaded successfully');
+      setLoadError('');
     });
 
     map.current.on('error', (e: any) => {
       console.error('Map error:', e);
-      setLoadError('Map failed to load');
+      setLoadError('Invalid Mapbox token or map failed to load');
+      setShowTokenInput(true);
     });
 
     // Add navigation controls
@@ -295,17 +305,22 @@ const FavoritesMap = ({ favorites, onAirportClick }: FavoritesMapProps) => {
         maxZoom: 8,
       });
     }
-  }, [favorites, onAirportClick, mapboxLoaded]);
+  }, [favorites, onAirportClick, mapboxLoaded, mapboxToken]);
 
   if (loadError) {
     return (
       <div className="h-64 bg-slate-700/50 rounded-lg flex items-center justify-center">
-        <div className="text-slate-400">Error loading map: {loadError}</div>
+        <div className="text-center text-slate-400">
+          <p className="mb-2">Error: {loadError}</p>
+          <Button onClick={() => setShowTokenInput(true)} size="sm">
+            Try Again
+          </Button>
+        </div>
       </div>
     );
   }
 
-  if (!mapboxLoaded || !mapboxToken) {
+  if (!mapboxLoaded) {
     return (
       <div className="h-64 bg-slate-700/50 rounded-lg flex items-center justify-center">
         <div className="text-slate-400">Loading map...</div>
@@ -313,19 +328,62 @@ const FavoritesMap = ({ favorites, onAirportClick }: FavoritesMapProps) => {
     );
   }
 
+  if (showTokenInput) {
+    return (
+      <div className="space-y-3">
+        <h3 className="text-sm font-medium text-slate-300">Favorites Map</h3>
+        <div className="h-64 bg-slate-700/50 rounded-lg flex flex-col items-center justify-center p-6">
+          <Key className="w-8 h-8 mb-4 text-slate-400" />
+          <p className="text-slate-300 mb-4 text-center">Enter your Mapbox public token to display the map</p>
+          <div className="w-full max-w-sm space-y-3">
+            <Input
+              type="text"
+              placeholder="pk.eyJ1IjoieW91ci11c2VybmFtZSI..."
+              value={inputToken}
+              onChange={(e) => setInputToken(e.target.value)}
+              className="bg-slate-600 border-slate-500 text-white"
+            />
+            <Button onClick={handleTokenSubmit} className="w-full">
+              Load Map
+            </Button>
+          </div>
+          <p className="text-xs text-slate-400 mt-3 text-center">
+            Get your free token at{' '}
+            <a href="https://mapbox.com/" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">
+              mapbox.com
+            </a>
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (favorites.length === 0) {
     return (
-      <div className="h-64 bg-slate-700/50 rounded-lg flex flex-col items-center justify-center text-slate-400">
-        <MapPin className="w-8 h-8 mb-2 opacity-50" />
-        <p>No favorites to display on map</p>
-        <p className="text-sm">Add some airports to see them here</p>
+      <div className="space-y-3">
+        <h3 className="text-sm font-medium text-slate-300">Favorites Map</h3>
+        <div className="h-64 bg-slate-700/50 rounded-lg flex flex-col items-center justify-center text-slate-400">
+          <MapPin className="w-8 h-8 mb-2 opacity-50" />
+          <p>No favorites to display on map</p>
+          <p className="text-sm">Add some airports to see them here</p>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="space-y-3">
-      <h3 className="text-sm font-medium text-slate-300">Favorites Map</h3>
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-medium text-slate-300">Favorites Map</h3>
+        <Button 
+          onClick={() => setShowTokenInput(true)} 
+          size="sm" 
+          variant="ghost" 
+          className="text-xs text-slate-400 hover:text-slate-300"
+        >
+          Change Token
+        </Button>
+      </div>
       <div className="relative h-64 rounded-lg overflow-hidden border border-slate-600">
         <div ref={mapContainer} className="absolute inset-0" />
         <div className="absolute top-2 left-2 bg-slate-800/90 text-slate-300 text-xs px-2 py-1 rounded">
