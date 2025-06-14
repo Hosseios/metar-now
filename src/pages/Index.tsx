@@ -1,9 +1,11 @@
+
 import MetarSearch from "@/components/MetarSearch";
 import MetarDisplay from "@/components/MetarDisplay";
 import FavoritesManager from "@/components/FavoritesManager";
 import { useMetarData } from "@/hooks/useMetarData";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
+
 const Index = () => {
   const [icaoCode, setIcaoCode] = useState("");
   const {
@@ -15,15 +17,18 @@ const Index = () => {
   const {
     loading: authLoading
   } = useAuth();
+
   const handleSearch = (code: string) => {
     setIcaoCode(code);
     fetchWeatherData(code);
   };
+
   if (authLoading) {
     return <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
         <div className="text-white text-lg">Loading...</div>
       </div>;
   }
+
   return <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative">
       {/* Large Background Banner */}
       <div className="absolute inset-0 overflow-hidden">
@@ -42,7 +47,7 @@ const Index = () => {
         <div className="flex items-center justify-between p-4 md:p-6">
           <div className="flex items-center space-x-3 md:space-x-4">
             <div className="relative">
-              <img src="/lovable-uploads/81ee7fc3-3cd9-4ad4-9af8-178b7988fb4c.png" alt="METAR Now Logo" className="w-16 h-16 md:w-20 md:h-20" />
+              <img src="/lovable-uploads/2750b808-8ab0-485e-95b6-fd3cbf9517e2.png" alt="METAR Now Logo" className="w-16 h-16 md:w-20 md:h-20" />
             </div>
             <div>
               <h1 className="text-xl md:text-3xl font-bold text-white drop-shadow-lg">Aviation METAR Weather Viewer</h1>
@@ -76,4 +81,5 @@ const Index = () => {
       </div>
     </div>;
 };
+
 export default Index;
