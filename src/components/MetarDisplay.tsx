@@ -1,7 +1,6 @@
-
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CloudRain, AlertTriangle, Clock, Calendar, Info, Plane } from "lucide-react";
+import { CloudRain, AlertTriangle, Clock, CloudLightning, Info, Plane } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -191,7 +190,7 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
               )}
             </TabsTrigger>
             <TabsTrigger value="taf" className="flex items-center gap-2 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-200">
-              <Calendar className="w-4 h-4" />
+              <CloudLightning className="w-4 h-4" />
               TAF
               {hasTafData && (
                 <div className="w-2 h-2 bg-orange-400 rounded-full ml-1 shadow-sm shadow-orange-400/50"></div>
