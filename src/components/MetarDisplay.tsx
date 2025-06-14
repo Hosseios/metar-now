@@ -207,44 +207,50 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
           </TabsList>
           
           <TabsContent value="metar" className="mt-4">
-            <div className="relative">
-              <div className="min-h-[200px] max-h-[400px] overflow-auto scrollbar-hide bg-black border-0 text-orange-400 p-6 shadow-inner avionics-display rounded-none"
-                style={{
-                  fontFamily: 'Monaco, "Courier New", monospace',
-                  textShadow: '0 0 8px rgba(255, 165, 0, 0.6)',
-                  letterSpacing: '0.5px',
-                  lineHeight: '1.6'
-                }}>
-                <pre className="whitespace-pre-wrap font-mono">{getDisplayContent('metar')}</pre>
-              </div>
+            <div className="relative avionics-display rounded-none">
+              <ScrollArea className="h-[400px] w-full">
+                <div className="bg-black text-orange-400 p-6 avionics-display min-h-full"
+                  style={{
+                    fontFamily: 'Monaco, "Courier New", monospace',
+                    textShadow: '0 0 8px rgba(255, 165, 0, 0.6)',
+                    letterSpacing: '0.5px',
+                    lineHeight: '1.6'
+                  }}>
+                  <pre className="whitespace-pre-wrap font-mono">{getDisplayContent('metar')}</pre>
+                </div>
+              </ScrollArea>
             </div>
           </TabsContent>
           
           <TabsContent value="taf" className="mt-4">
-            <div className="relative">
-              <div className="min-h-[200px] max-h-[400px] overflow-auto scrollbar-hide bg-black border-0 text-orange-400 p-6 shadow-inner avionics-display rounded-none"
-                style={{
-                  fontFamily: 'Monaco, "Courier New", monospace',
-                  textShadow: '0 0 8px rgba(255, 165, 0, 0.6)',
-                  letterSpacing: '0.5px',
-                  lineHeight: '1.6'
-                }}>
-                <pre className="whitespace-pre-wrap font-mono">{getDisplayContent('taf')}</pre>
-              </div>
+            <div className="relative avionics-display rounded-none">
+              <ScrollArea className="h-[400px] w-full">
+                <div className="bg-black text-orange-400 p-6 avionics-display min-h-full"
+                  style={{
+                    fontFamily: 'Monaco, "Courier New", monospace',
+                    textShadow: '0 0 8px rgba(255, 165, 0, 0.6)',
+                    letterSpacing: '0.5px',
+                    lineHeight: '1.6'
+                  }}>
+                  <pre className="whitespace-pre-wrap font-mono">{getDisplayContent('taf')}</pre>
+                </div>
+              </ScrollArea>
             </div>
           </TabsContent>
 
           <TabsContent value="airport" className="mt-4">
-            <div className="relative">
-              <div className="min-h-[200px] max-h-[400px] overflow-auto scrollbar-hide bg-black border-0 text-orange-400 p-6 shadow-inner avionics-display rounded-none"
-                style={{
-                  fontFamily: 'Monaco, "Courier New", monospace',
-                  textShadow: '0 0 8px rgba(255, 165, 0, 0.6)',
-                  letterSpacing: '0.5px',
-                  lineHeight: '1.6'
-                }}>
-                <pre className="whitespace-pre-wrap font-mono">{getDisplayContent('airport')}</pre>
-              </div>
+            <div className="relative avionics-display rounded-none">
+              <ScrollArea className="h-[400px] w-full">
+                <div className="bg-black text-orange-400 p-6 avionics-display min-h-full"
+                  style={{
+                    fontFamily: 'Monaco, "Courier New", monospace',
+                    textShadow: '0 0 8px rgba(255, 165, 0, 0.6)',
+                    letterSpacing: '0.5px',
+                    lineHeight: '1.6'
+                  }}>
+                  <pre className="whitespace-pre-wrap font-mono">{getDisplayContent('airport')}</pre>
+                </div>
+              </ScrollArea>
             </div>
           </TabsContent>
         </Tabs>
