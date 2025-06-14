@@ -2,7 +2,7 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'app.lovable.211234231fed4b7caab7465a7c9d6242',
+  appId: 'com.metarnow.app',
   appName: 'metar-now',
   webDir: 'dist',
   server: {
