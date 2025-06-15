@@ -1,3 +1,4 @@
+
 import { useState, useRef } from "react";
 import { searchAirports } from "@/utils/airportDatabase";
 import { Input } from "@/components/ui/input";
@@ -137,8 +138,9 @@ const AirportAutocomplete = ({ onSelect, isLoading }: AirportAutocompleteProps) 
       </div>
       {showDropdown && suggestions.length > 0 && (
         <div 
-          className="absolute z-[9999] left-0 right-0 mt-2 bg-slate-800 border border-slate-600 rounded-xl shadow-2xl max-h-60 overflow-auto"
+          className="absolute z-[99999] left-0 right-0 mt-2 bg-slate-800 border border-slate-600 rounded-xl shadow-2xl max-h-60 overflow-auto"
           onMouseDown={handleDropdownMouseDown}
+          style={{ zIndex: 99999 }}
         >
           {suggestions.map((s, i) => (
             <button
@@ -155,16 +157,18 @@ const AirportAutocomplete = ({ onSelect, isLoading }: AirportAutocompleteProps) 
       )}
       {showDropdown && suggestions.length === 0 && query.length >= 2 && !searching && (
         <div 
-          className="absolute z-[9999] left-0 right-0 mt-2 bg-slate-800 border border-slate-600 rounded-xl shadow-2xl p-4 text-slate-400 text-sm"
+          className="absolute z-[99999] left-0 right-0 mt-2 bg-slate-800 border border-slate-600 rounded-xl shadow-2xl p-4 text-slate-400 text-sm"
           onMouseDown={handleDropdownMouseDown}
+          style={{ zIndex: 99999 }}
         >
           No results found for "{query}".
         </div>
       )}
       {searching && (
         <div 
-          className="absolute z-[9999] left-0 right-0 mt-2 bg-slate-800 border border-slate-600 rounded-xl shadow-2xl p-4 text-slate-400 text-sm"
+          className="absolute z-[99999] left-0 right-0 mt-2 bg-slate-800 border border-slate-600 rounded-xl shadow-2xl p-4 text-slate-400 text-sm"
           onMouseDown={handleDropdownMouseDown}
+          style={{ zIndex: 99999 }}
         >
           Searching...
         </div>
