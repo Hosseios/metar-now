@@ -3,7 +3,7 @@ import { useState, useRef } from "react";
 import { searchAirports } from "@/utils/airportDatabase";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Plane, Search } from "lucide-react";
+import { Search } from "lucide-react";
 
 interface Suggestion {
   display: string;
@@ -25,8 +25,10 @@ const AirportAutocomplete = ({ onSelect, isLoading }: AirportAutocompleteProps) 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setQuery(val);
+    console.log(`Search query changed to: "${val}"`);
 
     if (val.length >= 2) {
+      console.log(`Triggering search for: "${val}"`);
       const results = searchAirports(val)
         .filter(a => a.icao_code)
         .map(a => ({
@@ -34,6 +36,8 @@ const AirportAutocomplete = ({ onSelect, isLoading }: AirportAutocompleteProps) 
           icao: a.icao_code,
           iata: a.iata_code,
         }));
+      
+      console.log(`Search returned ${results.length} results:`, results);
       setSuggestions(results);
       setShowDropdown(true);
     } else {
@@ -43,6 +47,7 @@ const AirportAutocomplete = ({ onSelect, isLoading }: AirportAutocompleteProps) 
   };
 
   const handleSelect = (icao: string) => {
+    console.log(`Airport selected: ${icao}`);
     setQuery(icao);
     setShowDropdown(false);
     setSuggestions([]);
@@ -52,6 +57,7 @@ const AirportAutocomplete = ({ onSelect, isLoading }: AirportAutocompleteProps) 
   // Allow "Enter" to trigger select if there is only one suggestion
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && suggestions.length > 0) {
+      console.log(`Enter pressed, selecting first result: ${suggestions[0].icao}`);
       handleSelect(suggestions[0].icao);
     }
   };
@@ -76,8 +82,10 @@ const AirportAutocomplete = ({ onSelect, isLoading }: AirportAutocompleteProps) 
         disabled={!query || isLoading}
         onClick={() => {
           if (suggestions.length > 0) {
+            console.log(`Search button clicked, selecting first result: ${suggestions[0].icao}`);
             handleSelect(suggestions[0].icao);
           } else {
+            console.log(`Search button clicked, using direct input: ${query.toUpperCase()}`);
             onSelect(query.toUpperCase());
           }
         }}
@@ -98,9 +106,9 @@ const AirportAutocomplete = ({ onSelect, isLoading }: AirportAutocompleteProps) 
           ))}
         </div>
       )}
-      {showDropdown && suggestions.length === 0 && (
+      {showDropdown && suggestions.length === 0 && query.length >= 2 && (
         <div className="absolute z-20 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg p-2 text-gray-600 text-sm">
-          No results found.
+          No results found for "{query}".
         </div>
       )}
     </div>
