@@ -50,6 +50,10 @@ const AirportAutocomplete = ({ onSelect, isLoading }: AirportAutocompleteProps) 
         setShowDropdown(false);
       } finally {
         setSearching(false);
+        // Keep focus on input after search completes
+        if (inputRef.current) {
+          inputRef.current.focus();
+        }
       }
     } else {
       setSuggestions([]);
@@ -63,10 +67,15 @@ const AirportAutocomplete = ({ onSelect, isLoading }: AirportAutocompleteProps) 
     setShowDropdown(false);
     setSuggestions([]);
     onSelect(icao);
-    // Keep focus on input after selection
+    // Maintain focus after selection
     setTimeout(() => {
-      inputRef.current?.focus();
-    }, 100);
+      if (inputRef.current) {
+        inputRef.current.focus();
+        // Set cursor to end of text
+        const length = inputRef.current.value.length;
+        inputRef.current.setSelectionRange(length, length);
+      }
+    }, 50);
   };
 
   // Allow "Enter" to trigger select if there is only one suggestion
@@ -77,24 +86,41 @@ const AirportAutocomplete = ({ onSelect, isLoading }: AirportAutocompleteProps) 
     }
   };
 
+  // Prevent input blur during dropdown interaction
+  const handleInputBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    // Only blur if not clicking on dropdown
+    setTimeout(() => {
+      if (!document.activeElement?.closest('.dropdown-container')) {
+        setShowDropdown(false);
+      }
+    }, 150);
+  };
+
+  const handleDropdownMouseDown = (e: React.MouseEvent) => {
+    // Prevent input blur when clicking dropdown
+    e.preventDefault();
+  };
+
   return (
-    <div className="relative w-full max-w-md">
-      <div className="relative">
+    <div className="relative w-full max-w-md dropdown-container">
+      <div className="flex space-x-2">
         <Input
           ref={inputRef}
           type="text"
           value={query}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
+          onBlur={handleInputBlur}
           placeholder="Enter ICAO Code (e.g., KJFK, EGLL, LFPG)"
           autoComplete="off"
-          className="h-12 pr-12 bg-slate-800/50 border-slate-600 text-white placeholder-slate-400 rounded-xl"
-          disabled={isLoading || searching}
+          className="flex-1 h-10 bg-slate-800/50 border-slate-600 text-white placeholder-slate-400 rounded-lg"
+          disabled={isLoading}
           aria-autocomplete="list"
         />
         <Button
           type="button"
-          className="absolute right-2 top-2 bottom-2 px-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+          size="sm"
+          className="h-10 px-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
           disabled={!query || isLoading || searching}
           onClick={async () => {
             if (suggestions.length > 0) {
@@ -110,12 +136,16 @@ const AirportAutocomplete = ({ onSelect, isLoading }: AirportAutocompleteProps) 
         </Button>
       </div>
       {showDropdown && suggestions.length > 0 && (
-        <div className="absolute z-50 left-0 right-0 mt-2 bg-slate-800 border border-slate-600 rounded-xl shadow-2xl max-h-60 overflow-auto">
+        <div 
+          className="absolute z-[9999] left-0 right-0 mt-2 bg-slate-800 border border-slate-600 rounded-xl shadow-2xl max-h-60 overflow-auto"
+          onMouseDown={handleDropdownMouseDown}
+        >
           {suggestions.map((s, i) => (
             <button
               type="button"
               key={s.icao + i}
               onClick={() => handleSelect(s.icao)}
+              onMouseDown={handleDropdownMouseDown}
               className="block w-full text-left px-4 py-3 hover:bg-slate-700 text-white transition-colors border-b border-slate-700 last:border-b-0"
             >
               <span className="text-sm">{s.display}</span>
@@ -124,12 +154,18 @@ const AirportAutocomplete = ({ onSelect, isLoading }: AirportAutocompleteProps) 
         </div>
       )}
       {showDropdown && suggestions.length === 0 && query.length >= 2 && !searching && (
-        <div className="absolute z-50 left-0 right-0 mt-2 bg-slate-800 border border-slate-600 rounded-xl shadow-2xl p-4 text-slate-400 text-sm">
+        <div 
+          className="absolute z-[9999] left-0 right-0 mt-2 bg-slate-800 border border-slate-600 rounded-xl shadow-2xl p-4 text-slate-400 text-sm"
+          onMouseDown={handleDropdownMouseDown}
+        >
           No results found for "{query}".
         </div>
       )}
       {searching && (
-        <div className="absolute z-50 left-0 right-0 mt-2 bg-slate-800 border border-slate-600 rounded-xl shadow-2xl p-4 text-slate-400 text-sm">
+        <div 
+          className="absolute z-[9999] left-0 right-0 mt-2 bg-slate-800 border border-slate-600 rounded-xl shadow-2xl p-4 text-slate-400 text-sm"
+          onMouseDown={handleDropdownMouseDown}
+        >
           Searching...
         </div>
       )}
