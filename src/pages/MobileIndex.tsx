@@ -1,16 +1,20 @@
+
 import { useState } from "react";
 import MetarSearch from "@/components/MetarSearch";
 import FavoritesManager from "@/components/FavoritesManager";
 import RecentSearches from "@/components/RecentSearches";
-import MobileWeatherCard from "@/components/MobileWeatherCard";
 import BottomNavigation from "@/components/BottomNavigation";
 import { useMetarData } from "@/hooks/useMetarData";
 import { useAuth } from "@/contexts/AuthContext";
 import { CloudRain, CloudLightning, Plane, Bell } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const MobileIndex = () => {
   const [icaoCode, setIcaoCode] = useState("");
   const [activeTab, setActiveTab] = useState("search");
+  const [weatherTab, setWeatherTab] = useState("metar");
   const {
     weatherData,
     isLoading,
@@ -109,35 +113,155 @@ const MobileIndex = () => {
               </div>
 
               {weatherData && (
-                <div className="space-y-4">
-                  <MobileWeatherCard
-                    type="metar"
-                    title="METAR"
-                    data={getDisplayContent('metar')}
-                    hasData={hasMetarData}
-                    icon={CloudRain}
-                  />
-                  <MobileWeatherCard
-                    type="taf"
-                    title="TAF"
-                    data={getDisplayContent('taf')}
-                    hasData={hasTafData}
-                    icon={CloudLightning}
-                  />
-                  <MobileWeatherCard
-                    type="airport"
-                    title="Airport Info"
-                    data={getDisplayContent('airport')}
-                    hasData={hasAirportData}
-                    icon={Plane}
-                  />
-                  <MobileWeatherCard
-                    type="notam"
-                    title="NOTAM"
-                    data={getDisplayContent('notam')}
-                    hasData={hasNotamData}
-                    icon={Bell}
-                  />
+                <div className="bg-slate-800/90 backdrop-blur-xl rounded-2xl border border-white/20 shadow-lg overflow-hidden">
+                  <Tabs value={weatherTab} onValueChange={setWeatherTab} className="w-full">
+                    <TabsList className="grid w-full grid-cols-4 bg-slate-900/60 rounded-none h-12">
+                      <TabsTrigger 
+                        value="metar" 
+                        className="flex items-center gap-1 text-xs data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-200 relative"
+                      >
+                        <CloudRain className="w-4 h-4" />
+                        METAR
+                        {hasMetarData && (
+                          <div className="absolute -top-1 -right-1 w-2 h-2 bg-orange-400 rounded-full shadow-sm shadow-orange-400/50"></div>
+                        )}
+                      </TabsTrigger>
+                      <TabsTrigger 
+                        value="taf" 
+                        className="flex items-center gap-1 text-xs data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-200 relative"
+                      >
+                        <CloudLightning className="w-4 h-4" />
+                        TAF
+                        {hasTafData && (
+                          <div className="absolute -top-1 -right-1 w-2 h-2 bg-orange-400 rounded-full shadow-sm shadow-orange-400/50"></div>
+                        )}
+                      </TabsTrigger>
+                      <TabsTrigger 
+                        value="airport" 
+                        className="flex items-center gap-1 text-xs data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-200 relative"
+                      >
+                        <Plane className="w-4 h-4" />
+                        Airport
+                        {hasAirportData && (
+                          <div className="absolute -top-1 -right-1 w-2 h-2 bg-orange-400 rounded-full shadow-sm shadow-orange-400/50"></div>
+                        )}
+                      </TabsTrigger>
+                      <TabsTrigger 
+                        value="notam" 
+                        className="flex items-center gap-1 text-xs data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-200 relative"
+                      >
+                        <Bell className="w-4 h-4" />
+                        NOTAM
+                        {hasNotamData && (
+                          <div className="absolute -top-1 -right-1 w-2 h-2 bg-orange-400 rounded-full shadow-sm shadow-orange-400/50"></div>
+                        )}
+                      </TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="metar" className="mt-0 border-0 p-0">
+                      <div className="p-4">
+                        <div className="flex items-center gap-2 mb-3">
+                          <CloudRain className="w-5 h-5 text-cyan-400" />
+                          <h3 className="text-lg font-bold text-white">Current Weather (METAR)</h3>
+                          {hasMetarData && (
+                            <Badge variant="outline" className="text-xs bg-orange-400/20 border-orange-400/50 text-orange-200">
+                              Live Data
+                            </Badge>
+                          )}
+                        </div>
+                        <ScrollArea className="h-[400px] w-full">
+                          <div className="bg-black/90 text-orange-400 p-4 rounded-xl avionics-display"
+                            style={{
+                              fontFamily: 'Monaco, "Courier New", monospace',
+                              textShadow: '0 0 8px rgba(255, 165, 0, 0.6)',
+                              letterSpacing: '0.5px',
+                              lineHeight: '1.4',
+                              fontSize: '13px'
+                            }}>
+                            <pre className="whitespace-pre-wrap break-words overflow-wrap-anywhere">{getDisplayContent('metar')}</pre>
+                          </div>
+                        </ScrollArea>
+                      </div>
+                    </TabsContent>
+
+                    <TabsContent value="taf" className="mt-0 border-0 p-0">
+                      <div className="p-4">
+                        <div className="flex items-center gap-2 mb-3">
+                          <CloudLightning className="w-5 h-5 text-cyan-400" />
+                          <h3 className="text-lg font-bold text-white">Forecast (TAF)</h3>
+                          {hasTafData && (
+                            <Badge variant="outline" className="text-xs bg-orange-400/20 border-orange-400/50 text-orange-200">
+                              Live Data
+                            </Badge>
+                          )}
+                        </div>
+                        <ScrollArea className="h-[400px] w-full">
+                          <div className="bg-black/90 text-orange-400 p-4 rounded-xl avionics-display"
+                            style={{
+                              fontFamily: 'Monaco, "Courier New", monospace',
+                              textShadow: '0 0 8px rgba(255, 165, 0, 0.6)',
+                              letterSpacing: '0.5px',
+                              lineHeight: '1.4',
+                              fontSize: '13px'
+                            }}>
+                            <pre className="whitespace-pre-wrap break-words overflow-wrap-anywhere">{getDisplayContent('taf')}</pre>
+                          </div>
+                        </ScrollArea>
+                      </div>
+                    </TabsContent>
+
+                    <TabsContent value="airport" className="mt-0 border-0 p-0">
+                      <div className="p-4">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Plane className="w-5 h-5 text-cyan-400" />
+                          <h3 className="text-lg font-bold text-white">Airport Information</h3>
+                          {hasAirportData && (
+                            <Badge variant="outline" className="text-xs bg-orange-400/20 border-orange-400/50 text-orange-200">
+                              Live Data
+                            </Badge>
+                          )}
+                        </div>
+                        <ScrollArea className="h-[400px] w-full">
+                          <div className="bg-black/90 text-orange-400 p-4 rounded-xl avionics-display"
+                            style={{
+                              fontFamily: 'Monaco, "Courier New", monospace',
+                              textShadow: '0 0 8px rgba(255, 165, 0, 0.6)',
+                              letterSpacing: '0.5px',
+                              lineHeight: '1.4',
+                              fontSize: '13px'
+                            }}>
+                            <pre className="whitespace-pre-wrap break-words overflow-wrap-anywhere">{getDisplayContent('airport')}</pre>
+                          </div>
+                        </ScrollArea>
+                      </div>
+                    </TabsContent>
+
+                    <TabsContent value="notam" className="mt-0 border-0 p-0">
+                      <div className="p-4">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Bell className="w-5 h-5 text-cyan-400" />
+                          <h3 className="text-lg font-bold text-white">NOTAMs</h3>
+                          {hasNotamData && (
+                            <Badge variant="outline" className="text-xs bg-orange-400/20 border-orange-400/50 text-orange-200">
+                              Live Data
+                            </Badge>
+                          )}
+                        </div>
+                        <ScrollArea className="h-[400px] w-full">
+                          <div className="bg-black/90 text-orange-400 p-4 rounded-xl avionics-display"
+                            style={{
+                              fontFamily: 'Monaco, "Courier New", monospace',
+                              textShadow: '0 0 8px rgba(255, 165, 0, 0.6)',
+                              letterSpacing: '0.5px',
+                              lineHeight: '1.4',
+                              fontSize: '13px'
+                            }}>
+                            <pre className="whitespace-pre-wrap break-words overflow-wrap-anywhere">{getDisplayContent('notam')}</pre>
+                          </div>
+                        </ScrollArea>
+                      </div>
+                    </TabsContent>
+                  </Tabs>
                 </div>
               )}
             </>
