@@ -1,4 +1,3 @@
-
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CloudRain, AlertTriangle, Clock, CloudLightning, Info, Plane, Bell, AlertCircle, Settings, FileText } from "lucide-react";
@@ -9,7 +8,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { WeatherData } from "@/hooks/useMetarData";
 import RetroRadar from "./RetroRadar";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useDecodedWeather } from "@/hooks/useDecodedWeather";
 
 interface MetarDisplayProps {
   weatherData?: WeatherData | null;
@@ -20,10 +20,13 @@ interface MetarDisplayProps {
 }
 
 const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: MetarDisplayProps) => {
-  const [decodedHtml, setDecodedHtml] = useState<string>("");
-  const [isLoadingDecoded, setIsLoadingDecoded] = useState(false);
-  const [decodedError, setDecodedError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("decoded");
+  
+  // Use the optimized hook for decoded weather
+  const { decodedHtml, isLoadingDecoded, decodedError } = useDecodedWeather(
+    icaoCode, 
+    activeTab === "decoded"
+  );
 
   // Use new weatherData if available, fallback to old metarData for backward compatibility
   const currentWeatherData = weatherData || (metarData ? { metar: metarData, taf: "", airport: "", notam: "" } : null);
@@ -41,47 +44,6 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
   const hasAirportData = currentWeatherData ? isDataAvailable(currentWeatherData.airport) : false;
   const hasNotamData = currentWeatherData ? isDataAvailable(currentWeatherData.notam) : false;
   const hasWeatherData = hasMetarData || hasTafData;
-
-  const fetchDecodedWeather = async () => {
-    if (!icaoCode) return;
-    
-    setIsLoadingDecoded(true);
-    setDecodedError(null);
-    
-    try {
-      // Use a CORS proxy to access the Aviation Weather API
-      const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(`https://aviationweather.gov/api/data/taf?ids=${icaoCode}&format=html&metar=true`)}`;
-      
-      console.log(`Fetching decoded weather for ${icaoCode} via CORS proxy`);
-      const response = await fetch(proxyUrl);
-      
-      if (!response.ok) {
-        throw new Error(`Failed to fetch decoded weather: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      
-      if (data.status.http_code !== 200) {
-        throw new Error(`Aviation Weather API returned error: ${data.status.http_code}`);
-      }
-      
-      setDecodedHtml(data.contents);
-      console.log(`Successfully fetched decoded weather for ${icaoCode}`);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to fetch decoded weather";
-      setDecodedError(errorMessage);
-      console.error('Error fetching decoded weather:', errorMessage);
-    } finally {
-      setIsLoadingDecoded(false);
-    }
-  };
-
-  // Auto-fetch decoded weather when ICAO code changes or when decoded tab becomes active
-  useEffect(() => {
-    if (icaoCode && activeTab === "decoded") {
-      fetchDecodedWeather();
-    }
-  }, [icaoCode, activeTab]);
 
   const formatNotamDisplay = (notamText: string) => {
     if (!notamText || notamText.includes('No current NOTAMs')) {
