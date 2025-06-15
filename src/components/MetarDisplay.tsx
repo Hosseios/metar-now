@@ -1,3 +1,4 @@
+
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CloudRain, AlertTriangle, Clock, CloudLightning, Info, Plane, Bell, AlertCircle, Settings, FileText } from "lucide-react";
@@ -39,6 +40,7 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
   const hasTafData = currentWeatherData ? isDataAvailable(currentWeatherData.taf) : false;
   const hasAirportData = currentWeatherData ? isDataAvailable(currentWeatherData.airport) : false;
   const hasNotamData = currentWeatherData ? isDataAvailable(currentWeatherData.notam) : false;
+  const hasWeatherData = hasMetarData || hasTafData;
 
   const fetchDecodedWeather = async () => {
     if (!icaoCode) return;
@@ -85,8 +87,11 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
     return notamText;
   };
 
-  const getDisplayContent = (type: 'metar' | 'taf' | 'airport' | 'notam') => {
+  const getDisplayContent = (type: 'metar' | 'taf' | 'airport' | 'notam' | 'weather') => {
     if (isLoading) {
+      if (type === 'weather') {
+        return `Fetching METAR and TAF data for ${icaoCode}...\n\nPlease wait while we retrieve the latest weather information.`;
+      }
       return `Fetching ${type.toUpperCase()} data for ${icaoCode}...\n\nPlease wait while we retrieve the latest information.`;
     }
     
@@ -94,17 +99,36 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
       return `Unable to connect to weather services for ${icaoCode}\n\nPlease check your internet connection and try again.`;
     }
     
-    if (currentWeatherData && currentWeatherData[type]) {
-      const data = currentWeatherData[type];
+    if (type === 'weather' && currentWeatherData) {
+      const metarContent = currentWeatherData.metar || '';
+      const tafContent = currentWeatherData.taf || '';
+      
+      let combinedContent = '';
+      
+      // Add METAR section
+      if (isDataAvailable(metarContent)) {
+        combinedContent += `=== CURRENT WEATHER (METAR) ===\n\n${metarContent}\n\n`;
+      } else {
+        combinedContent += `=== CURRENT WEATHER (METAR) ===\n\nNo current weather report available for ${icaoCode}\n\nThis airport may not provide real-time weather updates, or the data is temporarily unavailable.\n\n`;
+      }
+      
+      // Add TAF section
+      if (isDataAvailable(tafContent)) {
+        combinedContent += `=== FORECAST (TAF) ===\n\n${tafContent}`;
+      } else {
+        combinedContent += `=== FORECAST (TAF) ===\n\nNo weather forecast available for ${icaoCode}\n\nThis airport may not issue forecasts, or the forecast data is temporarily unavailable.`;
+      }
+      
+      return combinedContent;
+    }
+    
+    if (currentWeatherData && currentWeatherData[type as keyof WeatherData]) {
+      const data = currentWeatherData[type as keyof WeatherData];
       
       // Handle error messages with user-friendly text
       if (data.includes('Error fetching') || (data.includes('No ') && (data.includes(' data available') || data.includes('current NOTAMs')))) {
-        if (type === 'metar') {
-          return `No current weather report available for ${icaoCode}\n\nThis airport may not provide real-time weather updates, or the data is temporarily unavailable.\n\nTry checking the TAF (forecast) or Airport info tabs for other available information.`;
-        } else if (type === 'taf') {
-          return `No weather forecast available for ${icaoCode}\n\nThis airport may not issue forecasts, or the forecast data is temporarily unavailable.\n\nCheck the METAR tab for current conditions or Airport info for facility details.`;
-        } else if (type === 'airport') {
-          return `No airport information available for ${icaoCode}\n\nThe airport database may not have details for this facility, or the information is temporarily unavailable.\n\nTry the METAR or TAF tabs for weather data.`;
+        if (type === 'airport') {
+          return `No airport information available for ${icaoCode}\n\nThe airport database may not have details for this facility, or the information is temporarily unavailable.\n\nTry the Weather or NOTAM tabs for other available information.`;
         } else if (type === 'notam') {
           return `No current NOTAMs for ${icaoCode}\n\nThis means there are no active Notices to Airmen for this airport at this time.\n\nNOTAMs provide important information about airport conditions, closures, and operational changes.`;
         }
@@ -120,10 +144,8 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
     }
     
     // Default messages when no data is loaded yet
-    if (type === 'metar') {
-      return "Enter an ICAO code above to view real-time weather conditions\n\nMETAR provides current weather observations from airports worldwide, including wind, visibility, clouds, and temperature.";
-    } else if (type === 'taf') {
-      return "Enter an ICAO code above to view weather forecasts\n\nTAF provides detailed weather forecasts for airports, typically covering the next 24-30 hours with expected conditions and changes.";
+    if (type === 'weather') {
+      return "Enter an ICAO code above to view weather conditions and forecasts\n\nMETAR provides current weather observations and TAF provides detailed forecasts for airports worldwide.";
     } else if (type === 'airport') {
       return "Enter an ICAO code above to view airport information\n\nAirport data includes facility details, coordinates, elevation, runway information, and operational status.";
     } else if (type === 'notam') {
@@ -145,50 +167,6 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
             </p>
           </div>
         </div>
-
-        {/* Decoded Weather Button */}
-        {currentWeatherData && icaoCode && (
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={fetchDecodedWeather}
-                disabled={isLoadingDecoded}
-                className="bg-white/10 border-white/20 text-white hover:bg-white/20"
-              >
-                <Info className="w-4 h-4 mr-2" />
-                {isLoadingDecoded ? "Loading..." : "View Decoded Weather"}
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[80vh] bg-black border-orange-400/50">
-              <DialogHeader>
-                <DialogTitle className="text-orange-400 font-mono">Decoded Weather Report - {icaoCode}</DialogTitle>
-              </DialogHeader>
-              <div className="h-[60vh] w-full overflow-auto scrollbar-hide">
-                {decodedError ? (
-                  <Alert className="bg-red-500/20 border-red-400/50 text-red-100">
-                    <AlertTriangle className="h-4 w-4" />
-                    <AlertDescription className="text-red-100">
-                      {decodedError}
-                    </AlertDescription>
-                  </Alert>
-                ) : (
-                  <div 
-                    className="p-6 bg-black text-orange-400 font-mono text-sm avionics-display min-h-full"
-                    style={{
-                      fontFamily: 'Monaco, "Courier New", monospace',
-                      textShadow: '0 0 8px rgba(255, 165, 0, 0.6)',
-                      letterSpacing: '0.5px',
-                      lineHeight: '1.6'
-                    }}
-                    dangerouslySetInnerHTML={{ __html: decodedHtml }}
-                  />
-                )}
-              </div>
-            </DialogContent>
-          </Dialog>
-        )}
       </div>
 
       {error && (
@@ -201,21 +179,18 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
       )}
 
       <div className="relative">
-        <Tabs defaultValue="metar" className="w-full">
+        <Tabs defaultValue="weather" className="w-full">
           <TabsList className="grid w-full grid-cols-4 bg-black/40 backdrop-blur-sm">
-            <TabsTrigger value="metar" className="flex items-center gap-2 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-200">
+            <TabsTrigger value="weather" className="flex items-center gap-2 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-200">
               <CloudRain className="w-4 h-4" />
-              METAR
-              {hasMetarData && (
+              Weather
+              {hasWeatherData && (
                 <div className="w-2 h-2 bg-orange-400 rounded-full ml-1 shadow-sm shadow-orange-400/50"></div>
               )}
             </TabsTrigger>
-            <TabsTrigger value="taf" className="flex items-center gap-2 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-200">
-              <CloudLightning className="w-4 h-4" />
-              TAF
-              {hasTafData && (
-                <div className="w-2 h-2 bg-orange-400 rounded-full ml-1 shadow-sm shadow-orange-400/50"></div>
-              )}
+            <TabsTrigger value="decoded" className="flex items-center gap-2 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-200">
+              <FileText className="w-4 h-4" />
+              Decoded
             </TabsTrigger>
             <TabsTrigger value="airport" className="flex items-center gap-2 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-200">
               <Plane className="w-4 h-4" />
@@ -233,7 +208,7 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
             </TabsTrigger>
           </TabsList>
           
-          <TabsContent value="metar" className="mt-4">
+          <TabsContent value="weather" className="mt-4">
             <div className="relative avionics-display rounded-none">
               <ScrollArea className="h-[400px] w-full">
                 <div className="bg-black text-orange-400 p-6 avionics-display min-h-full"
@@ -243,25 +218,71 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
                     letterSpacing: '0.5px',
                     lineHeight: '1.6'
                   }}>
-                  <pre className="whitespace-pre-wrap font-mono">{getDisplayContent('metar')}</pre>
+                  <pre className="whitespace-pre-wrap font-mono">{getDisplayContent('weather')}</pre>
                 </div>
               </ScrollArea>
             </div>
           </TabsContent>
           
-          <TabsContent value="taf" className="mt-4">
+          <TabsContent value="decoded" className="mt-4">
             <div className="relative avionics-display rounded-none">
-              <ScrollArea className="h-[400px] w-full">
-                <div className="bg-black text-orange-400 p-6 avionics-display min-h-full"
-                  style={{
-                    fontFamily: 'Monaco, "Courier New", monospace',
-                    textShadow: '0 0 8px rgba(255, 165, 0, 0.6)',
-                    letterSpacing: '0.5px',
-                    lineHeight: '1.6'
-                  }}>
-                  <pre className="whitespace-pre-wrap font-mono">{getDisplayContent('taf')}</pre>
-                </div>
-              </ScrollArea>
+              <div className="bg-black text-orange-400 p-6 avionics-display h-[400px] flex flex-col"
+                style={{
+                  fontFamily: 'Monaco, "Courier New", monospace',
+                  textShadow: '0 0 8px rgba(255, 165, 0, 0.6)',
+                  letterSpacing: '0.5px',
+                  lineHeight: '1.6'
+                }}>
+                {!icaoCode ? (
+                  <div className="flex-1 flex items-center justify-center">
+                    <pre className="whitespace-pre-wrap font-mono text-center">
+                      Enter an ICAO code above to view decoded weather information
+                      
+                      Decoded weather provides human-readable explanations of METAR and TAF codes
+                    </pre>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-bold">Decoded Weather - {icaoCode}</h3>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={fetchDecodedWeather}
+                        disabled={isLoadingDecoded}
+                        className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                      >
+                        <Info className="w-4 h-4 mr-2" />
+                        {isLoadingDecoded ? "Loading..." : "Fetch Decoded"}
+                      </Button>
+                    </div>
+                    
+                    <ScrollArea className="flex-1">
+                      {decodedError ? (
+                        <Alert className="bg-red-500/20 border-red-400/50 text-red-100">
+                          <AlertTriangle className="h-4 w-4" />
+                          <AlertDescription className="text-red-100">
+                            {decodedError}
+                          </AlertDescription>
+                        </Alert>
+                      ) : decodedHtml ? (
+                        <div 
+                          className="text-orange-400 font-mono text-sm"
+                          dangerouslySetInnerHTML={{ __html: decodedHtml }}
+                        />
+                      ) : (
+                        <div className="flex items-center justify-center h-full">
+                          <pre className="whitespace-pre-wrap font-mono text-center">
+                            Click "Fetch Decoded" to get human-readable weather explanations
+                            
+                            This will show detailed interpretations of METAR and TAF codes
+                          </pre>
+                        </div>
+                      )}
+                    </ScrollArea>
+                  </>
+                )}
+              </div>
             </div>
           </TabsContent>
 
