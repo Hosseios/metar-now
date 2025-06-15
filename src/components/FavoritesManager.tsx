@@ -120,7 +120,7 @@ const FavoritesManager = ({ currentIcao, onSelectFavorite }: FavoritesManagerPro
             onClick={() => navigate("/auth")}
             className="mt-4 bg-slate-800/50 backdrop-blur-sm border border-green-500/30 text-white hover:bg-green-900/20 hover:border-green-400/50 transition-all duration-200"
           >
-            Sign In to Get Started
+            Sign In
           </Button>
         </div>
       )}
@@ -129,3 +129,4 @@ const FavoritesManager = ({ currentIcao, onSelectFavorite }: FavoritesManagerPro
 };
 
 export default FavoritesManager;
+

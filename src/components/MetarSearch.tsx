@@ -57,17 +57,36 @@ const MetarSearch = ({ onSearch, isLoading }: MetarSearchProps) => {
           <button
             type="button"
             title={isAlreadyFavorite ? "Already in favorites" : "Add to favorites"}
-            className={`ml-4 transition p-2 rounded-full border-2 ${
-              isAlreadyFavorite 
-                ? "bg-pink-700/60 border-pink-400 text-white cursor-not-allowed opacity-60" 
-                : "bg-slate-700/60 border-pink-500 hover:bg-pink-600/70 hover:border-pink-400 text-white"
-            }`}
+            className={`ml-4 flex items-center justify-center transition p-2 rounded-full border-2 relative group bg-transparent border-transparent 
+              ${isAlreadyFavorite 
+                ? "cursor-not-allowed opacity-60"
+                : "hover:bg-pink-700/20"
+              }`}
             onClick={handleAddFavorite}
             disabled={!isValidIcao || isAlreadyFavorite || favLoading}
             aria-label="Add to favorites"
-            style={{boxShadow: '0 0 6px 0 rgba(236,72,153,.22)'}}
+            style={{ boxShadow: '0 0 6px 0 rgba(236,72,153,.12)' }}
           >
-            <Heart className="w-5 h-5" fill={isAlreadyFavorite ? "#ec4899" : "none"} />
+            <Heart
+              className={`w-7 h-7 transition-all duration-150 drop-shadow-lg 
+                ${isAlreadyFavorite
+                  ? "fill-pink-500 text-pink-400 scale-110"
+                  : "text-pink-300 hover:scale-110 hover:text-pink-500"
+                }
+              `}
+              fill={isAlreadyFavorite ? "#ec4899" : "none"}
+              strokeWidth={2.2}
+            />
+            {!isAlreadyFavorite && (
+              <span className="absolute left-0 top-full w-max text-xs bg-pink-700/90 text-white rounded-md px-2 py-1 mt-1 opacity-0 group-hover:opacity-100 transition pointer-events-none shadow-xl z-10">
+                Add to favorites
+              </span>
+            )}
+            {isAlreadyFavorite && (
+              <span className="absolute left-0 top-full w-max text-xs bg-gray-700/90 text-white rounded-md px-2 py-1 mt-1 opacity-100 transition pointer-events-none shadow-xl z-10">
+                Favorited
+              </span>
+            )}
           </button>
         )}
       </div>
@@ -108,3 +127,4 @@ const MetarSearch = ({ onSearch, isLoading }: MetarSearchProps) => {
 };
 
 export default MetarSearch;
+
