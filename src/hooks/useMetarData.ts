@@ -227,7 +227,7 @@ export const useMetarData = () => {
     let formattedOutput = `NOTAMs for ${icaoCode} (${notams.length} active NOTAMs found)\n`;
     formattedOutput += `${'═'.repeat(60)}\n\n`;
 
-    // Add category summary with professional icons
+    // Add category summary with professional text markers
     if (notamsByCategory.critical.length > 0) {
       formattedOutput += `[CRITICAL] ${notamsByCategory.critical.length} NOTAMs (Safety-related)\n`;
     }

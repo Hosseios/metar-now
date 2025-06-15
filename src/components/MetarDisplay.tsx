@@ -1,4 +1,3 @@
-
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CloudRain, AlertTriangle, Clock, CloudLightning, Info, Plane, Bell, AlertCircle, Settings, FileText } from "lucide-react";
@@ -81,13 +80,9 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
       return notamText;
     }
 
-    // Replace text markers with professional badges and icons
-    return notamText
-      .replace(/\[CRITICAL\]/g, '🔴 CRITICAL')
-      .replace(/\[OPERATIONAL\]/g, '🟡 OPERATIONAL') 
-      .replace(/\[INFORMATIONAL\]/g, '🔵 INFORMATIONAL')
-      .replace(/\[TIME\]/g, '⏰')
-      .replace(/\[CREATED\]/g, '📅');
+    // The text already comes formatted with professional text markers from the hook
+    // Just return it as-is since emojis have been removed from the source
+    return notamText;
   };
 
   const getDisplayContent = (type: 'metar' | 'taf' | 'airport' | 'notam') => {
