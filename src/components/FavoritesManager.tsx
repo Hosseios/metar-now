@@ -1,6 +1,5 @@
 
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Star, Trash, LogIn, LogOut } from "lucide-react";
 import { useSupabaseFavorites } from "@/hooks/useSupabaseFavorites";
 import { useAuth } from "@/contexts/AuthContext";
@@ -13,45 +12,21 @@ interface FavoritesManagerProps {
 }
 
 const FavoritesManager = ({ currentIcao, onSelectFavorite }: FavoritesManagerProps) => {
-  const { favorites, addFavorite, removeFavorite, selectedFavorite, setSelectedFavorite, loading } = useSupabaseFavorites();
+  const { favorites, removeFavorite, loading } = useSupabaseFavorites();
   const { user, signOut } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const handleAddFavorite = () => {
-    if (!currentIcao || currentIcao.length !== 4) {
-      toast({
-        title: "Invalid ICAO Code",
-        description: "Please enter a valid 4-letter ICAO code first.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    addFavorite(currentIcao);
-  };
-
-  const handleRemoveFavorite = () => {
-    if (!selectedFavorite) {
-      toast({
-        title: "No Selection",
-        description: "Please select a favorite to remove.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    removeFavorite(selectedFavorite);
-    setSelectedFavorite("");
+  const handleRemoveFavorite = (icao: string) => {
+    removeFavorite(icao);
     toast({
       title: "Removed from Favorites",
-      description: `${selectedFavorite} has been removed from your favorites.`,
+      description: `${icao} has been removed from your favorites.`,
     });
   };
 
-  const handleSelectFavorite = (value: string) => {
-    setSelectedFavorite(value);
-    onSelectFavorite(value);
+  const handleSelectFavorite = (icao: string) => {
+    onSelectFavorite(icao);
   };
 
   const handleSignOut = async () => {
@@ -74,7 +49,6 @@ const FavoritesManager = ({ currentIcao, onSelectFavorite }: FavoritesManagerPro
             {user ? `Signed in as ${user.email}` : "Sign in to save favorites"}
           </p>
         </div>
-        
         <div className="flex gap-2">
           {user ? (
             <Button
@@ -100,53 +74,42 @@ const FavoritesManager = ({ currentIcao, onSelectFavorite }: FavoritesManagerPro
 
       {user ? (
         <div className="space-y-4">
-          {/* Favorites Dropdown */}
           <div className="space-y-3">
             <label className="text-sm font-medium text-slate-300">
-              Select Favorite
+              My Favorites
             </label>
-            <Select value={selectedFavorite} onValueChange={handleSelectFavorite} disabled={loading}>
-              <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white">
-                <SelectValue placeholder={
-                  loading ? "Loading..." : 
-                  favorites.length === 0 ? "No favorites yet" : 
-                  "Choose an airport"
-                } />
-              </SelectTrigger>
-              <SelectContent className="bg-slate-800 border-slate-600">
-                {favorites.map((icao) => (
-                  <SelectItem key={icao} value={icao} className="text-white hover:bg-slate-700">
+            <ul className="divide-y divide-slate-700 border border-slate-700 rounded-xl bg-slate-800/60 max-h-60 overflow-auto">
+              {favorites.length === 0 && !loading && (
+                <li className="py-4 px-3 text-slate-400 text-center">
+                  <Star className="inline w-4 h-4 mb-1 text-yellow-300" /> No favorite airports yet.
+                  <div className="text-xs mt-2">Add some from the Search tab!</div>
+                </li>
+              )}
+              {favorites.map((icao) => (
+                <li key={icao} className="flex items-center justify-between px-3 py-3 hover:bg-slate-700/40 transition cursor-pointer group">
+                  <button
+                    className="flex items-center gap-3 text-white font-mono"
+                    onClick={() => handleSelectFavorite(icao)}
+                  >
+                    <Star className="w-4 h-4 text-yellow-400 flex-shrink-0" />
                     {icao}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="space-y-3">
-            <label className="text-sm font-medium text-slate-300">
-              Actions
-            </label>
-            <div className="flex gap-3 pr-2">
-              <Button
-                onClick={handleAddFavorite}
-                disabled={!currentIcao || currentIcao.length !== 4 || loading}
-                className="flex-1 bg-slate-800/50 backdrop-blur-sm border border-green-500/30 text-white hover:bg-green-900/20 hover:border-green-400/50 transition-all duration-200"
-              >
-                <Star className="w-4 h-4 mr-2" />
-                Add Current
-              </Button>
-              
-              <Button
-                onClick={handleRemoveFavorite}
-                disabled={!selectedFavorite || loading}
-                className="flex-1 bg-slate-800/50 backdrop-blur-sm border border-red-500/30 text-white hover:bg-red-900/20 hover:border-red-400/50 transition-all duration-200"
-              >
-                <Trash className="w-4 h-4 mr-2" />
-                Remove
-              </Button>
-            </div>
+                  </button>
+                  <button
+                    title={`Remove ${icao} from favorites`}
+                    onClick={() => handleRemoveFavorite(icao)}
+                    className="text-red-400 hover:text-red-600 transition p-1 rounded-full opacity-70 hover:opacity-100"
+                    disabled={loading}
+                  >
+                    <Trash className="w-4 h-4" />
+                  </button>
+                </li>
+              ))}
+              {loading && (
+                <li className="py-4 px-3 text-slate-400 text-center">
+                  Loading...
+                </li>
+              )}
+            </ul>
           </div>
         </div>
       ) : (
@@ -159,14 +122,6 @@ const FavoritesManager = ({ currentIcao, onSelectFavorite }: FavoritesManagerPro
           >
             Sign In to Get Started
           </Button>
-        </div>
-      )}
-
-      {user && favorites.length === 0 && !loading && (
-        <div className="text-center py-8 text-slate-400">
-          <Star className="w-8 h-8 mx-auto mb-2 opacity-50" />
-          <p>No favorite airports yet.</p>
-          <p className="text-sm">Enter an ICAO code and click "Add Current" to get started.</p>
         </div>
       )}
     </div>

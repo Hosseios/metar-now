@@ -3,8 +3,10 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Search, Plane } from "lucide-react";
+import { Search, Plane, Heart } from "lucide-react";
 import RetroRadar from "./RetroRadar";
+import { useSupabaseFavorites } from "@/hooks/useSupabaseFavorites";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface MetarSearchProps {
   onSearch: (icaoCode: string) => void;
@@ -13,6 +15,8 @@ interface MetarSearchProps {
 
 const MetarSearch = ({ onSearch, isLoading }: MetarSearchProps) => {
   const [inputValue, setInputValue] = useState("");
+  const { addFavorite, favorites, loading: favLoading } = useSupabaseFavorites();
+  const { user } = useAuth();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.toUpperCase().slice(0, 4);
@@ -26,7 +30,14 @@ const MetarSearch = ({ onSearch, isLoading }: MetarSearchProps) => {
     }
   };
 
+  const handleAddFavorite = () => {
+    if (user && inputValue.length === 4 && !favLoading && !favorites.includes(inputValue)) {
+      addFavorite(inputValue);
+    }
+  };
+
   const isValidIcao = inputValue.length === 4;
+  const isAlreadyFavorite = favorites.includes(inputValue);
 
   return (
     <div className="space-y-6">
@@ -42,6 +53,23 @@ const MetarSearch = ({ onSearch, isLoading }: MetarSearchProps) => {
             Enter a 4-letter airport code (e.g., KJFK, EGLL, LFPG)
           </p>
         </div>
+        {user && (
+          <button
+            type="button"
+            title={isAlreadyFavorite ? "Already in favorites" : "Add to favorites"}
+            className={`ml-4 transition p-2 rounded-full border-2 ${
+              isAlreadyFavorite 
+                ? "bg-pink-700/60 border-pink-400 text-white cursor-not-allowed opacity-60" 
+                : "bg-slate-700/60 border-pink-500 hover:bg-pink-600/70 hover:border-pink-400 text-white"
+            }`}
+            onClick={handleAddFavorite}
+            disabled={!isValidIcao || isAlreadyFavorite || favLoading}
+            aria-label="Add to favorites"
+            style={{boxShadow: '0 0 6px 0 rgba(236,72,153,.22)'}}
+          >
+            <Heart className="w-5 h-5" fill={isAlreadyFavorite ? "#ec4899" : "none"} />
+          </button>
+        )}
       </div>
       
       <form onSubmit={handleSubmit} className="flex gap-4">
