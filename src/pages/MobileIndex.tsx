@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import MetarSearch from "@/components/MetarSearch";
 import FavoritesManager from "@/components/FavoritesManager";
@@ -101,21 +100,8 @@ const MobileIndex = () => {
 
       {/* Content */}
       <div className="relative z-10 flex flex-col min-h-screen bg-slate-900/20">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 pt-8 bg-slate-900/50 backdrop-blur-sm" style={{ paddingTop: 'max(2rem, env(safe-area-inset-top, 2rem))' }}>
-          <div className="flex items-center space-x-3">
-            <div className="relative">
-              <img src="/lovable-uploads/2750b808-8ab0-485e-95b6-fd3cbf9517e2.png" alt="METAR Now Logo" className="w-12 h-12" />
-            </div>
-            <div>
-              <h1 className="text-lg font-bold text-white drop-shadow-lg">METAR Now</h1>
-              <p className="text-sm text-slate-200 drop-shadow">Aviation Weather</p>
-            </div>
-          </div>
-        </div>
-
         {/* Tab Content */}
-        <div className="flex-1 p-4 space-y-4 pb-24 bg-slate-900/20">
+        <div className="flex-1 p-4 space-y-4 pb-24 bg-slate-900/20" style={{ paddingTop: 'max(1rem, env(safe-area-inset-top, 1rem))' }}>
           {activeTab === 'search' && (
             <>
               <div className="bg-slate-800/90 backdrop-blur-xl rounded-2xl p-4 border border-white/20 shadow-lg">
