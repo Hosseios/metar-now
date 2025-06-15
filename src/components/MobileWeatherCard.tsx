@@ -62,7 +62,7 @@ const MobileWeatherCard = ({ type, title, data, hasData, icon: Icon }: MobileWea
         <div className="relative overflow-hidden">
           {isExpanded ? (
             <ScrollArea className="h-[300px] w-full">
-              <div className="bg-black/90 text-orange-400 p-4 rounded-xl avionics-display"
+              <div className="bg-black/90 text-orange-400 p-4 rounded-xl avionics-display h-full min-h-[300px] flex flex-col"
                 style={{
                   fontFamily: 'Monaco, "Courier New", monospace',
                   textShadow: '0 0 8px rgba(255, 165, 0, 0.6)',
@@ -70,11 +70,11 @@ const MobileWeatherCard = ({ type, title, data, hasData, icon: Icon }: MobileWea
                   lineHeight: '1.4',
                   fontSize: '13px'
                 }}>
-                <pre className="whitespace-pre-wrap break-words overflow-wrap-anywhere">{data}</pre>
+                <pre className="whitespace-pre-wrap break-words overflow-wrap-anywhere flex-1">{data}</pre>
               </div>
             </ScrollArea>
           ) : (
-            <div className="bg-black/90 text-orange-400 p-4 rounded-xl avionics-display overflow-hidden"
+            <div className="bg-black/90 text-orange-400 p-4 rounded-xl avionics-display overflow-hidden h-32 flex flex-col"
               style={{
                 fontFamily: 'Monaco, "Courier New", monospace',
                 textShadow: '0 0 8px rgba(255, 165, 0, 0.6)',
@@ -82,7 +82,7 @@ const MobileWeatherCard = ({ type, title, data, hasData, icon: Icon }: MobileWea
                 lineHeight: '1.4',
                 fontSize: '13px'
               }}>
-              <pre className="whitespace-pre-wrap break-words overflow-wrap-anywhere">{getPreviewText(data)}</pre>
+              <pre className="whitespace-pre-wrap break-words overflow-wrap-anywhere flex-1">{getPreviewText(data)}</pre>
               {shouldShowExpand && (
                 <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-black/90 to-transparent rounded-b-xl flex items-end justify-center pb-1">
                   <span className="text-orange-300 text-xs">Tap to expand</span>
