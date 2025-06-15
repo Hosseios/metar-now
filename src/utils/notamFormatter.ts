@@ -12,8 +12,14 @@ export const formatNotamsForDisplay = (notams: NotamItem[], icaoCode: string): s
     informational: notams.filter(n => n.category === 'informational')
   };
 
+  // Use shorter lines for mobile-friendly display
+  const isMobile = window.innerWidth <= 768;
+  const mainSeparator = isMobile ? '═'.repeat(30) : '═'.repeat(60);
+  const categorySeparator = isMobile ? '─'.repeat(25) : '─'.repeat(40);
+  const notamSeparator = isMobile ? '▔'.repeat(30) : '▔'.repeat(50);
+
   let formattedOutput = `NOTAMs for ${icaoCode} (${notams.length} active NOTAMs found)\n`;
-  formattedOutput += `${'═'.repeat(60)}\n\n`;
+  formattedOutput += `${mainSeparator}\n\n`;
 
   // Add category summary with professional text markers
   if (notamsByCategory.critical.length > 0) {
@@ -37,13 +43,13 @@ export const formatNotamsForDisplay = (notams: NotamItem[], icaoCode: string): s
   categories.forEach(category => {
     if (category.notams.length > 0) {
       formattedOutput += `${category.prefix} NOTAMs\n`;
-      formattedOutput += `${'─'.repeat(40)}\n\n`;
+      formattedOutput += `${categorySeparator}\n\n`;
 
       category.notams.forEach((notam, index) => {
         const overallIndex = notams.findIndex(n => n.id === notam.id) + 1;
         
         formattedOutput += `NOTAM ${overallIndex}: ${notam.id} [${notam.type}-TYPE]\n`;
-        formattedOutput += `${'▔'.repeat(50)}\n`;
+        formattedOutput += `${notamSeparator}\n`;
         
         // Format the main text with better line breaks
         const formattedText = notam.text
