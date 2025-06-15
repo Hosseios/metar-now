@@ -2,8 +2,10 @@
 import MetarSearch from "@/components/MetarSearch";
 import MetarDisplay from "@/components/MetarDisplay";
 import FavoritesManager from "@/components/FavoritesManager";
+import MobileIndex from "@/pages/MobileIndex";
 import { useMetarData } from "@/hooks/useMetarData";
 import { useAuth } from "@/contexts/AuthContext";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useState } from "react";
 
 const Index = () => {
@@ -17,11 +19,17 @@ const Index = () => {
   const {
     loading: authLoading
   } = useAuth();
+  const isMobile = useIsMobile();
 
   const handleSearch = (code: string) => {
     setIcaoCode(code);
     fetchWeatherData(code);
   };
+
+  // Use mobile-optimized layout on mobile devices
+  if (isMobile) {
+    return <MobileIndex />;
+  }
 
   if (authLoading) {
     return <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">

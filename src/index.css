@@ -188,4 +188,33 @@
   .scrollbar-thumb-orange-400\/50::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 165, 0, 0.7);
   }
+
+  /* Mobile-specific utilities */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 1rem);
+  }
+  
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 1rem);
+  }
+  
+  /* Touch-friendly interactions */
+  .touch-manipulation {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Better mobile text rendering */
+  @media (max-width: 768px) {
+    body {
+      -webkit-text-size-adjust: 100%;
+      text-rendering: optimizeLegibility;
+    }
+    
+    /* Larger touch targets on mobile */
+    .mobile-touch-target {
+      min-height: 44px;
+      min-width: 44px;
+    }
+  }
 }
