@@ -116,12 +116,6 @@ const FavoritesManager = ({ currentIcao, onSelectFavorite }: FavoritesManagerPro
         <div className="text-center py-8 text-slate-400">
           <LogIn className="w-8 h-8 mx-auto mb-2 opacity-50" />
           <p>Sign in to save and manage your favorite airports.</p>
-          <Button
-            onClick={() => navigate("/auth")}
-            className="mt-4 bg-slate-800/50 backdrop-blur-sm border border-green-500/30 text-white hover:bg-green-900/20 hover:border-green-400/50 transition-all duration-200"
-          >
-            Sign In
-          </Button>
         </div>
       )}
     </div>
@@ -129,4 +123,3 @@ const FavoritesManager = ({ currentIcao, onSelectFavorite }: FavoritesManagerPro
 };
 
 export default FavoritesManager;
-
