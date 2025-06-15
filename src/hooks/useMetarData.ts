@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -84,37 +83,87 @@ export const useMetarData = () => {
         };
       }
 
-      const content = data.contents.trim();
+      const htmlContent = data.contents.trim();
       
-      // Parse HTML response and extract NOTAM text
-      if (content.includes("No NOTAMs match your criteria") || content.includes("No current NOTAMs")) {
+      // Check for "no NOTAMs" message
+      if (htmlContent.includes("No NOTAMs match your criteria") || htmlContent.includes("No current NOTAMs")) {
         return {
           data: `No current NOTAMs for ${icaoCode}`,
           error: null
         };
       }
       
-      // Basic parsing - look for NOTAM content between common markers
-      let parsedContent = content;
-      if (content.includes('<pre>')) {
-        const preMatch = content.match(/<pre[^>]*>([\s\S]*?)<\/pre>/);
-        if (preMatch) {
-          parsedContent = preMatch[1].trim();
+      // Parse NOTAMs from HTML - look for the NOTAM pattern in <PRE> tags
+      const notams: string[] = [];
+      
+      // Use regex to find all NOTAM entries in <PRE> tags
+      const preTagRegex = /<PRE><b>([^<]+)<\/b>\s*-\s*([^<]+(?:<[^>]*>[^<]*)*[^<]*)<\/PRE>/gi;
+      let match;
+      
+      while ((match = preTagRegex.exec(htmlContent)) !== null) {
+        const notamId = match[1];
+        let notamText = match[2];
+        
+        // Clean up HTML entities and tags
+        notamText = notamText
+          .replace(/&#8203;/g, '') // Remove zero-width spaces
+          .replace(/<[^>]*>/g, '') // Remove any remaining HTML tags
+          .replace(/\s+/g, ' ') // Normalize whitespace
+          .trim();
+        
+        const formattedNotam = `${notamId} - ${notamText}`;
+        notams.push(formattedNotam);
+      }
+      
+      // If regex parsing failed, try alternative parsing method
+      if (notams.length === 0) {
+        // Look for text patterns that indicate NOTAMs
+        const lines = htmlContent.split('\n');
+        let currentNotam = '';
+        let inNotamSection = false;
+        
+        for (const line of lines) {
+          const cleanLine = line.replace(/<[^>]*>/g, '').trim();
+          
+          // Check if this line contains a NOTAM ID pattern
+          if (/^[AV]\d{4}\/\d{2}/.test(cleanLine)) {
+            if (currentNotam) {
+              notams.push(currentNotam.trim());
+            }
+            currentNotam = cleanLine;
+            inNotamSection = true;
+          } else if (inNotamSection && cleanLine.length > 0 && !cleanLine.includes('CREATED:')) {
+            currentNotam += ' ' + cleanLine;
+          } else if (cleanLine.includes('CREATED:') && inNotamSection) {
+            currentNotam += ' ' + cleanLine;
+            notams.push(currentNotam.trim());
+            currentNotam = '';
+            inNotamSection = false;
+          }
+        }
+        
+        // Add the last NOTAM if exists
+        if (currentNotam.trim()) {
+          notams.push(currentNotam.trim());
         }
       }
       
-      // Remove HTML tags
-      parsedContent = parsedContent.replace(/<[^>]*>/g, '').trim();
-      
-      if (!parsedContent || parsedContent.length < 10) {
+      if (notams.length === 0) {
         return {
           data: `No current NOTAMs for ${icaoCode}`,
           error: null
         };
       }
-
+      
+      // Format NOTAMs with proper spacing and structure
+      const formattedNotams = notams.map((notam, index) => {
+        return `NOTAM ${index + 1}:\n${notam}\n`;
+      }).join('\n');
+      
+      const notamHeader = `NOTAMs for ${icaoCode} (${notams.length} active):\n${'='.repeat(50)}\n\n`;
+      
       return {
-        data: parsedContent,
+        data: notamHeader + formattedNotams,
         error: null
       };
     } catch (err) {
