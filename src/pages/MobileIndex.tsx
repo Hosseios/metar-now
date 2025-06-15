@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from "react";
 import MetarSearch from "@/components/MetarSearch";
 import FavoritesManager from "@/components/FavoritesManager";
@@ -28,26 +27,29 @@ const MobileIndex = () => {
   const weatherTabs = ["metar", "taf", "airport", "notam"];
   const [emblaRef, emblaApi] = useEmblaCarousel({ align: "start", skipSnaps: false });
 
+  // Sync tab highlight with scroll position
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
     const selectedIndex = emblaApi.selectedScrollSnap();
     setWeatherTab(weatherTabs[selectedIndex]);
-  }, [emblaApi]);
+  }, [emblaApi, weatherTabs]);
 
+  // Sync tab button -> carousel scroll
   const handleTabChange = useCallback((value: string) => {
     setWeatherTab(value);
     const index = weatherTabs.indexOf(value);
     if (emblaApi && index !== -1) {
       emblaApi.scrollTo(index);
     }
-  }, [emblaApi]);
+  }, [emblaApi, weatherTabs]);
 
-  // Set up embla carousel listeners
+  // Listen to carousel selection change and sync active tab
   useState(() => {
-    if (emblaApi) {
-      emblaApi.on("select", onSelect);
-      return () => emblaApi.off("select", onSelect);
-    }
+    if (!emblaApi) return;
+    emblaApi.on("select", onSelect);
+    // On mount, sync the tab highlight to current position
+    onSelect();
+    return () => emblaApi.off("select", onSelect);
   });
 
   const handleSearch = (code: string) => {
@@ -293,7 +295,7 @@ const MobileIndex = () => {
               <div className="space-y-4">
                 <div className="p-4 bg-slate-900/40 rounded-xl">
                   <p className="text-white font-medium mb-2">About METAR Now</p>
-                  <p className="text-slate-300 text-sm">Real-time aviation weather data for pilots and aviation enthusiasts.</p>
+                  <p className="text-slate-300">Real-time aviation weather data for pilots and aviation enthusiasts.</p>
                 </div>
                 <div className="p-4 bg-slate-900/40 rounded-xl">
                   <p className="text-white font-medium mb-2">Data Sources</p>
