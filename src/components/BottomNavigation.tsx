@@ -1,5 +1,5 @@
 
-import { Home, Heart, Clock, Settings } from "lucide-react";
+import { Home, Plus, Clock, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface BottomNavigationProps {
@@ -10,7 +10,7 @@ interface BottomNavigationProps {
 const BottomNavigation = ({ activeTab, onTabChange }: BottomNavigationProps) => {
   const tabs = [
     { id: 'search', label: 'Search', icon: Home },
-    { id: 'favorites', label: 'Favorites', icon: Heart },
+    { id: 'favorites', label: 'Favorites', icon: Plus },
     { id: 'recent', label: 'Recent', icon: Clock },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
