@@ -22,7 +22,7 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
   const [decodedHtml, setDecodedHtml] = useState<string>("");
   const [isLoadingDecoded, setIsLoadingDecoded] = useState(false);
   const [decodedError, setDecodedError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState("weather");
+  const [activeTab, setActiveTab] = useState("decoded");
 
   // Use new weatherData if available, fallback to old metarData for backward compatibility
   const currentWeatherData = weatherData || (metarData ? { metar: metarData, taf: "", airport: "", notam: "" } : null);
@@ -184,23 +184,16 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
       )}
 
       <div className="relative">
-        <Tabs defaultValue="weather" className="w-full" onValueChange={setActiveTab}>
+        <Tabs defaultValue="decoded" className="w-full" onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-4 bg-black/40 backdrop-blur-sm">
-            <TabsTrigger value="weather" className="flex items-center gap-2 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-200">
-              <CloudRain className="w-4 h-4" />
-              Weather
-              {hasWeatherData && (
-                <div className="w-2 h-2 bg-orange-400 rounded-full ml-1 shadow-sm shadow-orange-400/50"></div>
-              )}
-            </TabsTrigger>
             <TabsTrigger value="decoded" className="flex items-center gap-2 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-200">
               <FileText className="w-4 h-4" />
               Decoded
             </TabsTrigger>
-            <TabsTrigger value="airport" className="flex items-center gap-2 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-200">
-              <Plane className="w-4 h-4" />
-              Airport
-              {hasAirportData && (
+            <TabsTrigger value="raw" className="flex items-center gap-2 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-200">
+              <CloudRain className="w-4 h-4" />
+              Raw
+              {hasWeatherData && (
                 <div className="w-2 h-2 bg-orange-400 rounded-full ml-1 shadow-sm shadow-orange-400/50"></div>
               )}
             </TabsTrigger>
@@ -211,23 +204,14 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
                 <div className="w-2 h-2 bg-orange-400 rounded-full ml-1 shadow-sm shadow-orange-400/50"></div>
               )}
             </TabsTrigger>
+            <TabsTrigger value="airport" className="flex items-center gap-2 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-200">
+              <Plane className="w-4 h-4" />
+              Airport
+              {hasAirportData && (
+                <div className="w-2 h-2 bg-orange-400 rounded-full ml-1 shadow-sm shadow-orange-400/50"></div>
+              )}
+            </TabsTrigger>
           </TabsList>
-          
-          <TabsContent value="weather" className="mt-4">
-            <div className="relative avionics-display rounded-none">
-              <ScrollArea className="h-[400px] w-full">
-                <div className="bg-black text-orange-400 p-6 avionics-display min-h-full"
-                  style={{
-                    fontFamily: 'Monaco, "Courier New", monospace',
-                    textShadow: '0 0 8px rgba(255, 165, 0, 0.6)',
-                    letterSpacing: '0.5px',
-                    lineHeight: '1.6'
-                  }}>
-                  <pre className="whitespace-pre-wrap font-mono">{getDisplayContent('weather')}</pre>
-                </div>
-              </ScrollArea>
-            </div>
-          </TabsContent>
           
           <TabsContent value="decoded" className="mt-4">
             <div className="relative avionics-display rounded-none">
@@ -286,10 +270,10 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
               </div>
             </div>
           </TabsContent>
-
-          <TabsContent value="airport" className="mt-4">
+          
+          <TabsContent value="raw" className="mt-4">
             <div className="relative avionics-display rounded-none">
-              <ScrollArea className="h-[400px] w-full [&>[data-radix-scroll-area-viewport]]:scrollbar-thin [&>[data-radix-scroll-area-viewport]]:scrollbar-track-black [&>[data-radix-scroll-area-viewport]]:scrollbar-thumb-orange-400/50 [&>[data-radix-scroll-area-viewport]]:scrollbar-thumb-rounded">
+              <ScrollArea className="h-[400px] w-full">
                 <div className="bg-black text-orange-400 p-6 avionics-display min-h-full"
                   style={{
                     fontFamily: 'Monaco, "Courier New", monospace',
@@ -297,7 +281,7 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
                     letterSpacing: '0.5px',
                     lineHeight: '1.6'
                   }}>
-                  <pre className="whitespace-pre-wrap font-mono">{getDisplayContent('airport')}</pre>
+                  <pre className="whitespace-pre-wrap font-mono">{getDisplayContent('weather')}</pre>
                 </div>
               </ScrollArea>
             </div>
@@ -314,6 +298,22 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
                     lineHeight: '1.6'
                   }}>
                   <pre className="whitespace-pre-wrap font-mono">{getDisplayContent('notam')}</pre>
+                </div>
+              </ScrollArea>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="airport" className="mt-4">
+            <div className="relative avionics-display rounded-none">
+              <ScrollArea className="h-[400px] w-full [&>[data-radix-scroll-area-viewport]]:scrollbar-thin [&>[data-radix-scroll-area-viewport]]:scrollbar-track-black [&>[data-radix-scroll-area-viewport]]:scrollbar-thumb-orange-400/50 [&>[data-radix-scroll-area-viewport]]:scrollbar-thumb-rounded">
+                <div className="bg-black text-orange-400 p-6 avionics-display min-h-full"
+                  style={{
+                    fontFamily: 'Monaco, "Courier New", monospace',
+                    textShadow: '0 0 8px rgba(255, 165, 0, 0.6)',
+                    letterSpacing: '0.5px',
+                    lineHeight: '1.6'
+                  }}>
+                  <pre className="whitespace-pre-wrap font-mono">{getDisplayContent('airport')}</pre>
                 </div>
               </ScrollArea>
             </div>
