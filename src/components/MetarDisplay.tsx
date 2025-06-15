@@ -1,4 +1,3 @@
-
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CloudRain, AlertTriangle, Clock, CloudLightning, Info, Plane, Bell, AlertCircle, Settings, FileText } from "lucide-react";
@@ -9,7 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { WeatherData } from "@/hooks/useMetarData";
 import RetroRadar from "./RetroRadar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface MetarDisplayProps {
   weatherData?: WeatherData | null;
@@ -23,7 +22,7 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
   const [decodedHtml, setDecodedHtml] = useState<string>("");
   const [isLoadingDecoded, setIsLoadingDecoded] = useState(false);
   const [decodedError, setDecodedError] = useState<string | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("weather");
 
   // Use new weatherData if available, fallback to old metarData for backward compatibility
   const currentWeatherData = weatherData || (metarData ? { metar: metarData, taf: "", airport: "", notam: "" } : null);
@@ -66,7 +65,6 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
       }
       
       setDecodedHtml(data.contents);
-      setIsDialogOpen(true);
       console.log(`Successfully fetched decoded weather for ${icaoCode}`);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to fetch decoded weather";
@@ -76,6 +74,13 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
       setIsLoadingDecoded(false);
     }
   };
+
+  // Auto-fetch decoded weather when ICAO code changes or when decoded tab becomes active
+  useEffect(() => {
+    if (icaoCode && activeTab === "decoded") {
+      fetchDecodedWeather();
+    }
+  }, [icaoCode, activeTab]);
 
   const formatNotamDisplay = (notamText: string) => {
     if (!notamText || notamText.includes('No current NOTAMs')) {
@@ -179,7 +184,7 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
       )}
 
       <div className="relative">
-        <Tabs defaultValue="weather" className="w-full">
+        <Tabs defaultValue="weather" className="w-full" onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-4 bg-black/40 backdrop-blur-sm">
             <TabsTrigger value="weather" className="flex items-center gap-2 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-200">
               <CloudRain className="w-4 h-4" />
@@ -245,16 +250,12 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
                   <>
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-lg font-bold">Decoded Weather - {icaoCode}</h3>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={fetchDecodedWeather}
-                        disabled={isLoadingDecoded}
-                        className="bg-white/10 border-white/20 text-white hover:bg-white/20"
-                      >
-                        <Info className="w-4 h-4 mr-2" />
-                        {isLoadingDecoded ? "Loading..." : "Fetch Decoded"}
-                      </Button>
+                      {isLoadingDecoded && (
+                        <div className="flex items-center space-x-2">
+                          <div className="w-4 h-4 border-2 border-orange-400 border-t-transparent rounded-full animate-spin"></div>
+                          <span className="text-sm">Loading...</span>
+                        </div>
+                      )}
                     </div>
                     
                     <ScrollArea className="flex-1">
@@ -270,15 +271,15 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
                           className="text-orange-400 font-mono text-sm"
                           dangerouslySetInnerHTML={{ __html: decodedHtml }}
                         />
-                      ) : (
+                      ) : !isLoadingDecoded ? (
                         <div className="flex items-center justify-center h-full">
                           <pre className="whitespace-pre-wrap font-mono text-center">
-                            Click "Fetch Decoded" to get human-readable weather explanations
+                            Decoded weather will appear here automatically
                             
-                            This will show detailed interpretations of METAR and TAF codes
+                            This shows detailed interpretations of METAR and TAF codes
                           </pre>
                         </div>
-                      )}
+                      ) : null}
                     </ScrollArea>
                   </>
                 )}
