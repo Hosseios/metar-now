@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import MetarSearch from "@/components/MetarSearch";
 import FavoritesManager from "@/components/FavoritesManager";
@@ -5,15 +6,20 @@ import RecentSearches from "@/components/RecentSearches";
 import BottomNavigation from "@/components/BottomNavigation";
 import { useMetarData } from "@/hooks/useMetarData";
 import { useAuth } from "@/contexts/AuthContext";
-import { CloudRain, CloudLightning, Plane, Bell } from "lucide-react";
+import { CloudRain, CloudLightning, Plane, Bell, FileText } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertTriangle } from "lucide-react";
 
 const MobileIndex = () => {
   const [icaoCode, setIcaoCode] = useState("");
   const [activeTab, setActiveTab] = useState("search");
-  const [weatherTab, setWeatherTab] = useState("metar");
+  const [weatherTab, setWeatherTab] = useState("decoded");
+  const [decodedHtml, setDecodedHtml] = useState<string>("");
+  const [isLoadingDecoded, setIsLoadingDecoded] = useState(false);
+  const [decodedError, setDecodedError] = useState<string | null>(null);
   const {
     weatherData,
     isLoading,
@@ -43,8 +49,49 @@ const MobileIndex = () => {
   const hasTafData = weatherData ? isDataAvailable(weatherData.taf) : false;
   const hasAirportData = weatherData ? isDataAvailable(weatherData.airport) : false;
   const hasNotamData = weatherData ? isDataAvailable(weatherData.notam) : false;
+  const hasWeatherData = hasMetarData || hasTafData;
 
-  const getDisplayContent = (type: 'metar' | 'taf' | 'airport' | 'notam') => {
+  const fetchDecodedWeather = async () => {
+    if (!icaoCode) return;
+    
+    setIsLoadingDecoded(true);
+    setDecodedError(null);
+    
+    try {
+      const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(`https://aviationweather.gov/api/data/taf?ids=${icaoCode}&format=html&metar=true`)}`;
+      
+      console.log(`Fetching decoded weather for ${icaoCode} via CORS proxy`);
+      const response = await fetch(proxyUrl);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch decoded weather: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      if (data.status.http_code !== 200) {
+        throw new Error(`Aviation Weather API returned error: ${data.status.http_code}`);
+      }
+      
+      setDecodedHtml(data.contents);
+      console.log(`Successfully fetched decoded weather for ${icaoCode}`);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to fetch decoded weather";
+      setDecodedError(errorMessage);
+      console.error('Error fetching decoded weather:', errorMessage);
+    } finally {
+      setIsLoadingDecoded(false);
+    }
+  };
+
+  // Auto-fetch decoded weather when ICAO code changes or when decoded tab becomes active
+  React.useEffect(() => {
+    if (icaoCode && weatherTab === "decoded") {
+      fetchDecodedWeather();
+    }
+  }, [icaoCode, weatherTab]);
+
+  const getDisplayContent = (type: 'raw' | 'airport' | 'notam') => {
     if (isLoading) {
       return `Fetching ${type.toUpperCase()} data for ${icaoCode}...\n\nPlease wait while we retrieve the latest information.`;
     }
@@ -53,15 +100,32 @@ const MobileIndex = () => {
       return `Unable to connect to weather services for ${icaoCode}\n\nPlease check your internet connection and try again.`;
     }
     
-    if (weatherData && weatherData[type]) {
-      const data = weatherData[type];
+    if (type === 'raw' && weatherData) {
+      const metarContent = weatherData.metar || '';
+      const tafContent = weatherData.taf || '';
+      
+      let combinedContent = '';
+      
+      if (isDataAvailable(metarContent)) {
+        combinedContent += `=== CURRENT WEATHER (METAR) ===\n\n${metarContent}\n\n`;
+      } else {
+        combinedContent += `=== CURRENT WEATHER (METAR) ===\n\nNo current weather report available for ${icaoCode}\n\nThis airport may not provide real-time weather updates, or the data is temporarily unavailable.\n\n`;
+      }
+      
+      if (isDataAvailable(tafContent)) {
+        combinedContent += `=== FORECAST (TAF) ===\n\n${tafContent}`;
+      } else {
+        combinedContent += `=== FORECAST (TAF) ===\n\nNo weather forecast available for ${icaoCode}\n\nThis airport may not issue forecasts, or the forecast data is temporarily unavailable.`;
+      }
+      
+      return combinedContent;
+    }
+    
+    if (weatherData && weatherData[type === 'raw' ? 'metar' : type]) {
+      const data = weatherData[type === 'raw' ? 'metar' : type];
       
       if (data.includes('Error fetching') || (data.includes('No ') && (data.includes(' data available') || data.includes('current NOTAMs')))) {
-        if (type === 'metar') {
-          return `No current weather report available for ${icaoCode}\n\nThis airport may not provide real-time weather updates, or the data is temporarily unavailable.`;
-        } else if (type === 'taf') {
-          return `No weather forecast available for ${icaoCode}\n\nThis airport may not issue forecasts, or the forecast data is temporarily unavailable.`;
-        } else if (type === 'airport') {
+        if (type === 'airport') {
           return `No airport information available for ${icaoCode}\n\nThe airport database may not have details for this facility, or the information is temporarily unavailable.`;
         } else if (type === 'notam') {
           return `No current NOTAMs for ${icaoCode}\n\nThis means there are no active Notices to Airmen for this airport at this time.`;
@@ -71,10 +135,8 @@ const MobileIndex = () => {
       return data;
     }
     
-    if (type === 'metar') {
-      return "Enter an ICAO code to view real-time weather conditions\n\nMETAR provides current weather observations from airports worldwide.";
-    } else if (type === 'taf') {
-      return "Enter an ICAO code to view weather forecasts\n\nTAF provides detailed weather forecasts for airports.";
+    if (type === 'raw') {
+      return "Enter an ICAO code to view weather conditions and forecasts\n\nMETAR provides current weather observations and TAF provides detailed forecasts for airports worldwide.";
     } else if (type === 'airport') {
       return "Enter an ICAO code to view airport information\n\nAirport data includes facility details and operational status.";
     } else if (type === 'notam') {
@@ -116,32 +178,19 @@ const MobileIndex = () => {
                   <Tabs value={weatherTab} onValueChange={setWeatherTab} className="w-full">
                     <TabsList className="grid w-full grid-cols-4 bg-slate-900/60 rounded-none h-12">
                       <TabsTrigger 
-                        value="metar" 
+                        value="decoded" 
+                        className="flex items-center gap-1 text-xs data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-200"
+                      >
+                        <FileText className="w-4 h-4" />
+                        Decoded
+                      </TabsTrigger>
+                      <TabsTrigger 
+                        value="raw" 
                         className="flex items-center gap-1 text-xs data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-200 relative"
                       >
                         <CloudRain className="w-4 h-4" />
-                        METAR
-                        {hasMetarData && (
-                          <div className="absolute -top-1 -right-1 w-2 h-2 bg-orange-400 rounded-full shadow-sm shadow-orange-400/50"></div>
-                        )}
-                      </TabsTrigger>
-                      <TabsTrigger 
-                        value="taf" 
-                        className="flex items-center gap-1 text-xs data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-200 relative"
-                      >
-                        <CloudLightning className="w-4 h-4" />
-                        TAF
-                        {hasTafData && (
-                          <div className="absolute -top-1 -right-1 w-2 h-2 bg-orange-400 rounded-full shadow-sm shadow-orange-400/50"></div>
-                        )}
-                      </TabsTrigger>
-                      <TabsTrigger 
-                        value="airport" 
-                        className="flex items-center gap-1 text-xs data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-200 relative"
-                      >
-                        <Plane className="w-4 h-4" />
-                        Airport
-                        {hasAirportData && (
+                        Raw
+                        {hasWeatherData && (
                           <div className="absolute -top-1 -right-1 w-2 h-2 bg-orange-400 rounded-full shadow-sm shadow-orange-400/50"></div>
                         )}
                       </TabsTrigger>
@@ -155,21 +204,32 @@ const MobileIndex = () => {
                           <div className="absolute -top-1 -right-1 w-2 h-2 bg-orange-400 rounded-full shadow-sm shadow-orange-400/50"></div>
                         )}
                       </TabsTrigger>
+                      <TabsTrigger 
+                        value="airport" 
+                        className="flex items-center gap-1 text-xs data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-200 relative"
+                      >
+                        <Plane className="w-4 h-4" />
+                        Airport
+                        {hasAirportData && (
+                          <div className="absolute -top-1 -right-1 w-2 h-2 bg-orange-400 rounded-full shadow-sm shadow-orange-400/50"></div>
+                        )}
+                      </TabsTrigger>
                     </TabsList>
                     
-                    <TabsContent value="metar" className="mt-0 border-0 p-0">
+                    <TabsContent value="decoded" className="mt-0 border-0 p-0">
                       <div className="p-4">
                         <div className="flex items-center gap-2 mb-3">
-                          <CloudRain className="w-5 h-5 text-cyan-400" />
-                          <h3 className="text-lg font-bold text-white">Current Weather (METAR)</h3>
-                          {hasMetarData && (
-                            <Badge variant="outline" className="text-xs bg-orange-400/20 border-orange-400/50 text-orange-200">
-                              Live Data
-                            </Badge>
+                          <FileText className="w-5 h-5 text-cyan-400" />
+                          <h3 className="text-lg font-bold text-white">Decoded Weather</h3>
+                          {isLoadingDecoded && (
+                            <div className="flex items-center space-x-2">
+                              <div className="w-4 h-4 border-2 border-orange-400 border-t-transparent rounded-full animate-spin"></div>
+                              <span className="text-sm text-orange-300">Loading...</span>
+                            </div>
                           )}
                         </div>
-                        <ScrollArea className="h-[400px] w-full">
-                          <div className="bg-black/90 text-orange-400 p-4 rounded-xl avionics-display"
+                        <ScrollArea className="h-[400px] w-full [&>[data-radix-scroll-area-viewport]]:scrollbar-thin [&>[data-radix-scroll-area-viewport]]:scrollbar-track-black [&>[data-radix-scroll-area-viewport]]:scrollbar-thumb-orange-400/50 [&>[data-radix-scroll-area-viewport]]:scrollbar-thumb-rounded">
+                          <div className="bg-black/90 text-orange-400 p-4 rounded-xl avionics-display h-full min-h-[400px] flex flex-col"
                             style={{
                               fontFamily: 'Monaco, "Courier New", monospace',
                               textShadow: '0 0 8px rgba(255, 165, 0, 0.6)',
@@ -177,25 +237,53 @@ const MobileIndex = () => {
                               lineHeight: '1.4',
                               fontSize: '13px'
                             }}>
-                            <pre className="whitespace-pre-wrap break-words overflow-wrap-anywhere">{getDisplayContent('metar')}</pre>
+                            {!icaoCode ? (
+                              <div className="flex-1 flex items-center justify-center">
+                                <pre className="whitespace-pre-wrap font-mono text-center">
+                                  Enter an ICAO code above to view decoded weather information
+                                  
+                                  Decoded weather provides human-readable explanations of METAR and TAF codes
+                                </pre>
+                              </div>
+                            ) : decodedError ? (
+                              <Alert className="bg-red-500/20 border-red-400/50 text-red-100">
+                                <AlertTriangle className="h-4 w-4" />
+                                <AlertDescription className="text-red-100">
+                                  {decodedError}
+                                </AlertDescription>
+                              </Alert>
+                            ) : decodedHtml ? (
+                              <div 
+                                className="text-orange-400 font-mono text-sm flex-1"
+                                dangerouslySetInnerHTML={{ __html: decodedHtml }}
+                              />
+                            ) : !isLoadingDecoded ? (
+                              <div className="flex-1 flex items-center justify-center">
+                                <pre className="whitespace-pre-wrap font-mono text-center">
+                                  Decoded weather will appear here automatically
+                                  
+                                  This shows detailed interpretations of METAR and TAF codes
+                                </pre>
+                              </div>
+                            ) : null}
                           </div>
                         </ScrollArea>
                       </div>
                     </TabsContent>
 
-                    <TabsContent value="taf" className="mt-0 border-0 p-0">
+                    <TabsContent value="raw" className="mt-0 border-0 p-0">
                       <div className="p-4">
                         <div className="flex items-center gap-2 mb-3">
-                          <CloudLightning className="w-5 h-5 text-cyan-400" />
-                          <h3 className="text-lg font-bold text-white">Forecast (TAF)</h3>
-                          {hasTafData && (
+                          <CloudRain className="w-5 h-5 text-cyan-400" />
+                          <h3 className="text-lg font-bold text-white">Raw Weather Data</h3>
+                          {hasWeatherData && (
                             <Badge variant="outline" className="text-xs bg-orange-400/20 border-orange-400/50 text-orange-200">
                               Live Data
                             </Badge>
                           )}
                         </div>
-                        <ScrollArea className="h-[400px] w-full">
-                          <div className="bg-black/90 text-orange-400 p-4 rounded-xl avionics-display"
+                        <ScrollArea className="h-[400px] w-full [&>[data-radix-scroll-area-viewport]]:scrollbar-thin [&>[data-radix-scroll-area-viewport]]:scrollbar-track-black [&>[data-radix-scroll-area-viewport]]:scrollbar-thumb-orange-400/50 [&>[data-radix-scroll-area-viewport]]:scrollbar-thumb-rounded">
+                          <div className="bg-black/90 text-orange-400 p-4 rounded-xl avionics-display h-full min-h-[400px] flex flex-col"
                             style={{
                               fontFamily: 'Monaco, "Courier New", monospace',
                               textShadow: '0 0 8px rgba(255, 165, 0, 0.6)',
@@ -203,7 +291,7 @@ const MobileIndex = () => {
                               lineHeight: '1.4',
                               fontSize: '13px'
                             }}>
-                            <pre className="whitespace-pre-wrap break-words overflow-wrap-anywhere">{getDisplayContent('taf')}</pre>
+                            <pre className="whitespace-pre-wrap break-words overflow-wrap-anywhere flex-1">{getDisplayContent('raw')}</pre>
                           </div>
                         </ScrollArea>
                       </div>
@@ -220,8 +308,8 @@ const MobileIndex = () => {
                             </Badge>
                           )}
                         </div>
-                        <ScrollArea className="h-[400px] w-full">
-                          <div className="bg-black/90 text-orange-400 p-4 rounded-xl avionics-display"
+                        <ScrollArea className="h-[400px] w-full [&>[data-radix-scroll-area-viewport]]:scrollbar-thin [&>[data-radix-scroll-area-viewport]]:scrollbar-track-black [&>[data-radix-scroll-area-viewport]]:scrollbar-thumb-orange-400/50 [&>[data-radix-scroll-area-viewport]]:scrollbar-thumb-rounded">
+                          <div className="bg-black/90 text-orange-400 p-4 rounded-xl avionics-display h-full min-h-[400px] flex flex-col"
                             style={{
                               fontFamily: 'Monaco, "Courier New", monospace',
                               textShadow: '0 0 8px rgba(255, 165, 0, 0.6)',
@@ -229,7 +317,7 @@ const MobileIndex = () => {
                               lineHeight: '1.4',
                               fontSize: '13px'
                             }}>
-                            <pre className="whitespace-pre-wrap break-words overflow-wrap-anywhere">{getDisplayContent('airport')}</pre>
+                            <pre className="whitespace-pre-wrap break-words overflow-wrap-anywhere flex-1">{getDisplayContent('airport')}</pre>
                           </div>
                         </ScrollArea>
                       </div>
@@ -246,8 +334,8 @@ const MobileIndex = () => {
                             </Badge>
                           )}
                         </div>
-                        <ScrollArea className="h-[400px] w-full">
-                          <div className="bg-black/90 text-orange-400 p-4 rounded-xl avionics-display"
+                        <ScrollArea className="h-[400px] w-full [&>[data-radix-scroll-area-viewport]]:scrollbar-thin [&>[data-radix-scroll-area-viewport]]:scrollbar-track-black [&>[data-radix-scroll-area-viewport]]:scrollbar-thumb-orange-400/50 [&>[data-radix-scroll-area-viewport]]:scrollbar-thumb-rounded">
+                          <div className="bg-black/90 text-orange-400 p-4 rounded-xl avionics-display h-full min-h-[400px] flex flex-col"
                             style={{
                               fontFamily: 'Monaco, "Courier New", monospace',
                               textShadow: '0 0 8px rgba(255, 165, 0, 0.6)',
@@ -255,7 +343,7 @@ const MobileIndex = () => {
                               lineHeight: '1.4',
                               fontSize: '13px'
                             }}>
-                            <pre className="whitespace-pre-wrap break-words overflow-wrap-anywhere">{getDisplayContent('notam')}</pre>
+                            <pre className="whitespace-pre-wrap break-words overflow-wrap-anywhere flex-1">{getDisplayContent('notam')}</pre>
                           </div>
                         </ScrollArea>
                       </div>
