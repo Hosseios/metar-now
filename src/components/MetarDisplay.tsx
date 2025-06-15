@@ -1,10 +1,12 @@
+
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CloudRain, AlertTriangle, Clock, CloudLightning, Info, Plane, Bell } from "lucide-react";
+import { CloudRain, AlertTriangle, Clock, CloudLightning, Info, Plane, Bell, AlertCircle, Settings, FileText } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
 import { WeatherData } from "@/hooks/useMetarData";
 import RetroRadar from "./RetroRadar";
 import { useState } from "react";
@@ -74,6 +76,20 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
     }
   };
 
+  const formatNotamDisplay = (notamText: string) => {
+    if (!notamText || notamText.includes('No current NOTAMs')) {
+      return notamText;
+    }
+
+    // Replace text markers with professional badges and icons
+    return notamText
+      .replace(/\[CRITICAL\]/g, '🔴 CRITICAL')
+      .replace(/\[OPERATIONAL\]/g, '🟡 OPERATIONAL') 
+      .replace(/\[INFORMATIONAL\]/g, '🔵 INFORMATIONAL')
+      .replace(/\[TIME\]/g, '⏰')
+      .replace(/\[CREATED\]/g, '📅');
+  };
+
   const getDisplayContent = (type: 'metar' | 'taf' | 'airport' | 'notam') => {
     if (isLoading) {
       return `Fetching ${type.toUpperCase()} data for ${icaoCode}...\n\nPlease wait while we retrieve the latest information.`;
@@ -97,6 +113,11 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
         } else if (type === 'notam') {
           return `No current NOTAMs for ${icaoCode}\n\nThis means there are no active Notices to Airmen for this airport at this time.\n\nNOTAMs provide important information about airport conditions, closures, and operational changes.`;
         }
+      }
+      
+      // Format NOTAM display with professional styling
+      if (type === 'notam') {
+        return formatNotamDisplay(data);
       }
       
       // Return actual data if available

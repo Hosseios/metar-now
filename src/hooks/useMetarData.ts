@@ -97,7 +97,8 @@ export const useMetarData = () => {
       upperText.includes('NAVIGATION') ||
       upperText.includes('APCH') ||
       upperText.includes('DEP') ||
-      type === 'H' || type === 'J' // Hazards and restrictions
+      upperText.includes('PROCEDURAL') ||
+      type === 'H' || type === 'J' || type === 'V' // Hazards, restrictions, and procedures
     ) {
       return 'operational';
     }
@@ -226,32 +227,31 @@ export const useMetarData = () => {
     let formattedOutput = `NOTAMs for ${icaoCode} (${notams.length} active NOTAMs found)\n`;
     formattedOutput += `${'═'.repeat(60)}\n\n`;
 
-    // Add category summary
+    // Add category summary with professional icons
     if (notamsByCategory.critical.length > 0) {
-      formattedOutput += `🔴 CRITICAL: ${notamsByCategory.critical.length} NOTAMs (Safety-related)\n`;
+      formattedOutput += `[CRITICAL] ${notamsByCategory.critical.length} NOTAMs (Safety-related)\n`;
     }
     if (notamsByCategory.operational.length > 0) {
-      formattedOutput += `🟡 OPERATIONAL: ${notamsByCategory.operational.length} NOTAMs (Affects operations)\n`;
+      formattedOutput += `[OPERATIONAL] ${notamsByCategory.operational.length} NOTAMs (Affects operations)\n`;
     }
     if (notamsByCategory.informational.length > 0) {
-      formattedOutput += `🔵 INFORMATIONAL: ${notamsByCategory.informational.length} NOTAMs (General info)\n`;
+      formattedOutput += `[INFORMATIONAL] ${notamsByCategory.informational.length} NOTAMs (General info)\n`;
     }
     formattedOutput += '\n';
 
     // Display NOTAMs by category
     const categories = [
-      { name: 'CRITICAL', notams: notamsByCategory.critical, icon: '🔴' },
-      { name: 'OPERATIONAL', notams: notamsByCategory.operational, icon: '🟡' },
-      { name: 'INFORMATIONAL', notams: notamsByCategory.informational, icon: '🔵' }
+      { name: 'CRITICAL', notams: notamsByCategory.critical, prefix: '[CRITICAL]' },
+      { name: 'OPERATIONAL', notams: notamsByCategory.operational, prefix: '[OPERATIONAL]' },
+      { name: 'INFORMATIONAL', notams: notamsByCategory.informational, prefix: '[INFORMATIONAL]' }
     ];
 
     categories.forEach(category => {
       if (category.notams.length > 0) {
-        formattedOutput += `${category.icon} ${category.name} NOTAMs\n`;
+        formattedOutput += `${category.prefix} NOTAMs\n`;
         formattedOutput += `${'─'.repeat(40)}\n\n`;
 
         category.notams.forEach((notam, index) => {
-          const categoryIndex = categories.findIndex(c => c.notams.includes(notam));
           const overallIndex = notams.findIndex(n => n.id === notam.id) + 1;
           
           formattedOutput += `NOTAM ${overallIndex}: ${notam.id} [${notam.type}-TYPE]\n`;
@@ -260,16 +260,16 @@ export const useMetarData = () => {
           // Format the main text with better line breaks
           const formattedText = notam.text
             .replace(/\. (?=[A-Z])/g, '.\n• ')
-            .replace(/(\d{2} \w{3} \d{2}:\d{2} \d{4} UNTIL \d{2} \w{3} \d{2}:\d{2} \d{4})/g, '\n⏰ $1')
-            .replace(/(CREATED: \d{2} \w{3} \d{2}:\d{2} \d{4})/g, '\n📅 $1');
+            .replace(/(\d{2} \w{3} \d{2}:\d{2} \d{4} UNTIL \d{2} \w{3} \d{2}:\d{2} \d{4})/g, '\n[TIME] $1')
+            .replace(/(CREATED: \d{2} \w{3} \d{2}:\d{2} \d{4})/g, '\n[CREATED] $1');
 
           formattedOutput += `${formattedText}\n\n`;
           
           if (notam.effectiveDate && notam.expiryDate) {
-            formattedOutput += `⏰ Effective: ${notam.effectiveDate} - ${notam.expiryDate}\n`;
+            formattedOutput += `[TIME] Effective: ${notam.effectiveDate} - ${notam.expiryDate}\n`;
           }
           if (notam.createdDate) {
-            formattedOutput += `📅 Created: ${notam.createdDate}\n`;
+            formattedOutput += `[CREATED] Created: ${notam.createdDate}\n`;
           }
           
           formattedOutput += '\n';
