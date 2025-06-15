@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import React, { useState } from "react";
 import MetarSearch from "@/components/MetarSearch";
 import FavoritesManager from "@/components/FavoritesManager";
 import RecentSearches from "@/components/RecentSearches";
