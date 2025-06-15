@@ -1,7 +1,9 @@
 
 import { useState, useEffect } from "react";
-import { Clock, X, Search } from "lucide-react";
+import { Clock, X, Search, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useSupabaseFavorites } from "@/hooks/useSupabaseFavorites";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface RecentSearchesProps {
   onSelectRecent: (icao: string) => void;
@@ -9,6 +11,8 @@ interface RecentSearchesProps {
 
 const RecentSearches = ({ onSelectRecent }: RecentSearchesProps) => {
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const { addFavorite, favorites, loading: favLoading } = useSupabaseFavorites();
+  const { user } = useAuth();
 
   useEffect(() => {
     const stored = localStorage.getItem('recentSearches');
@@ -32,6 +36,13 @@ const RecentSearches = ({ onSelectRecent }: RecentSearchesProps) => {
   const clearAllRecent = () => {
     setRecentSearches([]);
     localStorage.removeItem('recentSearches');
+  };
+
+  const handleAddFavorite = (icao: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (user && !favLoading && !favorites.includes(icao)) {
+      addFavorite(icao);
+    }
   };
 
   // Expose addRecentSearch to parent component
@@ -70,28 +81,51 @@ const RecentSearches = ({ onSelectRecent }: RecentSearchesProps) => {
           <p className="text-slate-400 text-sm mt-2">Your recent ICAO code searches will appear here</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-3">
-          {recentSearches.map((icao) => (
-            <div
-              key={icao}
-              className="bg-white/10 backdrop-blur-xl rounded-xl border border-white/20 p-4 group hover:bg-white/20 transition-all duration-200"
-            >
-              <div className="flex items-center justify-between">
-                <button
-                  onClick={() => onSelectRecent(icao)}
-                  className="flex-1 text-left touch-manipulation active:scale-95 transition-transform"
+        <div className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 overflow-hidden">
+          <div className="divide-y divide-white/10">
+            {recentSearches.map((icao) => {
+              const isAlreadyFavorite = favorites.includes(icao);
+              return (
+                <div
+                  key={icao}
+                  className="flex items-center justify-between p-4 hover:bg-white/10 transition-all duration-200 group"
                 >
-                  <span className="text-white font-mono text-lg font-bold">{icao}</span>
-                </button>
-                <button
-                  onClick={() => removeRecentSearch(icao)}
-                  className="p-1 rounded-lg hover:bg-red-500/20 text-slate-400 hover:text-red-300 transition-colors touch-manipulation"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          ))}
+                  <button
+                    onClick={() => onSelectRecent(icao)}
+                    className="flex-1 text-left touch-manipulation active:scale-95 transition-transform"
+                  >
+                    <span className="text-white font-mono text-lg font-bold">{icao}</span>
+                  </button>
+                  
+                  <div className="flex items-center gap-2">
+                    {user && (
+                      <button
+                        onClick={(e) => handleAddFavorite(icao, e)}
+                        disabled={isAlreadyFavorite || favLoading}
+                        className={`p-1.5 rounded-lg transition-all duration-200 touch-manipulation
+                          ${isAlreadyFavorite
+                            ? "cursor-not-allowed opacity-50 bg-green-500/20 text-green-400"
+                            : "hover:bg-blue-500/20 text-blue-300 hover:text-blue-200"
+                          }`}
+                        title={isAlreadyFavorite ? "Already in favorites" : "Add to favorites"}
+                      >
+                        <Plus 
+                          className={`w-4 h-4 transition-transform duration-200 ${isAlreadyFavorite ? "rotate-45" : ""}`}
+                          strokeWidth={2}
+                        />
+                      </button>
+                    )}
+                    <button
+                      onClick={() => removeRecentSearch(icao)}
+                      className="p-1.5 rounded-lg hover:bg-red-500/20 text-slate-400 hover:text-red-300 transition-colors touch-manipulation"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>
