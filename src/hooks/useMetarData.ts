@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { WeatherData } from "@/types/weather";
+import { WeatherData, NotamItem } from "@/types/weather";
 import { fetchSingleDataSource, fetchNotamData } from "@/utils/weatherDataFetcher";
 
-export { WeatherData, NotamItem } from "@/types/weather";
+export type { WeatherData, NotamItem } from "@/types/weather";
 
 export const useMetarData = () => {
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
