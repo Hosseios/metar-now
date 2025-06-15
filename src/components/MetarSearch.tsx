@@ -19,14 +19,20 @@ const MetarSearch = ({ onSearch, isLoading }: MetarSearchProps) => {
   const [lastInput, setLastInput] = useState("");
 
   // Respond to autocomplete/select
-  const handleAirportSelect = (input: string) => {
+  const handleAirportSelect = async (input: string) => {
     setLastInput(input);
     // Try to resolve code (handles ICAO or IATA)
     let resolvedICAO = input.toUpperCase();
-    const airport = findAirportByCode(input);
-    if (airport && airport.icao_code) {
-      resolvedICAO = airport.icao_code.toUpperCase();
+    
+    try {
+      const airport = await findAirportByCode(input);
+      if (airport && airport.icao_code) {
+        resolvedICAO = airport.icao_code.toUpperCase();
+      }
+    } catch (error) {
+      console.error('Failed to resolve airport code:', error);
     }
+    
     if (resolvedICAO.length === 4) {
       onSearch(resolvedICAO);
     }

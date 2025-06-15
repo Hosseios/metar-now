@@ -20,26 +20,38 @@ const AirportAutocomplete = ({ onSelect, isLoading }: AirportAutocompleteProps) 
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [searching, setSearching] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setQuery(val);
     console.log(`Search query changed to: "${val}"`);
 
     if (val.length >= 2) {
       console.log(`Triggering search for: "${val}"`);
-      const results = searchAirports(val)
-        .filter(a => a.icao_code)
-        .map(a => ({
-          display: `${a.name} (${a.iata_code || "—"}, ${a.icao_code}) - ${a.municipality}, ${a.iso_country}`,
-          icao: a.icao_code,
-          iata: a.iata_code,
-        }));
+      setSearching(true);
       
-      console.log(`Search returned ${results.length} results:`, results);
-      setSuggestions(results);
-      setShowDropdown(true);
+      try {
+        const results = await searchAirports(val);
+        const formattedResults = results
+          .filter(a => a.icao_code)
+          .map(a => ({
+            display: `${a.name} (${a.iata_code || "—"}, ${a.icao_code}) - ${a.municipality}, ${a.iso_country}`,
+            icao: a.icao_code,
+            iata: a.iata_code,
+          }));
+        
+        console.log(`Search returned ${formattedResults.length} results:`, formattedResults);
+        setSuggestions(formattedResults);
+        setShowDropdown(true);
+      } catch (error) {
+        console.error('Search failed:', error);
+        setSuggestions([]);
+        setShowDropdown(false);
+      } finally {
+        setSearching(false);
+      }
     } else {
       setSuggestions([]);
       setShowDropdown(false);
@@ -73,14 +85,14 @@ const AirportAutocomplete = ({ onSelect, isLoading }: AirportAutocompleteProps) 
         placeholder="Search by city, airport, IATA or ICAO (e.g. JFK, New York, KJFK)"
         autoComplete="off"
         className="pr-12"
-        disabled={isLoading}
+        disabled={isLoading || searching}
         aria-autocomplete="list"
       />
       <Button
         type="button"
         className="absolute right-1 top-1 bottom-1 px-3 bg-blue-600 hover:bg-blue-700 text-white rounded-md"
-        disabled={!query || isLoading}
-        onClick={() => {
+        disabled={!query || isLoading || searching}
+        onClick={async () => {
           if (suggestions.length > 0) {
             console.log(`Search button clicked, selecting first result: ${suggestions[0].icao}`);
             handleSelect(suggestions[0].icao);
@@ -106,9 +118,14 @@ const AirportAutocomplete = ({ onSelect, isLoading }: AirportAutocompleteProps) 
           ))}
         </div>
       )}
-      {showDropdown && suggestions.length === 0 && query.length >= 2 && (
+      {showDropdown && suggestions.length === 0 && query.length >= 2 && !searching && (
         <div className="absolute z-20 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg p-2 text-gray-600 text-sm">
           No results found for "{query}".
+        </div>
+      )}
+      {searching && (
+        <div className="absolute z-20 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg p-2 text-gray-600 text-sm">
+          Searching...
         </div>
       )}
     </div>
