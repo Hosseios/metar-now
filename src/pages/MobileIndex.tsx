@@ -1,4 +1,5 @@
-import { useState, useCallback } from "react";
+
+import { useState } from "react";
 import MetarSearch from "@/components/MetarSearch";
 import FavoritesManager from "@/components/FavoritesManager";
 import RecentSearches from "@/components/RecentSearches";
@@ -9,8 +10,6 @@ import { CloudRain, CloudLightning, Plane, Bell } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
-import useEmblaCarousel from "embla-carousel-react";
 
 const MobileIndex = () => {
   const [icaoCode, setIcaoCode] = useState("");
@@ -23,34 +22,6 @@ const MobileIndex = () => {
     fetchWeatherData
   } = useMetarData();
   const { loading: authLoading } = useAuth();
-
-  const weatherTabs = ["metar", "taf", "airport", "notam"];
-  const [emblaRef, emblaApi] = useEmblaCarousel({ align: "start", skipSnaps: false });
-
-  // Sync tab highlight with scroll position
-  const onSelect = useCallback(() => {
-    if (!emblaApi) return;
-    const selectedIndex = emblaApi.selectedScrollSnap();
-    setWeatherTab(weatherTabs[selectedIndex]);
-  }, [emblaApi, weatherTabs]);
-
-  // Sync tab button -> carousel scroll
-  const handleTabChange = useCallback((value: string) => {
-    setWeatherTab(value);
-    const index = weatherTabs.indexOf(value);
-    if (emblaApi && index !== -1) {
-      emblaApi.scrollTo(index);
-    }
-  }, [emblaApi, weatherTabs]);
-
-  // Listen to carousel selection change and sync active tab
-  useState(() => {
-    if (!emblaApi) return;
-    emblaApi.on("select", onSelect);
-    // On mount, sync the tab highlight to current position
-    onSelect();
-    return () => emblaApi.off("select", onSelect);
-  });
 
   const handleSearch = (code: string) => {
     setIcaoCode(code);
@@ -112,57 +83,6 @@ const MobileIndex = () => {
     }
   };
 
-  const renderWeatherDisplay = (type: 'metar' | 'taf' | 'airport' | 'notam') => {
-    const icons = {
-      metar: CloudRain,
-      taf: CloudLightning,
-      airport: Plane,
-      notam: Bell
-    };
-    
-    const titles = {
-      metar: "Current Weather (METAR)",
-      taf: "Forecast (TAF)",
-      airport: "Airport Information",
-      notam: "NOTAMs"
-    };
-
-    const hasData = {
-      metar: hasMetarData,
-      taf: hasTafData,
-      airport: hasAirportData,
-      notam: hasNotamData
-    };
-
-    const Icon = icons[type];
-
-    return (
-      <div className="p-4">
-        <div className="flex items-center gap-2 mb-3">
-          <Icon className="w-5 h-5 text-cyan-400" />
-          <h3 className="text-lg font-bold text-white">{titles[type]}</h3>
-          {hasData[type] && (
-            <Badge variant="outline" className="text-xs bg-orange-400/20 border-orange-400/50 text-orange-200">
-              Live Data
-            </Badge>
-          )}
-        </div>
-        <ScrollArea className="h-[400px] w-full">
-          <div className="bg-black/90 text-orange-400 p-4 rounded-xl avionics-display"
-            style={{
-              fontFamily: 'Monaco, "Courier New", monospace',
-              textShadow: '0 0 8px rgba(255, 165, 0, 0.6)',
-              letterSpacing: '0.5px',
-              lineHeight: '1.4',
-              fontSize: '13px'
-            }}>
-            <pre className="whitespace-pre-wrap break-words overflow-wrap-anywhere">{getDisplayContent(type)}</pre>
-          </div>
-        </ScrollArea>
-      </div>
-    );
-  };
-
   if (authLoading) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
@@ -194,76 +114,154 @@ const MobileIndex = () => {
 
               {weatherData && (
                 <div className="bg-slate-800/90 backdrop-blur-xl rounded-2xl border border-white/20 shadow-lg overflow-hidden">
-                  {/* Tab Headers */}
-                  <div className="grid grid-cols-4 bg-slate-900/60 h-12">
-                    <button 
-                      onClick={() => handleTabChange("metar")}
-                      className={`flex items-center justify-center gap-1 text-xs transition-colors relative ${
-                        weatherTab === 'metar' 
-                          ? 'bg-cyan-500/20 text-cyan-200' 
-                          : 'text-slate-400 hover:text-slate-200'
-                      }`}
-                    >
-                      <CloudRain className="w-4 h-4" />
-                      METAR
-                      {hasMetarData && (
-                        <div className="absolute -top-1 -right-1 w-2 h-2 bg-orange-400 rounded-full shadow-sm shadow-orange-400/50"></div>
-                      )}
-                    </button>
-                    <button 
-                      onClick={() => handleTabChange("taf")}
-                      className={`flex items-center justify-center gap-1 text-xs transition-colors relative ${
-                        weatherTab === 'taf' 
-                          ? 'bg-cyan-500/20 text-cyan-200' 
-                          : 'text-slate-400 hover:text-slate-200'
-                      }`}
-                    >
-                      <CloudLightning className="w-4 h-4" />
-                      TAF
-                      {hasTafData && (
-                        <div className="absolute -top-1 -right-1 w-2 h-2 bg-orange-400 rounded-full shadow-sm shadow-orange-400/50"></div>
-                      )}
-                    </button>
-                    <button 
-                      onClick={() => handleTabChange("airport")}
-                      className={`flex items-center justify-center gap-1 text-xs transition-colors relative ${
-                        weatherTab === 'airport' 
-                          ? 'bg-cyan-500/20 text-cyan-200' 
-                          : 'text-slate-400 hover:text-slate-200'
-                      }`}
-                    >
-                      <Plane className="w-4 h-4" />
-                      Airport
-                      {hasAirportData && (
-                        <div className="absolute -top-1 -right-1 w-2 h-2 bg-orange-400 rounded-full shadow-sm shadow-orange-400/50"></div>
-                      )}
-                    </button>
-                    <button 
-                      onClick={() => handleTabChange("notam")}
-                      className={`flex items-center justify-center gap-1 text-xs transition-colors relative ${
-                        weatherTab === 'notam' 
-                          ? 'bg-cyan-500/20 text-cyan-200' 
-                          : 'text-slate-400 hover:text-slate-200'
-                      }`}
-                    >
-                      <Bell className="w-4 h-4" />
-                      NOTAM
-                      {hasNotamData && (
-                        <div className="absolute -top-1 -right-1 w-2 h-2 bg-orange-400 rounded-full shadow-sm shadow-orange-400/50"></div>
-                      )}
-                    </button>
-                  </div>
-                  
-                  {/* Swipeable Content */}
-                  <div className="overflow-hidden" ref={emblaRef}>
-                    <div className="flex">
-                      {weatherTabs.map((tab) => (
-                        <div key={tab} className="min-w-0 flex-[0_0_100%]">
-                          {renderWeatherDisplay(tab as 'metar' | 'taf' | 'airport' | 'notam')}
+                  <Tabs value={weatherTab} onValueChange={setWeatherTab} className="w-full">
+                    <TabsList className="grid w-full grid-cols-4 bg-slate-900/60 rounded-none h-12">
+                      <TabsTrigger 
+                        value="metar" 
+                        className="flex items-center gap-1 text-xs data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-200 relative"
+                      >
+                        <CloudRain className="w-4 h-4" />
+                        METAR
+                        {hasMetarData && (
+                          <div className="absolute -top-1 -right-1 w-2 h-2 bg-orange-400 rounded-full shadow-sm shadow-orange-400/50"></div>
+                        )}
+                      </TabsTrigger>
+                      <TabsTrigger 
+                        value="taf" 
+                        className="flex items-center gap-1 text-xs data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-200 relative"
+                      >
+                        <CloudLightning className="w-4 h-4" />
+                        TAF
+                        {hasTafData && (
+                          <div className="absolute -top-1 -right-1 w-2 h-2 bg-orange-400 rounded-full shadow-sm shadow-orange-400/50"></div>
+                        )}
+                      </TabsTrigger>
+                      <TabsTrigger 
+                        value="airport" 
+                        className="flex items-center gap-1 text-xs data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-200 relative"
+                      >
+                        <Plane className="w-4 h-4" />
+                        Airport
+                        {hasAirportData && (
+                          <div className="absolute -top-1 -right-1 w-2 h-2 bg-orange-400 rounded-full shadow-sm shadow-orange-400/50"></div>
+                        )}
+                      </TabsTrigger>
+                      <TabsTrigger 
+                        value="notam" 
+                        className="flex items-center gap-1 text-xs data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-200 relative"
+                      >
+                        <Bell className="w-4 h-4" />
+                        NOTAM
+                        {hasNotamData && (
+                          <div className="absolute -top-1 -right-1 w-2 h-2 bg-orange-400 rounded-full shadow-sm shadow-orange-400/50"></div>
+                        )}
+                      </TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="metar" className="mt-0 border-0 p-0">
+                      <div className="p-4">
+                        <div className="flex items-center gap-2 mb-3">
+                          <CloudRain className="w-5 h-5 text-cyan-400" />
+                          <h3 className="text-lg font-bold text-white">Current Weather (METAR)</h3>
+                          {hasMetarData && (
+                            <Badge variant="outline" className="text-xs bg-orange-400/20 border-orange-400/50 text-orange-200">
+                              Live Data
+                            </Badge>
+                          )}
                         </div>
-                      ))}
-                    </div>
-                  </div>
+                        <ScrollArea className="h-[400px] w-full">
+                          <div className="bg-black/90 text-orange-400 p-4 rounded-xl avionics-display"
+                            style={{
+                              fontFamily: 'Monaco, "Courier New", monospace',
+                              textShadow: '0 0 8px rgba(255, 165, 0, 0.6)',
+                              letterSpacing: '0.5px',
+                              lineHeight: '1.4',
+                              fontSize: '13px'
+                            }}>
+                            <pre className="whitespace-pre-wrap break-words overflow-wrap-anywhere">{getDisplayContent('metar')}</pre>
+                          </div>
+                        </ScrollArea>
+                      </div>
+                    </TabsContent>
+
+                    <TabsContent value="taf" className="mt-0 border-0 p-0">
+                      <div className="p-4">
+                        <div className="flex items-center gap-2 mb-3">
+                          <CloudLightning className="w-5 h-5 text-cyan-400" />
+                          <h3 className="text-lg font-bold text-white">Forecast (TAF)</h3>
+                          {hasTafData && (
+                            <Badge variant="outline" className="text-xs bg-orange-400/20 border-orange-400/50 text-orange-200">
+                              Live Data
+                            </Badge>
+                          )}
+                        </div>
+                        <ScrollArea className="h-[400px] w-full">
+                          <div className="bg-black/90 text-orange-400 p-4 rounded-xl avionics-display"
+                            style={{
+                              fontFamily: 'Monaco, "Courier New", monospace',
+                              textShadow: '0 0 8px rgba(255, 165, 0, 0.6)',
+                              letterSpacing: '0.5px',
+                              lineHeight: '1.4',
+                              fontSize: '13px'
+                            }}>
+                            <pre className="whitespace-pre-wrap break-words overflow-wrap-anywhere">{getDisplayContent('taf')}</pre>
+                          </div>
+                        </ScrollArea>
+                      </div>
+                    </TabsContent>
+
+                    <TabsContent value="airport" className="mt-0 border-0 p-0">
+                      <div className="p-4">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Plane className="w-5 h-5 text-cyan-400" />
+                          <h3 className="text-lg font-bold text-white">Airport Information</h3>
+                          {hasAirportData && (
+                            <Badge variant="outline" className="text-xs bg-orange-400/20 border-orange-400/50 text-orange-200">
+                              Live Data
+                            </Badge>
+                          )}
+                        </div>
+                        <ScrollArea className="h-[400px] w-full">
+                          <div className="bg-black/90 text-orange-400 p-4 rounded-xl avionics-display"
+                            style={{
+                              fontFamily: 'Monaco, "Courier New", monospace',
+                              textShadow: '0 0 8px rgba(255, 165, 0, 0.6)',
+                              letterSpacing: '0.5px',
+                              lineHeight: '1.4',
+                              fontSize: '13px'
+                            }}>
+                            <pre className="whitespace-pre-wrap break-words overflow-wrap-anywhere">{getDisplayContent('airport')}</pre>
+                          </div>
+                        </ScrollArea>
+                      </div>
+                    </TabsContent>
+
+                    <TabsContent value="notam" className="mt-0 border-0 p-0">
+                      <div className="p-4">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Bell className="w-5 h-5 text-cyan-400" />
+                          <h3 className="text-lg font-bold text-white">NOTAMs</h3>
+                          {hasNotamData && (
+                            <Badge variant="outline" className="text-xs bg-orange-400/20 border-orange-400/50 text-orange-200">
+                              Live Data
+                            </Badge>
+                          )}
+                        </div>
+                        <ScrollArea className="h-[400px] w-full">
+                          <div className="bg-black/90 text-orange-400 p-4 rounded-xl avionics-display"
+                            style={{
+                              fontFamily: 'Monaco, "Courier New", monospace',
+                              textShadow: '0 0 8px rgba(255, 165, 0, 0.6)',
+                              letterSpacing: '0.5px',
+                              lineHeight: '1.4',
+                              fontSize: '13px'
+                            }}>
+                            <pre className="whitespace-pre-wrap break-words overflow-wrap-anywhere">{getDisplayContent('notam')}</pre>
+                          </div>
+                        </ScrollArea>
+                      </div>
+                    </TabsContent>
+                  </Tabs>
                 </div>
               )}
             </>
@@ -295,7 +293,7 @@ const MobileIndex = () => {
               <div className="space-y-4">
                 <div className="p-4 bg-slate-900/40 rounded-xl">
                   <p className="text-white font-medium mb-2">About METAR Now</p>
-                  <p className="text-slate-300">Real-time aviation weather data for pilots and aviation enthusiasts.</p>
+                  <p className="text-slate-300 text-sm">Real-time aviation weather data for pilots and aviation enthusiasts.</p>
                 </div>
                 <div className="p-4 bg-slate-900/40 rounded-xl">
                   <p className="text-white font-medium mb-2">Data Sources</p>
