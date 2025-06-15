@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -5,6 +6,7 @@ export interface WeatherData {
   metar: string;
   taf: string;
   airport: string;
+  notam: string;
 }
 
 interface DataFetchResult {
@@ -58,8 +60,73 @@ export const useMetarData = () => {
     }
   };
 
+  const fetchNotamData = async (icaoCode: string): Promise<DataFetchResult> => {
+    try {
+      // Using FAA NOTAM Search API through CORS proxy
+      const notamUrl = `https://www.notams.faa.gov/dinsQueryWeb/queryRetrievalMapAction.do?reportType=Report&formatType=ICAO&retrieveLocId=${icaoCode}&actionType=notamRetrievalByICAOs`;
+      const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(notamUrl)}`;
+      
+      const response = await fetch(proxyUrl);
+      
+      if (!response.ok) {
+        return {
+          data: "",
+          error: `Failed to fetch NOTAM data: ${response.status}`
+        };
+      }
+      
+      const data = await response.json();
+      
+      if (data.status.http_code !== 200) {
+        return {
+          data: "",
+          error: `FAA NOTAM API returned error: ${data.status.http_code}`
+        };
+      }
+
+      const content = data.contents.trim();
+      
+      // Parse HTML response and extract NOTAM text
+      if (content.includes("No NOTAMs match your criteria") || content.includes("No current NOTAMs")) {
+        return {
+          data: `No current NOTAMs for ${icaoCode}`,
+          error: null
+        };
+      }
+      
+      // Basic parsing - look for NOTAM content between common markers
+      let parsedContent = content;
+      if (content.includes('<pre>')) {
+        const preMatch = content.match(/<pre[^>]*>([\s\S]*?)<\/pre>/);
+        if (preMatch) {
+          parsedContent = preMatch[1].trim();
+        }
+      }
+      
+      // Remove HTML tags
+      parsedContent = parsedContent.replace(/<[^>]*>/g, '').trim();
+      
+      if (!parsedContent || parsedContent.length < 10) {
+        return {
+          data: `No current NOTAMs for ${icaoCode}`,
+          error: null
+        };
+      }
+
+      return {
+        data: parsedContent,
+        error: null
+      };
+    } catch (err) {
+      return {
+        data: "",
+        error: err instanceof Error ? err.message : "Failed to fetch NOTAM data"
+      };
+    }
+  };
+
   const fetchWeatherData = async (icaoCode: string) => {
-    console.log(`Fetching real METAR, TAF, and Airport data for ${icaoCode}`);
+    console.log(`Fetching real METAR, TAF, Airport, and NOTAM data for ${icaoCode}`);
     setIsLoading(true);
     setError(null);
 
@@ -70,24 +137,27 @@ export const useMetarData = () => {
       const airportProxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(`https://aviationweather.gov/api/data/airport?ids=${icaoCode}`)}`;
 
       // Fetch all data sources in parallel, but handle each independently
-      const [metarResult, tafResult, airportResult] = await Promise.all([
+      const [metarResult, tafResult, airportResult, notamResult] = await Promise.all([
         fetchSingleDataSource(metarProxyUrl, 'METAR'),
         fetchSingleDataSource(tafProxyUrl, 'TAF'),
-        fetchSingleDataSource(airportProxyUrl, 'Airport')
+        fetchSingleDataSource(airportProxyUrl, 'Airport'),
+        fetchNotamData(icaoCode)
       ]);
 
       // Collect any errors that occurred
       const errors = [
         metarResult.error,
         tafResult.error,
-        airportResult.error
+        airportResult.error,
+        notamResult.error
       ].filter(Boolean);
 
       // Create weather data object with available data
       const weatherData: WeatherData = {
         metar: metarResult.data || `Error fetching METAR: ${metarResult.error}`,
         taf: tafResult.data || `Error fetching TAF: ${tafResult.error}`,
-        airport: airportResult.data || `Error fetching Airport data: ${airportResult.error}`
+        airport: airportResult.data || `Error fetching Airport data: ${airportResult.error}`,
+        notam: notamResult.data || `Error fetching NOTAM: ${notamResult.error}`
       };
       
       setWeatherData(weatherData);
@@ -97,9 +167,9 @@ export const useMetarData = () => {
       if (errors.length === 0) {
         toast({
           title: "Data Updated",
-          description: `Successfully retrieved METAR, TAF, and Airport data for ${icaoCode}`,
+          description: `Successfully retrieved METAR, TAF, Airport, and NOTAM data for ${icaoCode}`,
         });
-      } else if (errors.length < 3) {
+      } else if (errors.length < 4) {
         toast({
           title: "Partial Data Retrieved",
           description: `Retrieved available data for ${icaoCode}. Some data sources may be unavailable.`,

@@ -1,6 +1,6 @@
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CloudRain, AlertTriangle, Clock, CloudLightning, Info, Plane } from "lucide-react";
+import { CloudRain, AlertTriangle, Clock, CloudLightning, Info, Plane, Bell } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -24,19 +24,20 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // Use new weatherData if available, fallback to old metarData for backward compatibility
-  const currentWeatherData = weatherData || (metarData ? { metar: metarData, taf: "", airport: "" } : null);
+  const currentWeatherData = weatherData || (metarData ? { metar: metarData, taf: "", airport: "", notam: "" } : null);
 
   // Check if data is available (not an error message and not empty)
   const isDataAvailable = (data: string) => {
     if (!data || data.trim() === '') return false;
     if (data.includes('Error fetching')) return false;
-    if (data.includes('No ') && data.includes(' data available')) return false;
+    if (data.includes('No ') && (data.includes(' data available') || data.includes('current NOTAMs'))) return false;
     return true;
   };
 
   const hasMetarData = currentWeatherData ? isDataAvailable(currentWeatherData.metar) : false;
   const hasTafData = currentWeatherData ? isDataAvailable(currentWeatherData.taf) : false;
   const hasAirportData = currentWeatherData ? isDataAvailable(currentWeatherData.airport) : false;
+  const hasNotamData = currentWeatherData ? isDataAvailable(currentWeatherData.notam) : false;
 
   const fetchDecodedWeather = async () => {
     if (!icaoCode) return;
@@ -73,7 +74,7 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
     }
   };
 
-  const getDisplayContent = (type: 'metar' | 'taf' | 'airport') => {
+  const getDisplayContent = (type: 'metar' | 'taf' | 'airport' | 'notam') => {
     if (isLoading) {
       return `Fetching ${type.toUpperCase()} data for ${icaoCode}...\n\nPlease wait while we retrieve the latest information.`;
     }
@@ -86,13 +87,15 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
       const data = currentWeatherData[type];
       
       // Handle error messages with user-friendly text
-      if (data.includes('Error fetching') || (data.includes('No ') && data.includes(' data available'))) {
+      if (data.includes('Error fetching') || (data.includes('No ') && (data.includes(' data available') || data.includes('current NOTAMs')))) {
         if (type === 'metar') {
           return `No current weather report available for ${icaoCode}\n\nThis airport may not provide real-time weather updates, or the data is temporarily unavailable.\n\nTry checking the TAF (forecast) or Airport info tabs for other available information.`;
         } else if (type === 'taf') {
           return `No weather forecast available for ${icaoCode}\n\nThis airport may not issue forecasts, or the forecast data is temporarily unavailable.\n\nCheck the METAR tab for current conditions or Airport info for facility details.`;
-        } else {
+        } else if (type === 'airport') {
           return `No airport information available for ${icaoCode}\n\nThe airport database may not have details for this facility, or the information is temporarily unavailable.\n\nTry the METAR or TAF tabs for weather data.`;
+        } else if (type === 'notam') {
+          return `No current NOTAMs for ${icaoCode}\n\nThis means there are no active Notices to Airmen for this airport at this time.\n\nNOTAMs provide important information about airport conditions, closures, and operational changes.`;
         }
       }
       
@@ -105,8 +108,10 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
       return "Enter an ICAO code above to view real-time weather conditions\n\nMETAR provides current weather observations from airports worldwide, including wind, visibility, clouds, and temperature.";
     } else if (type === 'taf') {
       return "Enter an ICAO code above to view weather forecasts\n\nTAF provides detailed weather forecasts for airports, typically covering the next 24-30 hours with expected conditions and changes.";
-    } else {
+    } else if (type === 'airport') {
       return "Enter an ICAO code above to view airport information\n\nAirport data includes facility details, coordinates, elevation, runway information, and operational status.";
+    } else if (type === 'notam') {
+      return "Enter an ICAO code above to view NOTAMs\n\nNOTAMs (Notice to Airmen) provide critical information about airport conditions, runway closures, navigation aids, and other operational changes that affect flight operations.";
     }
   };
 
@@ -120,7 +125,7 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
           <div>
             <h2 className="text-xl font-bold text-white">Weather Report</h2>
             <p className="text-slate-300">
-              Current conditions, forecasts, and airport information
+              Current conditions, forecasts, airport information, and NOTAMs
             </p>
           </div>
         </div>
@@ -181,7 +186,7 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
 
       <div className="relative">
         <Tabs defaultValue="metar" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 bg-black/40 backdrop-blur-sm">
+          <TabsList className="grid w-full grid-cols-4 bg-black/40 backdrop-blur-sm">
             <TabsTrigger value="metar" className="flex items-center gap-2 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-200">
               <CloudRain className="w-4 h-4" />
               METAR
@@ -200,6 +205,13 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
               <Plane className="w-4 h-4" />
               Airport
               {hasAirportData && (
+                <div className="w-2 h-2 bg-orange-400 rounded-full ml-1 shadow-sm shadow-orange-400/50"></div>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="notam" className="flex items-center gap-2 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-200">
+              <Bell className="w-4 h-4" />
+              NOTAM
+              {hasNotamData && (
                 <div className="w-2 h-2 bg-orange-400 rounded-full ml-1 shadow-sm shadow-orange-400/50"></div>
               )}
             </TabsTrigger>
@@ -248,6 +260,22 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
                     lineHeight: '1.6'
                   }}>
                   <pre className="whitespace-pre-wrap font-mono">{getDisplayContent('airport')}</pre>
+                </div>
+              </ScrollArea>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="notam" className="mt-4">
+            <div className="relative avionics-display rounded-none">
+              <ScrollArea className="h-[400px] w-full">
+                <div className="bg-black text-orange-400 p-6 avionics-display min-h-full"
+                  style={{
+                    fontFamily: 'Monaco, "Courier New", monospace',
+                    textShadow: '0 0 8px rgba(255, 165, 0, 0.6)',
+                    letterSpacing: '0.5px',
+                    lineHeight: '1.6'
+                  }}>
+                  <pre className="whitespace-pre-wrap font-mono">{getDisplayContent('notam')}</pre>
                 </div>
               </ScrollArea>
             </div>
