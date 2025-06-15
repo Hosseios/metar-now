@@ -38,23 +38,22 @@ const MetarSearch = ({ onSearch, isLoading }: MetarSearchProps) => {
     }
   };
 
-  // You can add back the Add Favorite UI as before...
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex items-center space-x-3">
-        <div className="p-3 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl shadow-lg">
-          <Plane className="w-6 h-6 text-white" />
+        <div className="p-2 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl shadow-lg">
+          <Plane className="w-5 h-5 text-white" />
         </div>
         <div>
-          <Label htmlFor="airport-search" className="text-xl font-bold text-white">
-            Search Airport
+          <Label htmlFor="airport-search" className="text-lg font-bold text-white">
+            Enter ICAO Code
           </Label>
-          <p className="text-slate-300 mt-1">
-            Enter an airport name, city, IATA, or ICAO code (e.g., "JFK", "New York", "KJFK")
+          <p className="text-slate-300 text-sm">
+            Enter a 4-letter airport code (e.g., KJFK, EGLL, LFPG)
           </p>
         </div>
       </div>
-      {/* New Autocomplete search */}
+      {/* Compact autocomplete search */}
       <AirportAutocomplete onSelect={handleAirportSelect} isLoading={isLoading} />
     </div>
   );

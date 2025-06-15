@@ -1,4 +1,3 @@
-
 import { useState, useRef } from "react";
 import { searchAirports } from "@/utils/airportDatabase";
 import { Input } from "@/components/ui/input";
@@ -64,6 +63,10 @@ const AirportAutocomplete = ({ onSelect, isLoading }: AirportAutocompleteProps) 
     setShowDropdown(false);
     setSuggestions([]);
     onSelect(icao);
+    // Keep focus on input after selection
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 100);
   };
 
   // Allow "Enter" to trigger select if there is only one suggestion
@@ -75,56 +78,58 @@ const AirportAutocomplete = ({ onSelect, isLoading }: AirportAutocompleteProps) 
   };
 
   return (
-    <div className="relative">
-      <Input
-        ref={inputRef}
-        type="text"
-        value={query}
-        onChange={handleInputChange}
-        onKeyDown={handleKeyDown}
-        placeholder="Search by city, airport, IATA or ICAO (e.g. JFK, New York, KJFK)"
-        autoComplete="off"
-        className="pr-12"
-        disabled={isLoading || searching}
-        aria-autocomplete="list"
-      />
-      <Button
-        type="button"
-        className="absolute right-1 top-1 bottom-1 px-3 bg-blue-600 hover:bg-blue-700 text-white rounded-md"
-        disabled={!query || isLoading || searching}
-        onClick={async () => {
-          if (suggestions.length > 0) {
-            console.log(`Search button clicked, selecting first result: ${suggestions[0].icao}`);
-            handleSelect(suggestions[0].icao);
-          } else {
-            console.log(`Search button clicked, using direct input: ${query.toUpperCase()}`);
-            onSelect(query.toUpperCase());
-          }
-        }}
-      >
-        <Search className="w-4 h-4" />
-      </Button>
+    <div className="relative w-full max-w-md">
+      <div className="relative">
+        <Input
+          ref={inputRef}
+          type="text"
+          value={query}
+          onChange={handleInputChange}
+          onKeyDown={handleKeyDown}
+          placeholder="Enter ICAO Code (e.g., KJFK, EGLL, LFPG)"
+          autoComplete="off"
+          className="h-12 pr-12 bg-slate-800/50 border-slate-600 text-white placeholder-slate-400 rounded-xl"
+          disabled={isLoading || searching}
+          aria-autocomplete="list"
+        />
+        <Button
+          type="button"
+          className="absolute right-2 top-2 bottom-2 px-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+          disabled={!query || isLoading || searching}
+          onClick={async () => {
+            if (suggestions.length > 0) {
+              console.log(`Search button clicked, selecting first result: ${suggestions[0].icao}`);
+              handleSelect(suggestions[0].icao);
+            } else {
+              console.log(`Search button clicked, using direct input: ${query.toUpperCase()}`);
+              onSelect(query.toUpperCase());
+            }
+          }}
+        >
+          <Search className="w-4 h-4" />
+        </Button>
+      </div>
       {showDropdown && suggestions.length > 0 && (
-        <div className="absolute z-20 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-52 overflow-auto">
+        <div className="absolute z-50 left-0 right-0 mt-2 bg-slate-800 border border-slate-600 rounded-xl shadow-2xl max-h-60 overflow-auto">
           {suggestions.map((s, i) => (
             <button
               type="button"
               key={s.icao + i}
               onClick={() => handleSelect(s.icao)}
-              className="block w-full text-left px-3 py-2 hover:bg-blue-100 text-black transition"
+              className="block w-full text-left px-4 py-3 hover:bg-slate-700 text-white transition-colors border-b border-slate-700 last:border-b-0"
             >
-              <span className="font-semibold">{s.display}</span>
+              <span className="text-sm">{s.display}</span>
             </button>
           ))}
         </div>
       )}
       {showDropdown && suggestions.length === 0 && query.length >= 2 && !searching && (
-        <div className="absolute z-20 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg p-2 text-gray-600 text-sm">
+        <div className="absolute z-50 left-0 right-0 mt-2 bg-slate-800 border border-slate-600 rounded-xl shadow-2xl p-4 text-slate-400 text-sm">
           No results found for "{query}".
         </div>
       )}
       {searching && (
-        <div className="absolute z-20 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg p-2 text-gray-600 text-sm">
+        <div className="absolute z-50 left-0 right-0 mt-2 bg-slate-800 border border-slate-600 rounded-xl shadow-2xl p-4 text-slate-400 text-sm">
           Searching...
         </div>
       )}
