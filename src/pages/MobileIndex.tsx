@@ -7,6 +7,7 @@ import BottomNavigation from "@/components/BottomNavigation";
 import MobileWeatherTabs from "@/components/MobileWeatherTabs";
 import MobileLayout from "@/components/MobileLayout";
 import MobileSettings from "@/components/MobileSettings";
+import RetroRadar from "@/components/RetroRadar";
 import { useMetarData } from "@/hooks/useMetarData";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -49,6 +50,19 @@ const MobileIndex = () => {
             <div className="bg-slate-800/90 backdrop-blur-xl rounded-2xl p-4 border border-white/20 shadow-lg">
               <MetarSearch onSearch={handleSearch} isLoading={isLoading} />
             </div>
+
+            {/* Show radar when loading */}
+            {isLoading && (
+              <div className="bg-slate-800/90 backdrop-blur-xl rounded-2xl p-6 border border-white/20 shadow-lg">
+                <div className="flex flex-col items-center justify-center space-y-4">
+                  <RetroRadar isActive={true} />
+                  <div className="text-orange-400 font-mono text-sm text-center">
+                    <div>Fetching weather data...</div>
+                    <div className="text-xs text-orange-300 mt-1">Please wait</div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {weatherData && (
               <MobileWeatherTabs
