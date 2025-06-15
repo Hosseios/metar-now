@@ -1,27 +1,15 @@
-
 import { useState, useRef, useEffect } from "react";
-import { createPortal } from "react-dom";
 import { searchAirports } from "@/utils/airportDatabase";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-
-interface Suggestion {
-  display: string;
-  icao: string;
-  iata: string;
-}
-
-interface AirportAutocompleteProps {
-  onSelect: (icaoCode: string) => void;
-  isLoading?: boolean;
-}
+import { AirportAutocompleteProps, Suggestion, DropdownPosition } from "@/types/airport";
+import AirportDropdown from "./AirportDropdown";
+import AirportSearchInput from "./AirportSearchInput";
 
 const AirportAutocomplete = ({ onSelect, isLoading }: AirportAutocompleteProps) => {
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [searching, setSearching] = useState(false);
-  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
+  const [dropdownPosition, setDropdownPosition] = useState<DropdownPosition>({ top: 0, left: 0, width: 0 });
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -136,81 +124,43 @@ const AirportAutocomplete = ({ onSelect, isLoading }: AirportAutocompleteProps) 
     e.preventDefault();
   };
 
-  // Dropdown content component
-  const DropdownContent = () => (
-    <div 
-      className="dropdown-portal fixed bg-slate-800 border border-slate-600 rounded-xl shadow-2xl max-h-60 overflow-auto"
-      style={{
-        top: dropdownPosition.top,
-        left: dropdownPosition.left,
-        width: dropdownPosition.width,
-        zIndex: 999999
-      }}
-      onMouseDown={handleDropdownMouseDown}
-    >
-      {suggestions.length > 0 ? (
-        suggestions.map((s, i) => (
-          <button
-            type="button"
-            key={s.icao + i}
-            onClick={() => handleSelect(s.icao)}
-            onMouseDown={handleDropdownMouseDown}
-            className="block w-full text-left px-4 py-3 hover:bg-slate-700 text-white transition-colors border-b border-slate-700 last:border-b-0"
-          >
-            <span className="text-sm">{s.display}</span>
-          </button>
-        ))
-      ) : query.length >= 2 && !searching ? (
-        <div className="p-4 text-slate-400 text-sm">
-          No results found for "{query}".
-        </div>
-      ) : searching ? (
-        <div className="p-4 text-slate-400 text-sm">
-          Searching...
-        </div>
-      ) : null}
-    </div>
-  );
+  const handleSearchClick = async () => {
+    if (suggestions.length > 0) {
+      console.log(`Search button clicked, selecting first result: ${suggestions[0].icao}`);
+      handleSelect(suggestions[0].icao);
+    } else {
+      console.log(`Search button clicked, using direct input: ${query.toUpperCase()}`);
+      onSelect(query.toUpperCase());
+    }
+  };
 
   return (
     <>
       <div ref={containerRef} className="relative w-full max-w-md">
-        <div className="flex space-x-2">
-          <Input
-            ref={inputRef}
-            type="text"
-            value={query}
-            onChange={handleInputChange}
-            onKeyDown={handleKeyDown}
-            onBlur={handleInputBlur}
-            placeholder="Enter ICAO Code (e.g., KJFK, EGLL, LFPG)"
-            autoComplete="off"
-            className="flex-1 h-10 bg-slate-800/50 border-slate-600 text-white placeholder-slate-400 rounded-lg"
-            disabled={isLoading}
-            aria-autocomplete="list"
-          />
-          <Button
-            type="button"
-            size="sm"
-            className="h-10 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
-            disabled={!query || isLoading || searching}
-            onClick={async () => {
-              if (suggestions.length > 0) {
-                console.log(`Search button clicked, selecting first result: ${suggestions[0].icao}`);
-                handleSelect(suggestions[0].icao);
-              } else {
-                console.log(`Search button clicked, using direct input: ${query.toUpperCase()}`);
-                onSelect(query.toUpperCase());
-              }
-            }}
-          >
-            Search
-          </Button>
-        </div>
+        <AirportSearchInput
+          ref={inputRef}
+          query={query}
+          suggestions={suggestions}
+          isLoading={isLoading}
+          searching={searching}
+          onChange={handleInputChange}
+          onKeyDown={handleKeyDown}
+          onBlur={handleInputBlur}
+          onSearchClick={handleSearchClick}
+        />
       </div>
 
       {/* Portal dropdown to ensure it appears above everything */}
-      {showDropdown && createPortal(<DropdownContent />, document.body)}
+      {showDropdown && (
+        <AirportDropdown
+          suggestions={suggestions}
+          dropdownPosition={dropdownPosition}
+          query={query}
+          searching={searching}
+          onSelect={handleSelect}
+          onMouseDown={handleDropdownMouseDown}
+        />
+      )}
     </>
   );
 };
