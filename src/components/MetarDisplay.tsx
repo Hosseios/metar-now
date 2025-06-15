@@ -1,3 +1,4 @@
+
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CloudRain, AlertTriangle, Clock, CloudLightning, Info, Plane, Bell, AlertCircle, Settings, FileText } from "lucide-react";
@@ -242,7 +243,7 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
                       )}
                     </div>
                     
-                    <ScrollArea className="flex-1">
+                    <ScrollArea className="flex-1 [&>[data-radix-scroll-area-viewport]]:scrollbar-thin [&>[data-radix-scroll-area-viewport]]:scrollbar-track-black [&>[data-radix-scroll-area-viewport]]:scrollbar-thumb-orange-400/50 [&>[data-radix-scroll-area-viewport]]:scrollbar-thumb-rounded">
                       {decodedError ? (
                         <Alert className="bg-red-500/20 border-red-400/50 text-red-100">
                           <AlertTriangle className="h-4 w-4" />
@@ -273,7 +274,7 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
           
           <TabsContent value="raw" className="mt-4">
             <div className="relative avionics-display rounded-none">
-              <ScrollArea className="h-[400px] w-full">
+              <ScrollArea className="h-[400px] w-full [&>[data-radix-scroll-area-viewport]]:scrollbar-thin [&>[data-radix-scroll-area-viewport]]:scrollbar-track-black [&>[data-radix-scroll-area-viewport]]:scrollbar-thumb-orange-400/50 [&>[data-radix-scroll-area-viewport]]:scrollbar-thumb-rounded">
                 <div className="bg-black text-orange-400 p-6 avionics-display min-h-full"
                   style={{
                     fontFamily: 'Monaco, "Courier New", monospace',
