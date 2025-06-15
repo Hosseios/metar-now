@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -12,6 +11,16 @@ export interface WeatherData {
 interface DataFetchResult {
   data: string;
   error: string | null;
+}
+
+export interface NotamItem {
+  id: string;
+  type: 'A' | 'B' | 'H' | 'J' | 'V';
+  category: 'critical' | 'operational' | 'informational';
+  text: string;
+  effectiveDate?: string;
+  expiryDate?: string;
+  createdDate?: string;
 }
 
 export const useMetarData = () => {
@@ -60,9 +69,219 @@ export const useMetarData = () => {
     }
   };
 
+  const classifyNotam = (notamId: string, text: string): 'critical' | 'operational' | 'informational' => {
+    const upperText = text.toUpperCase();
+    const type = notamId.charAt(0);
+    
+    // Critical NOTAMs (safety-related)
+    if (
+      upperText.includes('RUNWAY') && (upperText.includes('CLOSED') || upperText.includes('CLSD')) ||
+      upperText.includes('RWY') && (upperText.includes('CLOSED') || upperText.includes('CLSD')) ||
+      upperText.includes('CRANE') ||
+      upperText.includes('OBSTACLE') ||
+      upperText.includes('SLIPPERY') ||
+      upperText.includes('LIGHTS U/S') ||
+      upperText.includes('HAZARD') ||
+      type === 'B' // Airspace and procedures
+    ) {
+      return 'critical';
+    }
+    
+    // Operational NOTAMs (affects operations)
+    if (
+      upperText.includes('TAXIWAY') ||
+      upperText.includes('TWY') ||
+      upperText.includes('APPROACH') ||
+      upperText.includes('DEPARTURE') ||
+      upperText.includes('RESTRICTED AREA') ||
+      upperText.includes('NAVIGATION') ||
+      upperText.includes('APCH') ||
+      upperText.includes('DEP') ||
+      type === 'H' || type === 'J' // Hazards and restrictions
+    ) {
+      return 'operational';
+    }
+    
+    // Informational NOTAMs
+    return 'informational';
+  };
+
+  const parseNotams = (htmlContent: string, icaoCode: string): NotamItem[] => {
+    const notams: NotamItem[] = [];
+    
+    // Clean the HTML content
+    let cleanContent = htmlContent
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/&#8203;/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    // Enhanced regex to capture complete NOTAMs with better text extraction
+    const notamPattern = /([ABHJV]\d{4}\/\d{2})\s*-\s*(.*?)(?=\s+[ABHJV]\d{4}\/\d{2}\s*-|$)/gs;
+    let match;
+
+    while ((match = notamPattern.exec(cleanContent)) !== null) {
+      const notamId = match[1];
+      let notamText = match[2].trim();
+      
+      // Clean up the NOTAM text more thoroughly
+      notamText = notamText
+        .replace(/CREATED:\s*\d{2}\s+\w{3}\s+\d{2}:\d{2}\s+\d{4}.*$/g, '') // Remove CREATED timestamp
+        .replace(/\s+/g, ' ') // Normalize whitespace
+        .trim();
+
+      // Extract dates if present
+      const effectiveMatch = notamText.match(/(\d{2}\s+\w{3}\s+\d{2}:\d{2}\s+\d{4})\s+UNTIL/);
+      const expiryMatch = notamText.match(/UNTIL\s+(\d{2}\s+\w{3}\s+\d{2}:\d{2}\s+\d{4})/);
+      const createdMatch = htmlContent.match(new RegExp(`${notamId}.*?CREATED:\\s*(\\d{2}\\s+\\w{3}\\s+\\d{2}:\\d{2}\\s+\\d{4})`));
+
+      if (notamText.length > 10) {
+        const type = notamId.charAt(0) as 'A' | 'B' | 'H' | 'J' | 'V';
+        const category = classifyNotam(notamId, notamText);
+        
+        notams.push({
+          id: notamId,
+          type,
+          category,
+          text: notamText,
+          effectiveDate: effectiveMatch ? effectiveMatch[1] : undefined,
+          expiryDate: expiryMatch ? expiryMatch[1] : undefined,
+          createdDate: createdMatch ? createdMatch[1] : undefined
+        });
+      }
+    }
+
+    // If regex didn't work well, try alternative parsing
+    if (notams.length === 0) {
+      const lines = cleanContent.split(/\s+/);
+      let currentNotam = '';
+      let notamId = '';
+      
+      for (let i = 0; i < lines.length; i++) {
+        const word = lines[i];
+        
+        if (/^[ABHJV]\d{4}\/\d{2}$/.test(word)) {
+          // Save previous NOTAM if exists
+          if (notamId && currentNotam.trim()) {
+            const cleanedNotam = currentNotam.replace(/CREATED:.*$/, '').trim();
+            if (cleanedNotam.length > 10) {
+              const type = notamId.charAt(0) as 'A' | 'B' | 'H' | 'J' | 'V';
+              const category = classifyNotam(notamId, cleanedNotam);
+              
+              notams.push({
+                id: notamId,
+                type,
+                category,
+                text: cleanedNotam
+              });
+            }
+          }
+          
+          notamId = word;
+          currentNotam = '';
+          
+          if (i + 1 < lines.length && lines[i + 1] === '-') {
+            i++;
+          }
+        } else if (notamId && !word.startsWith('CREATED:')) {
+          currentNotam += ' ' + word;
+        }
+      }
+      
+      // Add the last NOTAM
+      if (notamId && currentNotam.trim()) {
+        const cleanedNotam = currentNotam.replace(/CREATED:.*$/, '').trim();
+        if (cleanedNotam.length > 10) {
+          const type = notamId.charAt(0) as 'A' | 'B' | 'H' | 'J' | 'V';
+          const category = classifyNotam(notamId, cleanedNotam);
+          
+          notams.push({
+            id: notamId,
+            type,
+            category,
+            text: cleanedNotam
+          });
+        }
+      }
+    }
+
+    // Sort NOTAMs by priority: critical first, then operational, then informational
+    return notams.sort((a, b) => {
+      const priorityOrder = { critical: 0, operational: 1, informational: 2 };
+      return priorityOrder[a.category] - priorityOrder[b.category];
+    });
+  };
+
+  const formatNotamsForDisplay = (notams: NotamItem[], icaoCode: string): string => {
+    if (notams.length === 0) {
+      return `No current NOTAMs for ${icaoCode}`;
+    }
+
+    const notamsByCategory = {
+      critical: notams.filter(n => n.category === 'critical'),
+      operational: notams.filter(n => n.category === 'operational'),
+      informational: notams.filter(n => n.category === 'informational')
+    };
+
+    let formattedOutput = `NOTAMs for ${icaoCode} (${notams.length} active NOTAMs found)\n`;
+    formattedOutput += `${'═'.repeat(60)}\n\n`;
+
+    // Add category summary
+    if (notamsByCategory.critical.length > 0) {
+      formattedOutput += `🔴 CRITICAL: ${notamsByCategory.critical.length} NOTAMs (Safety-related)\n`;
+    }
+    if (notamsByCategory.operational.length > 0) {
+      formattedOutput += `🟡 OPERATIONAL: ${notamsByCategory.operational.length} NOTAMs (Affects operations)\n`;
+    }
+    if (notamsByCategory.informational.length > 0) {
+      formattedOutput += `🔵 INFORMATIONAL: ${notamsByCategory.informational.length} NOTAMs (General info)\n`;
+    }
+    formattedOutput += '\n';
+
+    // Display NOTAMs by category
+    const categories = [
+      { name: 'CRITICAL', notams: notamsByCategory.critical, icon: '🔴' },
+      { name: 'OPERATIONAL', notams: notamsByCategory.operational, icon: '🟡' },
+      { name: 'INFORMATIONAL', notams: notamsByCategory.informational, icon: '🔵' }
+    ];
+
+    categories.forEach(category => {
+      if (category.notams.length > 0) {
+        formattedOutput += `${category.icon} ${category.name} NOTAMs\n`;
+        formattedOutput += `${'─'.repeat(40)}\n\n`;
+
+        category.notams.forEach((notam, index) => {
+          const categoryIndex = categories.findIndex(c => c.notams.includes(notam));
+          const overallIndex = notams.findIndex(n => n.id === notam.id) + 1;
+          
+          formattedOutput += `NOTAM ${overallIndex}: ${notam.id} [${notam.type}-TYPE]\n`;
+          formattedOutput += `${'▔'.repeat(50)}\n`;
+          
+          // Format the main text with better line breaks
+          const formattedText = notam.text
+            .replace(/\. (?=[A-Z])/g, '.\n• ')
+            .replace(/(\d{2} \w{3} \d{2}:\d{2} \d{4} UNTIL \d{2} \w{3} \d{2}:\d{2} \d{4})/g, '\n⏰ $1')
+            .replace(/(CREATED: \d{2} \w{3} \d{2}:\d{2} \d{4})/g, '\n📅 $1');
+
+          formattedOutput += `${formattedText}\n\n`;
+          
+          if (notam.effectiveDate && notam.expiryDate) {
+            formattedOutput += `⏰ Effective: ${notam.effectiveDate} - ${notam.expiryDate}\n`;
+          }
+          if (notam.createdDate) {
+            formattedOutput += `📅 Created: ${notam.createdDate}\n`;
+          }
+          
+          formattedOutput += '\n';
+        });
+      }
+    });
+
+    return formattedOutput;
+  };
+
   const fetchNotamData = async (icaoCode: string): Promise<DataFetchResult> => {
     try {
-      // Using FAA NOTAM Search API through CORS proxy
       const notamUrl = `https://www.notams.faa.gov/dinsQueryWeb/queryRetrievalMapAction.do?reportType=Report&formatType=ICAO&retrieveLocId=${icaoCode}&actionType=notamRetrievalByICAOs`;
       const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(notamUrl)}`;
       
@@ -86,7 +305,6 @@ export const useMetarData = () => {
 
       const htmlContent = data.contents.trim();
       
-      // Check for "no NOTAMs" message
       if (htmlContent.includes("No NOTAMs match your criteria") || htmlContent.includes("No current NOTAMs")) {
         return {
           data: `No current NOTAMs for ${icaoCode}`,
@@ -94,105 +312,21 @@ export const useMetarData = () => {
         };
       }
       
-      // Parse NOTAMs from HTML content - look for NOTAM IDs and text
-      const notams: string[] = [];
+      // Parse NOTAMs into structured data
+      const parsedNotams = parseNotams(htmlContent, icaoCode);
       
-      // First try to find NOTAMs in the HTML structure
-      // Look for patterns like "A1234/25 - NOTAM TEXT"
-      const notamPattern = /([ABVJ]\d{4}\/\d{2})\s*-\s*([^A-Z]*?)(?=\s+[ABVJ]\d{4}\/\d{2}\s*-|CREATED:|$)/gs;
-      let match;
-      
-      // Clean the HTML content first
-      let cleanContent = htmlContent
-        .replace(/<[^>]*>/g, ' ') // Remove HTML tags
-        .replace(/&#8203;/g, '') // Remove zero-width spaces
-        .replace(/\s+/g, ' ') // Normalize whitespace
-        .trim();
-      
-      while ((match = notamPattern.exec(cleanContent)) !== null) {
-        const notamId = match[1];
-        let notamText = match[2].trim();
-        
-        // Clean up the NOTAM text
-        notamText = notamText
-          .replace(/\s+/g, ' ') // Normalize whitespace
-          .replace(/CREATED:.*?(?=\s|$)/g, '') // Remove CREATED timestamp
-          .trim();
-        
-        if (notamText.length > 10) { // Only include substantial NOTAMs
-          notams.push(`${notamId} - ${notamText}`);
-        }
-      }
-      
-      // Alternative parsing method if the regex didn't find anything
-      if (notams.length === 0) {
-        // Split by lines and look for NOTAM patterns
-        const lines = cleanContent.split(/\s+/);
-        let currentNotam = '';
-        let notamId = '';
-        
-        for (let i = 0; i < lines.length; i++) {
-          const word = lines[i];
-          
-          // Check if this word is a NOTAM ID
-          if (/^[ABVJ]\d{4}\/\d{2}$/.test(word)) {
-            // Save previous NOTAM if exists
-            if (notamId && currentNotam.trim()) {
-              const cleanedNotam = currentNotam.replace(/CREATED:.*$/, '').trim();
-              if (cleanedNotam.length > 10) {
-                notams.push(`${notamId} - ${cleanedNotam}`);
-              }
-            }
-            
-            // Start new NOTAM
-            notamId = word;
-            currentNotam = '';
-            
-            // Skip the dash if it's the next word
-            if (i + 1 < lines.length && lines[i + 1] === '-') {
-              i++;
-            }
-          } else if (notamId && !word.startsWith('CREATED:')) {
-            currentNotam += ' ' + word;
-          }
-        }
-        
-        // Add the last NOTAM
-        if (notamId && currentNotam.trim()) {
-          const cleanedNotam = currentNotam.replace(/CREATED:.*$/, '').trim();
-          if (cleanedNotam.length > 10) {
-            notams.push(`${notamId} - ${cleanedNotam}`);
-          }
-        }
-      }
-      
-      if (notams.length === 0) {
+      if (parsedNotams.length === 0) {
         return {
           data: `No current NOTAMs for ${icaoCode}`,
           error: null
         };
       }
       
-      // Format NOTAMs with clear separation and structure
-      const formattedNotams = notams.map((notam, index) => {
-        const parts = notam.split(' - ', 2);
-        const notamId = parts[0];
-        const notamText = parts[1] || '';
-        
-        return `NOTAM ${index + 1}: ${notamId}
-────────────────────────────────────────────────────────
-${notamText}
-
-`;
-      }).join('');
-      
-      const notamHeader = `NOTAMs for ${icaoCode} (${notams.length} active NOTAMs found)
-${'═'.repeat(60)}
-
-`;
+      // Format for display
+      const formattedNotams = formatNotamsForDisplay(parsedNotams, icaoCode);
       
       return {
-        data: notamHeader + formattedNotams,
+        data: formattedNotams,
         error: null
       };
     } catch (err) {
