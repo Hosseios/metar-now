@@ -1,5 +1,6 @@
 
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { searchAirports } from "@/utils/airportDatabase";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -135,6 +136,42 @@ const AirportAutocomplete = ({ onSelect, isLoading }: AirportAutocompleteProps) 
     e.preventDefault();
   };
 
+  // Dropdown content component
+  const DropdownContent = () => (
+    <div 
+      className="dropdown-portal fixed bg-slate-800 border border-slate-600 rounded-xl shadow-2xl max-h-60 overflow-auto"
+      style={{
+        top: dropdownPosition.top,
+        left: dropdownPosition.left,
+        width: dropdownPosition.width,
+        zIndex: 999999
+      }}
+      onMouseDown={handleDropdownMouseDown}
+    >
+      {suggestions.length > 0 ? (
+        suggestions.map((s, i) => (
+          <button
+            type="button"
+            key={s.icao + i}
+            onClick={() => handleSelect(s.icao)}
+            onMouseDown={handleDropdownMouseDown}
+            className="block w-full text-left px-4 py-3 hover:bg-slate-700 text-white transition-colors border-b border-slate-700 last:border-b-0"
+          >
+            <span className="text-sm">{s.display}</span>
+          </button>
+        ))
+      ) : query.length >= 2 && !searching ? (
+        <div className="p-4 text-slate-400 text-sm">
+          No results found for "{query}".
+        </div>
+      ) : searching ? (
+        <div className="p-4 text-slate-400 text-sm">
+          Searching...
+        </div>
+      ) : null}
+    </div>
+  );
+
   return (
     <>
       <div ref={containerRef} className="relative w-full max-w-md">
@@ -173,40 +210,7 @@ const AirportAutocomplete = ({ onSelect, isLoading }: AirportAutocompleteProps) 
       </div>
 
       {/* Portal dropdown to ensure it appears above everything */}
-      {showDropdown && (
-        <div 
-          className="dropdown-portal fixed bg-slate-800 border border-slate-600 rounded-xl shadow-2xl max-h-60 overflow-auto"
-          style={{
-            top: dropdownPosition.top,
-            left: dropdownPosition.left,
-            width: dropdownPosition.width,
-            zIndex: 999999
-          }}
-          onMouseDown={handleDropdownMouseDown}
-        >
-          {suggestions.length > 0 ? (
-            suggestions.map((s, i) => (
-              <button
-                type="button"
-                key={s.icao + i}
-                onClick={() => handleSelect(s.icao)}
-                onMouseDown={handleDropdownMouseDown}
-                className="block w-full text-left px-4 py-3 hover:bg-slate-700 text-white transition-colors border-b border-slate-700 last:border-b-0"
-              >
-                <span className="text-sm">{s.display}</span>
-              </button>
-            ))
-          ) : query.length >= 2 && !searching ? (
-            <div className="p-4 text-slate-400 text-sm">
-              No results found for "{query}".
-            </div>
-          ) : searching ? (
-            <div className="p-4 text-slate-400 text-sm">
-              Searching...
-            </div>
-          ) : null}
-        </div>
-      )}
+      {showDropdown && createPortal(<DropdownContent />, document.body)}
     </>
   );
 };
