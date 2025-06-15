@@ -267,7 +267,7 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
 
           <TabsContent value="airport" className="mt-4">
             <div className="relative avionics-display rounded-none">
-              <ScrollArea className="h-[400px] w-full">
+              <ScrollArea className="h-[400px] w-full [&>[data-radix-scroll-area-viewport]]:scrollbar-thin [&>[data-radix-scroll-area-viewport]]:scrollbar-track-black [&>[data-radix-scroll-area-viewport]]:scrollbar-thumb-orange-400/50 [&>[data-radix-scroll-area-viewport]]:scrollbar-thumb-rounded">
                 <div className="bg-black text-orange-400 p-6 avionics-display min-h-full"
                   style={{
                     fontFamily: 'Monaco, "Courier New", monospace',
@@ -283,7 +283,7 @@ const MetarDisplay = ({ weatherData, metarData, isLoading, error, icaoCode }: Me
 
           <TabsContent value="notam" className="mt-4">
             <div className="relative avionics-display rounded-none">
-              <ScrollArea className="h-[400px] w-full">
+              <ScrollArea className="h-[400px] w-full [&>[data-radix-scroll-area-viewport]]:scrollbar-thin [&>[data-radix-scroll-area-viewport]]:scrollbar-track-black [&>[data-radix-scroll-area-viewport]]:scrollbar-thumb-orange-400/50 [&>[data-radix-scroll-area-viewport]]:scrollbar-thumb-rounded">
                 <div className="bg-black text-orange-400 p-6 avionics-display min-h-full"
                   style={{
                     fontFamily: 'Monaco, "Courier New", monospace',
