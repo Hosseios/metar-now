@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import MetarSearch from "@/components/MetarSearch";
 import FavoritesManager from "@/components/FavoritesManager";
@@ -92,7 +91,7 @@ const MobileIndex = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 relative">
+    <div className="min-h-screen bg-slate-900 relative overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{
@@ -105,7 +104,7 @@ const MobileIndex = () => {
       {/* Content */}
       <div className="relative z-10 flex flex-col min-h-screen bg-slate-900/20">
         {/* Tab Content */}
-        <div className="flex-1 p-4 space-y-4 pb-24 bg-slate-900/20" style={{ paddingTop: 'max(1rem, env(safe-area-inset-top, 1rem))' }}>
+        <div className="flex-1 p-4 space-y-4 pb-24 bg-slate-900/20 overflow-y-auto" style={{ paddingTop: 'max(1rem, env(safe-area-inset-top, 1rem))', paddingBottom: '90px' }}>
           {activeTab === 'search' && (
             <>
               <div className="bg-slate-800/90 backdrop-blur-xl rounded-2xl p-4 border border-white/20 shadow-lg">
@@ -293,7 +292,7 @@ const MobileIndex = () => {
               <div className="space-y-4">
                 <div className="p-4 bg-slate-900/40 rounded-xl">
                   <p className="text-white font-medium mb-2">About METAR Now</p>
-                  <p className="text-slate-300 text-sm">Real-time aviation weather data for pilots and aviation enthusiasts.</p>
+                  <p className="text-slate-300">Real-time aviation weather data for pilots and aviation enthusiasts.</p>
                 </div>
                 <div className="p-4 bg-slate-900/40 rounded-xl">
                   <p className="text-white font-medium mb-2">Data Sources</p>
@@ -305,8 +304,10 @@ const MobileIndex = () => {
         </div>
       </div>
 
-      {/* Bottom Navigation */}
-      <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+      {/* Bottom Navigation - Fixed positioning */}
+      <div className="fixed bottom-0 left-0 right-0 z-50">
+        <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+      </div>
     </div>
   );
 };
