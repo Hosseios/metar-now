@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Search, Plane, Heart } from "lucide-react";
+import { Search, Plane, Plus } from "lucide-react";
 import RetroRadar from "./RetroRadar";
 import { useSupabaseFavorites } from "@/hooks/useSupabaseFavorites";
 import { useAuth } from "@/contexts/AuthContext";
@@ -57,34 +57,37 @@ const MetarSearch = ({ onSearch, isLoading }: MetarSearchProps) => {
           <button
             type="button"
             title={isAlreadyFavorite ? "Already in favorites" : "Add to favorites"}
-            className={`ml-4 flex items-center justify-center transition p-2 rounded-full border-2 relative group bg-transparent border-transparent 
+            className={`ml-4 flex items-center justify-center transition-all duration-200 p-2.5 rounded-xl border-2 relative group
               ${isAlreadyFavorite 
-                ? "cursor-not-allowed opacity-60"
-                : "hover:bg-pink-700/20"
+                ? "cursor-not-allowed opacity-60 bg-green-500/20 border-green-500/40"
+                : "hover:bg-blue-500/20 border-blue-400/30 hover:border-blue-400/60 bg-white/10 backdrop-blur-sm"
               }`}
             onClick={handleAddFavorite}
             disabled={!isValidIcao || isAlreadyFavorite || favLoading}
             aria-label="Add to favorites"
-            style={{ boxShadow: '0 0 6px 0 rgba(236,72,153,.12)' }}
+            style={{ 
+              boxShadow: isAlreadyFavorite 
+                ? '0 0 12px 0 rgba(34,197,94,.15)' 
+                : '0 0 12px 0 rgba(59,130,246,.15)' 
+            }}
           >
-            <Heart
-              className={`w-7 h-7 transition-all duration-150 drop-shadow-lg 
+            <Plus
+              className={`w-6 h-6 transition-all duration-200 font-bold
                 ${isAlreadyFavorite
-                  ? "fill-pink-500 text-pink-400 scale-110"
-                  : "text-pink-300 hover:scale-110 hover:text-pink-500"
+                  ? "text-green-400 rotate-45"
+                  : "text-blue-300 hover:text-blue-200 hover:scale-110"
                 }
               `}
-              fill={isAlreadyFavorite ? "#ec4899" : "none"}
-              strokeWidth={2.2}
+              strokeWidth={2.5}
             />
             {!isAlreadyFavorite && (
-              <span className="absolute left-0 top-full w-max text-xs bg-pink-700/90 text-white rounded-md px-2 py-1 mt-1 opacity-0 group-hover:opacity-100 transition pointer-events-none shadow-xl z-10">
+              <span className="absolute left-1/2 transform -translate-x-1/2 top-full w-max text-xs bg-blue-600/90 text-white rounded-lg px-3 py-1.5 mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none shadow-xl z-10 font-medium">
                 Add to favorites
               </span>
             )}
             {isAlreadyFavorite && (
-              <span className="absolute left-0 top-full w-max text-xs bg-gray-700/90 text-white rounded-md px-2 py-1 mt-1 opacity-100 transition pointer-events-none shadow-xl z-10">
-                Favorited
+              <span className="absolute left-1/2 transform -translate-x-1/2 top-full w-max text-xs bg-green-600/90 text-white rounded-lg px-3 py-1.5 mt-2 opacity-100 transition-opacity duration-200 pointer-events-none shadow-xl z-10 font-medium">
+                Added to favorites
               </span>
             )}
           </button>
@@ -127,4 +130,3 @@ const MetarSearch = ({ onSearch, isLoading }: MetarSearchProps) => {
 };
 
 export default MetarSearch;
-
