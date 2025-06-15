@@ -264,9 +264,13 @@ Elevation: ${Math.floor(Math.random() * 5000)} ft MSL
 Runways: ${Math.floor(Math.random() * 3) + 1}
 Control Tower: ${Math.random() > 0.5 ? 'Yes' : 'No'}`;
 
+  // Generate sample NOTAM data
+  const notam = `No current NOTAMs for ${icaoCode}`;
+
   return {
     metar,
     taf,
-    airport
+    airport,
+    notam
   };
 };
