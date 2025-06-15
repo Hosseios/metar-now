@@ -102,24 +102,24 @@ const RecentSearches = ({ onSelectRecent }: RecentSearchesProps) => {
                       <button
                         onClick={(e) => handleAddFavorite(icao, e)}
                         disabled={isAlreadyFavorite || favLoading}
-                        className={`p-1.5 rounded-lg transition-all duration-200 touch-manipulation
+                        className={`w-7 h-7 rounded-full flex items-center justify-center transition-all duration-200 touch-manipulation
                           ${isAlreadyFavorite
                             ? "cursor-not-allowed opacity-50 bg-green-500/20 text-green-400"
-                            : "hover:bg-blue-500/20 text-blue-300 hover:text-blue-200"
+                            : "hover:bg-blue-500/20 text-blue-300 hover:text-blue-200 bg-blue-500/10"
                           }`}
                         title={isAlreadyFavorite ? "Already in favorites" : "Add to favorites"}
                       >
                         <Plus 
-                          className={`w-4 h-4 transition-transform duration-200 ${isAlreadyFavorite ? "rotate-45" : ""}`}
-                          strokeWidth={2}
+                          className="w-3 h-3"
+                          strokeWidth={3}
                         />
                       </button>
                     )}
                     <button
                       onClick={() => removeRecentSearch(icao)}
-                      className="p-1.5 rounded-lg hover:bg-red-500/20 text-slate-400 hover:text-red-300 transition-colors touch-manipulation"
+                      className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-red-500/20 text-slate-400 hover:text-red-300 transition-colors touch-manipulation"
                     >
-                      <X className="w-4 h-4" />
+                      <X className="w-3 h-3" strokeWidth={2} />
                     </button>
                   </div>
                 </div>

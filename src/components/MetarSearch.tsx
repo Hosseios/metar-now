@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Search, Plane, Plus } from "lucide-react";
+import { Search, Plane } from "lucide-react";
 import RetroRadar from "./RetroRadar";
 import { useSupabaseFavorites } from "@/hooks/useSupabaseFavorites";
 import { useAuth } from "@/contexts/AuthContext";
@@ -53,45 +53,6 @@ const MetarSearch = ({ onSearch, isLoading }: MetarSearchProps) => {
             Enter a 4-letter airport code (e.g., KJFK, EGLL, LFPG)
           </p>
         </div>
-        {user && (
-          <button
-            type="button"
-            title={isAlreadyFavorite ? "Already in favorites" : "Add to favorites"}
-            className={`ml-4 flex items-center justify-center transition-all duration-200 p-2 rounded-lg border-2 relative group
-              ${isAlreadyFavorite 
-                ? "cursor-not-allowed opacity-60 bg-green-500/20 border-green-500/40"
-                : "hover:bg-blue-500/20 border-blue-400/30 hover:border-blue-400/60 bg-white/10 backdrop-blur-sm"
-              }`}
-            onClick={handleAddFavorite}
-            disabled={!isValidIcao || isAlreadyFavorite || favLoading}
-            aria-label="Add to favorites"
-            style={{ 
-              boxShadow: isAlreadyFavorite 
-                ? '0 0 8px 0 rgba(34,197,94,.12)' 
-                : '0 0 8px 0 rgba(59,130,246,.12)' 
-            }}
-          >
-            <Plus
-              className={`w-4 h-4 transition-all duration-200
-                ${isAlreadyFavorite
-                  ? "text-green-400 rotate-45"
-                  : "text-blue-300 hover:text-blue-200 hover:scale-110"
-                }
-              `}
-              strokeWidth={2}
-            />
-            {!isAlreadyFavorite && (
-              <span className="absolute left-1/2 transform -translate-x-1/2 top-full w-max text-xs bg-blue-600/90 text-white rounded-lg px-3 py-1.5 mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none shadow-xl z-10 font-medium">
-                Add to favorites
-              </span>
-            )}
-            {isAlreadyFavorite && (
-              <span className="absolute left-1/2 transform -translate-x-1/2 top-full w-max text-xs bg-green-600/90 text-white rounded-lg px-3 py-1.5 mt-2 opacity-100 transition-opacity duration-200 pointer-events-none shadow-xl z-10 font-medium">
-                Added to favorites
-              </span>
-            )}
-          </button>
-        )}
       </div>
       
       <form onSubmit={handleSubmit} className="flex gap-4">
