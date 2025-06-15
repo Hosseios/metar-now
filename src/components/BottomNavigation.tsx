@@ -16,8 +16,8 @@ const BottomNavigation = ({ activeTab, onTabChange }: BottomNavigationProps) => 
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-xl border-t border-white/20 z-50 md:hidden">
-      <div className="flex items-center justify-around py-2 pb-safe">
+    <div className="fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-white/20 z-[9999] md:hidden safe-area-bottom">
+      <div className="flex items-center justify-around py-2 px-2 min-h-[70px]">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -26,7 +26,7 @@ const BottomNavigation = ({ activeTab, onTabChange }: BottomNavigationProps) => 
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
               className={cn(
-                "flex flex-col items-center justify-center min-h-[60px] px-3 py-2 rounded-lg transition-all duration-200",
+                "flex flex-col items-center justify-center min-h-[60px] px-3 py-2 rounded-lg transition-all duration-200 flex-1 max-w-[80px]",
                 "active:scale-95 touch-manipulation",
                 isActive 
                   ? "text-cyan-400 bg-cyan-500/20" 

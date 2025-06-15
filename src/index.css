@@ -198,23 +198,52 @@
     padding-top: env(safe-area-inset-top, 1rem);
   }
   
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  
   /* Touch-friendly interactions */
   .touch-manipulation {
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
   }
   
-  /* Better mobile text rendering */
+  /* Better mobile text rendering and overflow handling */
   @media (max-width: 768px) {
     body {
       -webkit-text-size-adjust: 100%;
       text-rendering: optimizeLegibility;
+      background-color: #0f172a !important;
+      overflow-x: hidden;
+    }
+    
+    /* Prevent white backgrounds on mobile */
+    html, body, #root {
+      background-color: #0f172a !important;
+      min-height: 100vh;
+    }
+    
+    /* Better text wrapping for NOTAM and other long text */
+    .break-words {
+      word-wrap: break-word;
+      word-break: break-word;
+      overflow-wrap: break-word;
+      hyphens: auto;
+    }
+    
+    .overflow-wrap-anywhere {
+      overflow-wrap: anywhere;
     }
     
     /* Larger touch targets on mobile */
     .mobile-touch-target {
       min-height: 44px;
       min-width: 44px;
+    }
+    
+    /* Ensure bottom navigation is always visible */
+    .bottom-nav-spacer {
+      height: 80px;
     }
   }
 }

@@ -82,27 +82,27 @@ const MobileIndex = () => {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
         <div className="text-white text-lg">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative pb-20">
+    <div className="min-h-screen bg-slate-900 relative">
       {/* Background */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{
           backgroundImage: `url('/lovable-uploads/a24c1d1e-db26-4943-baf9-119712ba820f.png')`
         }} />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/70" />
-        <div className="absolute bottom-0 left-0 right-0 h-96 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-900/90 via-slate-900/70 to-slate-900/90" />
+        <div className="absolute bottom-0 left-0 right-0 h-96 bg-gradient-to-t from-slate-900 via-slate-900/80 to-transparent"></div>
       </div>
 
       {/* Content */}
-      <div className="relative z-10 flex flex-col min-h-screen">
+      <div className="relative z-10 flex flex-col min-h-screen bg-slate-900/20">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 pt-8" style={{ paddingTop: 'max(2rem, env(safe-area-inset-top, 2rem))' }}>
+        <div className="flex items-center justify-between p-4 pt-8 bg-slate-900/50 backdrop-blur-sm" style={{ paddingTop: 'max(2rem, env(safe-area-inset-top, 2rem))' }}>
           <div className="flex items-center space-x-3">
             <div className="relative">
               <img src="/lovable-uploads/2750b808-8ab0-485e-95b6-fd3cbf9517e2.png" alt="METAR Now Logo" className="w-12 h-12" />
@@ -115,10 +115,10 @@ const MobileIndex = () => {
         </div>
 
         {/* Tab Content */}
-        <div className="flex-1 p-4 space-y-4">
+        <div className="flex-1 p-4 space-y-4 pb-24 bg-slate-900/20">
           {activeTab === 'search' && (
             <>
-              <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-4 border border-white/20 shadow-lg">
+              <div className="bg-slate-800/90 backdrop-blur-xl rounded-2xl p-4 border border-white/20 shadow-lg">
                 <MetarSearch onSearch={handleSearch} isLoading={isLoading} />
               </div>
 
@@ -158,19 +158,19 @@ const MobileIndex = () => {
           )}
 
           {activeTab === 'favorites' && (
-            <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-4 border border-white/20 shadow-lg">
+            <div className="bg-slate-800/90 backdrop-blur-xl rounded-2xl p-4 border border-white/20 shadow-lg">
               <FavoritesManager currentIcao={icaoCode} onSelectFavorite={handleSearch} />
             </div>
           )}
 
           {activeTab === 'recent' && (
-            <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-4 border border-white/20 shadow-lg">
+            <div className="bg-slate-800/90 backdrop-blur-xl rounded-2xl p-4 border border-white/20 shadow-lg">
               <RecentSearches onSelectRecent={handleSearch} />
             </div>
           )}
 
           {activeTab === 'settings' && (
-            <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-4 border border-white/20 shadow-lg">
+            <div className="bg-slate-800/90 backdrop-blur-xl rounded-2xl p-4 border border-white/20 shadow-lg">
               <div className="flex items-center space-x-3 mb-4">
                 <div className="p-3 bg-gradient-to-br from-gray-500 to-slate-500 rounded-2xl shadow-lg">
                   <Bell className="w-6 h-6 text-white" />
@@ -181,11 +181,11 @@ const MobileIndex = () => {
                 </div>
               </div>
               <div className="space-y-4">
-                <div className="p-4 bg-black/20 rounded-xl">
+                <div className="p-4 bg-slate-900/40 rounded-xl">
                   <p className="text-white font-medium mb-2">About METAR Now</p>
                   <p className="text-slate-300 text-sm">Real-time aviation weather data for pilots and aviation enthusiasts.</p>
                 </div>
-                <div className="p-4 bg-black/20 rounded-xl">
+                <div className="p-4 bg-slate-900/40 rounded-xl">
                   <p className="text-white font-medium mb-2">Data Sources</p>
                   <p className="text-slate-300 text-sm">Weather data provided by Aviation Weather Center and CheckWX API.</p>
                 </div>
