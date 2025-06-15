@@ -3,6 +3,7 @@ import MetarSearch from "@/components/MetarSearch";
 import MetarDisplay from "@/components/MetarDisplay";
 import FavoritesManager from "@/components/FavoritesManager";
 import MobileIndex from "@/pages/MobileIndex";
+import DeviceInfo from "@/components/DeviceInfo";
 import { useMetarData } from "@/hooks/useMetarData";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -10,6 +11,7 @@ import { useState } from "react";
 
 const Index = () => {
   const [icaoCode, setIcaoCode] = useState("");
+  const [showDeviceInfo, setShowDeviceInfo] = useState(false);
   const {
     weatherData,
     isLoading,
@@ -26,7 +28,7 @@ const Index = () => {
     fetchWeatherData(code);
   };
 
-  // Use mobile-optimized layout on mobile devices
+  // Use mobile-optimized layout for mobile phones and tablets
   if (isMobile) {
     return <MobileIndex />;
   }
@@ -62,7 +64,24 @@ const Index = () => {
               <p className="text-sm md:text-base text-slate-200 drop-shadow">Get real-time METAR & TAF reports with ease.</p>
             </div>
           </div>
+          
+          {/* Debug toggle for device info */}
+          <button
+            onClick={() => setShowDeviceInfo(!showDeviceInfo)}
+            className="text-xs text-slate-400 hover:text-slate-200 transition-colors"
+            title="Toggle device info"
+          >
+            Device Info
+          </button>
         </div>
+
+        {/* Device Info Debug Panel */}
+        {showDeviceInfo && (
+          <div className="mx-4 md:mx-6 mb-4 bg-slate-800/90 backdrop-blur-xl rounded-xl p-4 border border-white/20">
+            <h3 className="text-white font-semibold mb-2">Device Detection Debug</h3>
+            <DeviceInfo />
+          </div>
+        )}
 
         {/* Main Content - Flex-grow to fill remaining space */}
         <div className="flex-1 flex flex-col p-3 md:p-6 space-y-3 md:space-y-4 max-w-6xl mx-auto w-full">

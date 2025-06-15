@@ -1,7 +1,7 @@
+
 import * as React from "react"
 import { Capacitor } from '@capacitor/core'
-
-const MOBILE_BREAKPOINT = 768
+import { detectDevice } from '@/utils/deviceDetection'
 
 export function useIsMobile() {
   const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined)
@@ -13,15 +13,29 @@ export function useIsMobile() {
       return
     }
 
-    // Otherwise, use screen width detection for web browsers
-    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
-    const onChange = () => {
-      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-    }
-    mql.addEventListener("change", onChange)
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-    return () => mql.removeEventListener("change", onChange)
+    // Use device detection based on user-agent
+    const deviceInfo = detectDevice()
+    console.log('Device detection:', deviceInfo)
+    
+    // Use mobile interface for both mobile phones and tablets
+    setIsMobile(deviceInfo.isMobileDevice)
   }, [])
 
   return !!isMobile
+}
+
+/**
+ * Hook to get detailed device information
+ */
+export function useDeviceInfo() {
+  const [deviceInfo, setDeviceInfo] = React.useState(() => detectDevice())
+
+  React.useEffect(() => {
+    // Update device info on mount (in case user-agent changes)
+    const info = detectDevice()
+    setDeviceInfo(info)
+    console.log('Device info:', info)
+  }, [])
+
+  return deviceInfo
 }
