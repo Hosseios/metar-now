@@ -43,8 +43,8 @@ const Index = () => {
 
       {/* Content Layer */}
       <div className="relative z-10 flex flex-col min-h-screen">
-        {/* Header with Logo */}
-        <div className="flex items-center justify-between p-4 md:p-6">
+        {/* Header with Logo - Added safe-area padding for mobile */}
+        <div className="flex items-center justify-between p-4 md:p-6 pt-8 md:pt-6" style={{ paddingTop: 'max(2rem, env(safe-area-inset-top, 2rem))' }}>
           <div className="flex items-center space-x-3 md:space-x-4">
             <div className="relative">
               <img src="/lovable-uploads/2750b808-8ab0-485e-95b6-fd3cbf9517e2.png" alt="METAR Now Logo" className="w-16 h-16 md:w-20 md:h-20" />
@@ -55,8 +55,6 @@ const Index = () => {
             </div>
           </div>
         </div>
-
-        {/* Minimal spacing - removed the hero content section completely */}
 
         {/* Main Content - Flex-grow to fill remaining space */}
         <div className="flex-1 flex flex-col p-3 md:p-6 space-y-3 md:space-y-4 max-w-6xl mx-auto w-full">
