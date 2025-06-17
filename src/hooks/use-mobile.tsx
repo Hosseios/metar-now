@@ -15,7 +15,6 @@ export function useIsMobile() {
 
     // Use device detection based on user-agent
     const deviceInfo = detectDevice()
-    console.log('Device detection:', deviceInfo)
     
     // Use mobile interface for both mobile phones and tablets
     setIsMobile(deviceInfo.isMobileDevice)
@@ -34,7 +33,6 @@ export function useDeviceInfo() {
     // Update device info on mount (in case user-agent changes)
     const info = detectDevice()
     setDeviceInfo(info)
-    console.log('Device info:', info)
   }, [])
 
   return deviceInfo

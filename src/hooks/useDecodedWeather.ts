@@ -29,7 +29,6 @@ export const useDecodedWeather = (icaoCode: string, isActive: boolean) => {
   const getCachedData = useCallback((icao: string) => {
     const cached = decodedCache.get(icao);
     if (cached && Date.now() < cached.expiry) {
-      console.log(`Using cached decoded weather for ${icao}`);
       return cached.data;
     }
     return null;
@@ -54,8 +53,6 @@ export const useDecodedWeather = (icaoCode: string, isActive: boolean) => {
         const proxy = CORS_PROXIES[proxyIndex];
         const proxyUrl = proxy + encodeURIComponent(aviationWeatherUrl);
         
-        console.log(`Fetching decoded weather for ${icao} via proxy ${proxyIndex + 1}/${CORS_PROXIES.length}`);
-        
         const response = await fetch(proxyUrl, { signal });
         
         if (!response.ok) {
@@ -78,15 +75,12 @@ export const useDecodedWeather = (icaoCode: string, isActive: boolean) => {
         }
         
         if (content.trim()) {
-          console.log(`Successfully fetched decoded weather for ${icao} via proxy ${proxyIndex + 1}`);
           return content;
         } else {
           throw new Error('Empty response');
         }
         
       } catch (err) {
-        console.warn(`Proxy ${proxyIndex + 1} failed for ${icao}:`, err);
-        
         // If this is the last proxy, throw the error
         if (proxyIndex === CORS_PROXIES.length - 1) {
           throw err;
@@ -134,7 +128,6 @@ export const useDecodedWeather = (icaoCode: string, isActive: boolean) => {
       if (!signal.aborted) {
         const errorMessage = err instanceof Error ? err.message : "Failed to fetch decoded weather";
         setDecodedError(`Unable to fetch decoded weather: ${errorMessage}`);
-        console.error('Error fetching decoded weather:', errorMessage);
       }
     } finally {
       if (!signal.aborted) {
