@@ -24,23 +24,38 @@ const fetchWithProxyRetry = async (targetUrl: string, dataType: string): Promise
         throw new Error(`HTTP ${response.status}`);
       }
       
-      const data = await response.json();
-      
-      // Handle different proxy response formats
+      // Try to parse as JSON first, then fall back to text
+      let data;
       let content = '';
-      if (data.contents) {
-        // allorigins format
-        content = data.contents;
-      } else if (typeof data === 'string') {
-        // corsproxy format
-        content = data;
-      } else {
-        // codetabs format
-        content = data.content || JSON.stringify(data);
+      
+      try {
+        data = await response.json();
+        
+        // Handle different proxy response formats
+        if (data.contents) {
+          // allorigins format
+          content = data.contents;
+        } else if (typeof data === 'string') {
+          // corsproxy format or direct string response
+          content = data;
+        } else if (data.content) {
+          // codetabs format
+          content = data.content;
+        } else {
+          // fallback to stringified JSON
+          content = JSON.stringify(data);
+        }
+      } catch (jsonError) {
+        // If JSON parsing fails, try to get the response as text
+        try {
+          content = await response.text();
+        } catch (textError) {
+          throw new Error(`Failed to parse response: ${jsonError}`);
+        }
       }
       
       // Check if we got valid response content
-      if (data.status && data.status.http_code !== 200) {
+      if (data && data.status && data.status.http_code !== 200) {
         throw new Error(`Aviation Weather API returned error for ${dataType}: ${data.status.http_code}`);
       }
       
@@ -109,23 +124,38 @@ export const fetchNotamData = async (icaoCode: string): Promise<DataFetchResult>
           throw new Error(`HTTP ${response.status}`);
         }
         
-        const data = await response.json();
-        
-        // Handle different proxy response formats
+        // Try to parse as JSON first, then fall back to text
+        let data;
         let htmlContent = '';
-        if (data.contents) {
-          // allorigins format
-          htmlContent = data.contents;
-        } else if (typeof data === 'string') {
-          // corsproxy format
-          htmlContent = data;
-        } else {
-          // codetabs format
-          htmlContent = data.content || JSON.stringify(data);
+        
+        try {
+          data = await response.json();
+          
+          // Handle different proxy response formats
+          if (data.contents) {
+            // allorigins format
+            htmlContent = data.contents;
+          } else if (typeof data === 'string') {
+            // corsproxy format or direct string response
+            htmlContent = data;
+          } else if (data.content) {
+            // codetabs format
+            htmlContent = data.content;
+          } else {
+            // fallback to stringified JSON
+            htmlContent = JSON.stringify(data);
+          }
+        } catch (jsonError) {
+          // If JSON parsing fails, try to get the response as text
+          try {
+            htmlContent = await response.text();
+          } catch (textError) {
+            throw new Error(`Failed to parse response: ${jsonError}`);
+          }
         }
         
         // Check if we got valid response
-        if (data.status && data.status.http_code !== 200) {
+        if (data && data.status && data.status.http_code !== 200) {
           throw new Error(`FAA NOTAM API returned error: ${data.status.http_code}`);
         }
         
