@@ -24,34 +24,37 @@ const fetchWithProxyRetry = async (targetUrl: string, dataType: string): Promise
         throw new Error(`HTTP ${response.status}`);
       }
       
-      // Try to parse as JSON first, then fall back to text
-      let data;
+      // Get response as text first, then try to parse as JSON if it looks like JSON
+      const responseText = await response.text();
       let content = '';
+      let data = null;
       
-      try {
-        data = await response.json();
-        
-        // Handle different proxy response formats
-        if (data.contents) {
-          // allorigins format
-          content = data.contents;
-        } else if (typeof data === 'string') {
-          // corsproxy format or direct string response
-          content = data;
-        } else if (data.content) {
-          // codetabs format
-          content = data.content;
-        } else {
-          // fallback to stringified JSON
-          content = JSON.stringify(data);
-        }
-      } catch (jsonError) {
-        // If JSON parsing fails, try to get the response as text
+      // Try to parse as JSON if the response looks like JSON
+      if (responseText.trim().startsWith('{') || responseText.trim().startsWith('[')) {
         try {
-          content = await response.text();
-        } catch (textError) {
-          throw new Error(`Failed to parse response: ${jsonError}`);
+          data = JSON.parse(responseText);
+          
+          // Handle different proxy response formats
+          if (data.contents) {
+            // allorigins format
+            content = data.contents;
+          } else if (typeof data === 'string') {
+            // corsproxy format or direct string response
+            content = data;
+          } else if (data.content) {
+            // codetabs format
+            content = data.content;
+          } else {
+            // fallback to stringified JSON
+            content = JSON.stringify(data);
+          }
+        } catch (jsonError) {
+          // If JSON parsing fails, use the raw text
+          content = responseText;
         }
+      } else {
+        // Response is plain text (like METAR/TAF data)
+        content = responseText;
       }
       
       // Check if we got valid response content
@@ -124,34 +127,37 @@ export const fetchNotamData = async (icaoCode: string): Promise<DataFetchResult>
           throw new Error(`HTTP ${response.status}`);
         }
         
-        // Try to parse as JSON first, then fall back to text
-        let data;
+        // Get response as text first, then try to parse as JSON if it looks like JSON
+        const responseText = await response.text();
         let htmlContent = '';
+        let data = null;
         
-        try {
-          data = await response.json();
-          
-          // Handle different proxy response formats
-          if (data.contents) {
-            // allorigins format
-            htmlContent = data.contents;
-          } else if (typeof data === 'string') {
-            // corsproxy format or direct string response
-            htmlContent = data;
-          } else if (data.content) {
-            // codetabs format
-            htmlContent = data.content;
-          } else {
-            // fallback to stringified JSON
-            htmlContent = JSON.stringify(data);
-          }
-        } catch (jsonError) {
-          // If JSON parsing fails, try to get the response as text
+        // Try to parse as JSON if the response looks like JSON
+        if (responseText.trim().startsWith('{') || responseText.trim().startsWith('[')) {
           try {
-            htmlContent = await response.text();
-          } catch (textError) {
-            throw new Error(`Failed to parse response: ${jsonError}`);
+            data = JSON.parse(responseText);
+            
+            // Handle different proxy response formats
+            if (data.contents) {
+              // allorigins format
+              htmlContent = data.contents;
+            } else if (typeof data === 'string') {
+              // corsproxy format or direct string response
+              htmlContent = data;
+            } else if (data.content) {
+              // codetabs format
+              htmlContent = data.content;
+            } else {
+              // fallback to stringified JSON
+              htmlContent = JSON.stringify(data);
+            }
+          } catch (jsonError) {
+            // If JSON parsing fails, use the raw text
+            htmlContent = responseText;
           }
+        } else {
+          // Response is plain text (HTML from NOTAM service)
+          htmlContent = responseText;
         }
         
         // Check if we got valid response
