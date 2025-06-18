@@ -3,94 +3,180 @@ import { DataFetchResult, WeatherData } from "@/types/weather";
 import { parseNotams } from "./notamParser";
 import { formatNotamsForDisplay } from "./notamFormatter";
 
-export const fetchSingleDataSource = async (url: string, dataType: string): Promise<DataFetchResult> => {
-  try {
-    const response = await fetch(url);
-    
-    if (!response.ok) {
-      return {
-        data: "",
-        error: `Failed to fetch ${dataType} data: ${response.status}`
-      };
-    }
-    
-    const data = await response.json();
-    
-    if (data.status.http_code !== 200) {
-      return {
-        data: "",
-        error: `Aviation Weather API returned error for ${dataType}: ${data.status.http_code}`
-      };
-    }
+// CORS proxy services with fallback
+const CORS_PROXIES = [
+  'https://api.allorigins.win/get?url=',
+  'https://corsproxy.io/?',
+  'https://api.codetabs.com/v1/proxy?quest='
+];
 
-    const content = data.contents.trim();
-    if (!content) {
+const fetchWithProxyRetry = async (targetUrl: string, dataType: string): Promise<DataFetchResult> => {
+  for (let proxyIndex = 0; proxyIndex < CORS_PROXIES.length; proxyIndex++) {
+    try {
+      const proxy = CORS_PROXIES[proxyIndex];
+      const proxyUrl = proxy + encodeURIComponent(targetUrl);
+      
+      console.log(`Attempting to fetch ${dataType} data using proxy ${proxyIndex + 1}:`, proxy);
+      
+      const response = await fetch(proxyUrl);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      // Handle different proxy response formats
+      let content = '';
+      if (data.contents) {
+        // allorigins format
+        content = data.contents;
+      } else if (typeof data === 'string') {
+        // corsproxy format
+        content = data;
+      } else {
+        // codetabs format
+        content = data.content || JSON.stringify(data);
+      }
+      
+      // Check if we got valid response content
+      if (data.status && data.status.http_code !== 200) {
+        throw new Error(`Aviation Weather API returned error for ${dataType}: ${data.status.http_code}`);
+      }
+      
+      const trimmedContent = content.trim();
+      if (!trimmedContent) {
+        return {
+          data: `No ${dataType} data available for this station`,
+          error: null
+        };
+      }
+      
+      console.log(`Successfully fetched ${dataType} data using proxy ${proxyIndex + 1}`);
       return {
-        data: `No ${dataType} data available for this station`,
+        data: trimmedContent,
         error: null
       };
+      
+    } catch (err) {
+      console.warn(`Proxy ${proxyIndex + 1} failed for ${dataType}:`, err);
+      
+      // If this is the last proxy, return the error
+      if (proxyIndex === CORS_PROXIES.length - 1) {
+        return {
+          data: "",
+          error: err instanceof Error ? err.message : `Failed to fetch ${dataType} data`
+        };
+      }
+      
+      // Wait a bit before trying the next proxy
+      await new Promise(resolve => setTimeout(resolve, 500));
     }
-
-    return {
-      data: content,
-      error: null
-    };
-  } catch (err) {
-    return {
-      data: "",
-      error: err instanceof Error ? err.message : `Failed to fetch ${dataType} data`
-    };
   }
+  
+  return {
+    data: "",
+    error: `All CORS proxies failed for ${dataType} data`
+  };
+};
+
+export const fetchSingleDataSource = async (url: string, dataType: string): Promise<DataFetchResult> => {
+  // Extract the target URL from the proxy URL if it's already proxied
+  let targetUrl = url;
+  if (url.includes('api.allorigins.win/get?url=')) {
+    targetUrl = decodeURIComponent(url.split('url=')[1]);
+  }
+  
+  return await fetchWithProxyRetry(targetUrl, dataType);
 };
 
 export const fetchNotamData = async (icaoCode: string): Promise<DataFetchResult> => {
   try {
     const notamUrl = `https://www.notams.faa.gov/dinsQueryWeb/queryRetrievalMapAction.do?reportType=Report&formatType=ICAO&retrieveLocId=${icaoCode}&actionType=notamRetrievalByICAOs`;
-    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(notamUrl)}`;
     
-    const response = await fetch(proxyUrl);
+    console.log(`Fetching NOTAM data for ${icaoCode}`);
     
-    if (!response.ok) {
-      return {
-        data: "",
-        error: `Failed to fetch NOTAM data: ${response.status}`
-      };
+    for (let proxyIndex = 0; proxyIndex < CORS_PROXIES.length; proxyIndex++) {
+      try {
+        const proxy = CORS_PROXIES[proxyIndex];
+        const proxyUrl = proxy + encodeURIComponent(notamUrl);
+        
+        console.log(`Attempting to fetch NOTAM data using proxy ${proxyIndex + 1}:`, proxy);
+        
+        const response = await fetch(proxyUrl);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        // Handle different proxy response formats
+        let htmlContent = '';
+        if (data.contents) {
+          // allorigins format
+          htmlContent = data.contents;
+        } else if (typeof data === 'string') {
+          // corsproxy format
+          htmlContent = data;
+        } else {
+          // codetabs format
+          htmlContent = data.content || JSON.stringify(data);
+        }
+        
+        // Check if we got valid response
+        if (data.status && data.status.http_code !== 200) {
+          throw new Error(`FAA NOTAM API returned error: ${data.status.http_code}`);
+        }
+        
+        const trimmedContent = htmlContent.trim();
+        
+        if (trimmedContent.includes("No NOTAMs match your criteria") || trimmedContent.includes("No current NOTAMs")) {
+          console.log(`No NOTAMs found for ${icaoCode}`);
+          return {
+            data: `No current NOTAMs for ${icaoCode}`,
+            error: null
+          };
+        }
+        
+        // Parse NOTAMs into structured data
+        const parsedNotams = parseNotams(trimmedContent, icaoCode);
+        
+        if (parsedNotams.length === 0) {
+          return {
+            data: `No current NOTAMs for ${icaoCode}`,
+            error: null
+          };
+        }
+        
+        // Format for display
+        const formattedNotams = formatNotamsForDisplay(parsedNotams, icaoCode);
+        
+        console.log(`Successfully fetched NOTAM data using proxy ${proxyIndex + 1}`);
+        return {
+          data: formattedNotams,
+          error: null
+        };
+        
+      } catch (err) {
+        console.warn(`Proxy ${proxyIndex + 1} failed for NOTAM:`, err);
+        
+        // If this is the last proxy, return the error
+        if (proxyIndex === CORS_PROXIES.length - 1) {
+          return {
+            data: "",
+            error: err instanceof Error ? err.message : "Failed to fetch NOTAM data"
+          };
+        }
+        
+        // Wait a bit before trying the next proxy
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
     }
-    
-    const data = await response.json();
-    
-    if (data.status.http_code !== 200) {
-      return {
-        data: "",
-        error: `FAA NOTAM API returned error: ${data.status.http_code}`
-      };
-    }
-
-    const htmlContent = data.contents.trim();
-    
-    if (htmlContent.includes("No NOTAMs match your criteria") || htmlContent.includes("No current NOTAMs")) {
-      return {
-        data: `No current NOTAMs for ${icaoCode}`,
-        error: null
-      };
-    }
-    
-    // Parse NOTAMs into structured data
-    const parsedNotams = parseNotams(htmlContent, icaoCode);
-    
-    if (parsedNotams.length === 0) {
-      return {
-        data: `No current NOTAMs for ${icaoCode}`,
-        error: null
-      };
-    }
-    
-    // Format for display
-    const formattedNotams = formatNotamsForDisplay(parsedNotams, icaoCode);
     
     return {
-      data: formattedNotams,
-      error: null
+      data: "",
+      error: "All CORS proxies failed for NOTAM data"
     };
   } catch (err) {
     return {
