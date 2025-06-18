@@ -26,26 +26,26 @@ export function formatNotamsForDisplay(notams: NotamItem[], icaoCode: string): s
   
   // Add category summary
   if (critical.length > 0) {
-    output += `⚠️  CRITICAL: ${critical.length} NOTAMs (Safety-related)\n`;
+    output += `[CRITICAL] ${critical.length} NOTAMs (Safety-related)\n`;
   }
   if (operational.length > 0) {
-    output += `🔧 OPERATIONAL: ${operational.length} NOTAMs (Affects operations)\n`;
+    output += `[OPERATIONAL] ${operational.length} NOTAMs (Affects operations)\n`;
   }
   if (informational.length > 0) {
-    output += `ℹ️  INFORMATIONAL: ${informational.length} NOTAMs (General info)\n`;
+    output += `[INFORMATIONAL] ${informational.length} NOTAMs (General info)\n`;
   }
   output += '\n';
   
   // Display critical NOTAMs first
   const categories = [
-    { name: 'CRITICAL', notams: critical, symbol: '⚠️' },
-    { name: 'OPERATIONAL', notams: operational, symbol: '🔧' },
-    { name: 'INFORMATIONAL', notams: informational, symbol: 'ℹ️' }
+    { name: 'CRITICAL', notams: critical, prefix: '[CRITICAL]' },
+    { name: 'OPERATIONAL', notams: operational, prefix: '[OPERATIONAL]' },
+    { name: 'INFORMATIONAL', notams: informational, prefix: '[INFORMATIONAL]' }
   ];
   
   categories.forEach(category => {
     if (category.notams.length > 0) {
-      output += `${category.symbol} ${category.name} NOTAMs\n`;
+      output += `${category.prefix} ${category.name} NOTAMs\n`;
       output += '─'.repeat(40) + '\n\n';
       
       category.notams.forEach((notam, index) => {
@@ -57,13 +57,13 @@ export function formatNotamsForDisplay(notams: NotamItem[], icaoCode: string): s
         output += `${formattedText}\n\n`;
         
         if (notam.effectiveDate && notam.expiryDate) {
-          output += `⏰ Effective: ${notam.effectiveDate} - ${notam.expiryDate}\n`;
+          output += `[TIME] Effective: ${notam.effectiveDate} - ${notam.expiryDate}\n`;
         } else if (notam.effectiveDate) {
-          output += `⏰ Effective: ${notam.effectiveDate}\n`;
+          output += `[TIME] Effective: ${notam.effectiveDate}\n`;
         }
         
         if (notam.createdDate) {
-          output += `📅 Created: ${notam.createdDate}\n`;
+          output += `[CREATED] Created: ${notam.createdDate}\n`;
         }
         
         output += '\n';
@@ -78,8 +78,8 @@ function formatNotamText(text: string): string {
   // Clean up and format NOTAM text for better readability
   return text
     .replace(/\. (?=[A-Z])/g, '.\n• ')
-    .replace(/(\d{2} \w{3} \d{2}:\d{2} \d{4} UNTIL \d{2} \w{3} \d{2}:\d{2} \d{4})/g, '\n⏰ $1')
-    .replace(/(CREATED: \d{2} \w{3} \d{2}:\d{2} \d{4})/g, '\n📅 $1')
+    .replace(/(\d{2} \w{3} \d{2}:\d{2} \d{4} UNTIL \d{2} \w{3} \d{2}:\d{2} \d{4})/g, '\n[TIME] $1')
+    .replace(/(CREATED: \d{2} \w{3} \d{2}:\d{2} \d{4})/g, '\n[CREATED] $1')
     .replace(/\s+/g, ' ')
     .trim();
 }
