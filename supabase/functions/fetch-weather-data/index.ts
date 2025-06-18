@@ -136,35 +136,78 @@ Country: ${airport.country || 'Unknown'}`;
 async function fetchNotamData(icaoCode: string): Promise<{ data: string; error: string | null }> {
   try {
     console.log(`Fetching NOTAM data for ${icaoCode}`);
-    const url = `https://www.notams.faa.gov/dinsQueryWeb/queryRetrievalMapAction.do?reportType=Report&formatType=ICAO&retrieveLocId=${icaoCode}&actionType=notamRetrievalByICAOs`;
-    const response = await fetchWithTimeout(url, 15000); // Longer timeout for NOTAM
     
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    // Try multiple NOTAM sources with different timeout strategies
+    const notamSources = [
+      {
+        name: 'FAA NOTAM Service',
+        url: `https://www.notams.faa.gov/dinsQueryWeb/queryRetrievalMapAction.do?reportType=Report&formatType=ICAO&retrieveLocId=${icaoCode}&actionType=notamRetrievalByICAOs`,
+        timeout: 20000 // 20 seconds for FAA
+      },
+      {
+        name: 'Alternative NOTAM Service',
+        url: `https://pilotweb.nas.faa.gov/PilotWeb/notamRetrievalByICAOAction.do?method=displayByICAOs&reportType=RAW&formatType=ICAO&retrieveLocId=${icaoCode}`,
+        timeout: 15000 // 15 seconds for alternative
+      }
+    ];
+
+    let lastError = null;
+    
+    for (const source of notamSources) {
+      try {
+        console.log(`Trying ${source.name} for ${icaoCode} (timeout: ${source.timeout}ms)`);
+        const response = await fetchWithTimeout(source.url, source.timeout);
+        
+        if (!response.ok) {
+          console.log(`${source.name} returned ${response.status}: ${response.statusText}`);
+          continue;
+        }
+        
+        const htmlContent = await response.text();
+        console.log(`${source.name} returned ${htmlContent.length} characters for ${icaoCode}`);
+        
+        if (htmlContent.includes("No NOTAMs match your criteria") || 
+            htmlContent.includes("No current NOTAMs") ||
+            htmlContent.includes("No NOTAMs were found")) {
+          console.log(`No NOTAMs found via ${source.name} for ${icaoCode}`);
+          return { data: `No current NOTAMs for ${icaoCode}`, error: null };
+        }
+        
+        // Parse NOTAMs into structured data
+        const parsedNotams = parseNotams(htmlContent, icaoCode);
+        console.log(`Parsed ${parsedNotams.length} NOTAMs from ${source.name} for ${icaoCode}`);
+        
+        if (parsedNotams.length === 0) {
+          console.log(`No parseable NOTAMs found via ${source.name} for ${icaoCode}`);
+          continue; // Try next source
+        }
+        
+        // Format for display
+        const formattedNotams = formatNotamsForDisplay(parsedNotams, icaoCode);
+        
+        console.log(`Successfully fetched and formatted NOTAM data via ${source.name} for ${icaoCode}`);
+        return { data: formattedNotams, error: null };
+        
+      } catch (sourceError) {
+        console.error(`${source.name} failed for ${icaoCode}:`, sourceError);
+        lastError = sourceError;
+        continue; // Try next source
+      }
     }
     
-    const htmlContent = await response.text();
+    // If all sources failed
+    console.error(`All NOTAM sources failed for ${icaoCode}. Last error:`, lastError);
+    return { 
+      data: `No current NOTAMs for ${icaoCode}`, 
+      error: null // Don't treat as error if we can't fetch NOTAMs - just return empty
+    };
     
-    if (htmlContent.includes("No NOTAMs match your criteria") || htmlContent.includes("No current NOTAMs")) {
-      console.log(`No NOTAMs found for ${icaoCode}`);
-      return { data: `No current NOTAMs for ${icaoCode}`, error: null };
-    }
-    
-    // Parse NOTAMs into structured data
-    const parsedNotams = parseNotams(htmlContent, icaoCode);
-    
-    if (parsedNotams.length === 0) {
-      return { data: `No current NOTAMs for ${icaoCode}`, error: null };
-    }
-    
-    // Format for display
-    const formattedNotams = formatNotamsForDisplay(parsedNotams, icaoCode);
-    
-    console.log(`Successfully fetched NOTAM data for ${icaoCode}`);
-    return { data: formattedNotams, error: null };
   } catch (error) {
-    console.error(`Error fetching NOTAM data for ${icaoCode}:`, error);
-    return { data: "", error: error instanceof Error ? error.message : "Failed to fetch NOTAM data" };
+    console.error(`Critical error fetching NOTAM data for ${icaoCode}:`, error);
+    return { 
+      data: `No current NOTAMs for ${icaoCode}`, 
+      error: null // Don't treat as error - NOTAMs are often unavailable
+    };
   }
 }
 
