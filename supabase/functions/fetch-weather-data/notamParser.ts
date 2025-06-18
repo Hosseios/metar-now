@@ -13,90 +13,189 @@ export function parseNotams(htmlContent: string, icaoCode: string): NotamItem[] 
   const notams: NotamItem[] = [];
   
   try {
-    // Look for NOTAM blocks in the HTML
-    const notamPattern = /NOTAM\s+([A-Z]\d{4}\/\d{2})[^]*?(?=NOTAM\s+[A-Z]\d{4}\/\d{2}|$)/gi;
-    const matches = htmlContent.match(notamPattern);
+    console.log(`Starting NOTAM parsing for ${icaoCode}, content length: ${htmlContent.length}`);
     
-    if (!matches) {
-      // Try alternative parsing for different HTML formats
-      const lines = htmlContent.split('\n');
+    // Clean HTML and extract text content
+    let textContent = htmlContent
+      .replace(/<script[^>]*>.*?<\/script>/gis, '')
+      .replace(/<style[^>]*>.*?<\/style>/gis, '')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    console.log(`Cleaned text content length: ${textContent.length}`);
+    
+    // Look for NOTAM patterns in the cleaned text
+    // Pattern 1: Standard NOTAM format with ID
+    const notamPattern1 = /([ABHJV]\d{4}\/\d{2})\s*[-\s]*([^]*?)(?=\s*[ABHJV]\d{4}\/\d{2}\s*[-\s]*|$)/gi;
+    let matches1 = [...textContent.matchAll(notamPattern1)];
+    
+    console.log(`Found ${matches1.length} NOTAMs with pattern 1`);
+    
+    if (matches1.length > 0) {
+      matches1.forEach((match, index) => {
+        const notamId = match[1];
+        let notamText = match[2].trim();
+        
+        // Clean up the NOTAM text
+        notamText = notamText
+          .replace(/\s+/g, ' ')
+          .replace(/^\s*[-\s]*/, '')
+          .trim();
+        
+        if (notamText.length > 20) { // Only process substantial content
+          const type = notamId.charAt(0) as 'A' | 'B' | 'H' | 'J' | 'V';
+          const category = categorizeNotam(notamId, notamText);
+          
+          // Extract dates if present
+          const dateMatches = notamText.match(/(\d{2}\s+\w{3}\s+\d{2}:\d{2}\s+\d{4})/g);
+          
+          console.log(`Processing NOTAM ${index + 1}: ${notamId} (${notamText.length} chars)`);
+          
+          notams.push({
+            id: notamId,
+            type,
+            category,
+            text: notamText,
+            ...(dateMatches && dateMatches.length > 0 && { effectiveDate: dateMatches[0] }),
+            ...(dateMatches && dateMatches.length > 1 && { expiryDate: dateMatches[1] })
+          });
+        }
+      });
+    }
+    
+    // Pattern 2: Look for NOTAMs in table format or line-by-line
+    if (notams.length === 0) {
+      console.log('Trying alternative parsing method...');
+      
+      // Split by common delimiters and look for NOTAM IDs
+      const lines = textContent.split(/[\n\r]+/);
       let currentNotam = '';
-      let notamId = '';
+      let currentId = '';
       
       for (const line of lines) {
         const trimmedLine = line.trim();
         
-        if (trimmedLine.match(/^[A-Z]\d{4}\/\d{2}/)) {
+        // Check if line contains a NOTAM ID
+        const idMatch = trimmedLine.match(/([ABHJV]\d{4}\/\d{2})/);
+        
+        if (idMatch) {
           // Save previous NOTAM if exists
-          if (currentNotam && notamId) {
-            notams.push(createNotamItem(notamId, currentNotam));
+          if (currentId && currentNotam.length > 20) {
+            const type = currentId.charAt(0) as 'A' | 'B' | 'H' | 'J' | 'V';
+            const category = categorizeNotam(currentId, currentNotam);
+            
+            console.log(`Found NOTAM via line parsing: ${currentId}`);
+            
+            notams.push({
+              id: currentId,
+              type,
+              category,
+              text: currentNotam.trim()
+            });
           }
           
           // Start new NOTAM
-          notamId = trimmedLine.match(/^([A-Z]\d{4}\/\d{2})/)?.[1] || '';
-          currentNotam = trimmedLine;
-        } else if (notamId && trimmedLine) {
+          currentId = idMatch[1];
+          currentNotam = trimmedLine.replace(idMatch[0], '').replace(/^[-\s]*/, '').trim();
+        } else if (currentId && trimmedLine.length > 5) {
+          // Continue building current NOTAM
           currentNotam += ' ' + trimmedLine;
         }
       }
       
       // Don't forget the last NOTAM
-      if (currentNotam && notamId) {
-        notams.push(createNotamItem(notamId, currentNotam));
+      if (currentId && currentNotam.length > 20) {
+        const type = currentId.charAt(0) as 'A' | 'B' | 'H' | 'J' | 'V';
+        const category = categorizeNotam(currentId, currentNotam);
+        
+        console.log(`Found final NOTAM via line parsing: ${currentId}`);
+        
+        notams.push({
+          id: currentId,
+          type,
+          category,
+          text: currentNotam.trim()
+        });
       }
-      
-      return notams;
     }
     
-    matches.forEach((match, index) => {
-      const idMatch = match.match(/NOTAM\s+([A-Z]\d{4}\/\d{2})/i);
-      const id = idMatch ? idMatch[1] : `NOTAM-${index + 1}`;
+    // Pattern 3: Look for any text that mentions runway closures, etc. even without proper IDs
+    if (notams.length === 0) {
+      console.log('Trying content-based NOTAM detection...');
       
-      notams.push(createNotamItem(id, match.trim()));
-    });
+      const criticalKeywords = [
+        'runway closed', 'rwy closed', 'runway clsd', 'rwy clsd',
+        'taxiway closed', 'twy closed', 'taxiway clsd', 'twy clsd',
+        'approach unavailable', 'ils out of service', 'ils u/s',
+        'navigation aid out of service', 'navaid u/s'
+      ];
+      
+      const lowerText = textContent.toLowerCase();
+      let foundCritical = false;
+      
+      for (const keyword of criticalKeywords) {
+        if (lowerText.includes(keyword)) {
+          foundCritical = true;
+          break;
+        }
+      }
+      
+      if (foundCritical) {
+        console.log('Found critical NOTAM content without proper ID format');
+        
+        // Create a generic NOTAM entry
+        notams.push({
+          id: 'GENERIC-001',
+          type: 'A',
+          category: 'critical',
+          text: `Important operational information found for ${icaoCode}. ${textContent.substring(0, 500)}...`
+        });
+      }
+    }
+    
+    console.log(`Successfully parsed ${notams.length} NOTAMs for ${icaoCode}`);
     
   } catch (error) {
     console.error('Error parsing NOTAMs:', error);
+    
     // Return a basic NOTAM indicating parsing issues
     notams.push({
       id: 'PARSE-ERROR',
       type: 'A',
       category: 'informational',
-      text: `Unable to parse NOTAM data for ${icaoCode}. Raw data may be available.`
+      text: `NOTAM data received but could not be parsed properly for ${icaoCode}. This may indicate NOTAMs are available but in an unexpected format.`
     });
   }
   
   return notams;
 }
 
-function createNotamItem(id: string, text: string): NotamItem {
-  // Determine NOTAM type from ID
-  const type = (id.match(/^([A-Z])/)?.[1] as 'A' | 'B' | 'H' | 'J' | 'V') || 'A';
-  
-  // Categorize based on content keywords
-  let category: 'critical' | 'operational' | 'informational' = 'informational';
-  
-  const criticalKeywords = ['CLOSED', 'CLSD', 'DANGEROUS', 'HAZARD', 'EMERGENCY'];
-  const operationalKeywords = ['RWY', 'RUNWAY', 'TWY', 'TAXIWAY', 'FREQ', 'FREQUENCY'];
-  
+function categorizeNotam(id: string, text: string): 'critical' | 'operational' | 'informational' {
   const upperText = text.toUpperCase();
+  const type = id.charAt(0);
   
-  if (criticalKeywords.some(keyword => upperText.includes(keyword))) {
-    category = 'critical';
-  } else if (operationalKeywords.some(keyword => upperText.includes(keyword))) {
-    category = 'operational';
+  // Critical NOTAMs (safety-related)
+  const criticalKeywords = [
+    'CLOSED', 'CLSD', 'DANGEROUS', 'HAZARD', 'EMERGENCY', 'CRANE', 'OBSTACLE',
+    'SLIPPERY', 'LIGHTS U/S', 'OUT OF SERVICE', 'INOP', 'UNSERVICEABLE'
+  ];
+  
+  // Operational NOTAMs (affects operations)
+  const operationalKeywords = [
+    'RWY', 'RUNWAY', 'TWY', 'TAXIWAY', 'APCH', 'APPROACH', 'DEP', 'DEPARTURE',
+    'FREQ', 'FREQUENCY', 'RESTRICTED', 'NAVIGATION', 'PROCEDURAL'
+  ];
+  
+  if (criticalKeywords.some(keyword => upperText.includes(keyword)) || type === 'B') {
+    return 'critical';
+  } else if (operationalKeywords.some(keyword => upperText.includes(keyword)) || ['H', 'J', 'V'].includes(type)) {
+    return 'operational';
   }
   
-  // Try to extract dates (basic parsing)
-  const datePattern = /(\d{2})(\d{2})(\d{2})(\d{4})/g;
-  const dates = text.match(datePattern);
-  
-  return {
-    id,
-    type,
-    category,
-    text: text.replace(/\s+/g, ' ').trim(),
-    ...(dates && dates.length > 0 && { effectiveDate: dates[0] }),
-    ...(dates && dates.length > 1 && { expiryDate: dates[1] })
-  };
+  return 'informational';
 }

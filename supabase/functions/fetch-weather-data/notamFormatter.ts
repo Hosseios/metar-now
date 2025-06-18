@@ -14,72 +14,72 @@ export function formatNotamsForDisplay(notams: NotamItem[], icaoCode: string): s
     return `No current NOTAMs for ${icaoCode}`;
   }
   
-  let output = `NOTAMs for ${icaoCode}\n`;
-  output += '='.repeat(20) + '\n\n';
+  console.log(`Formatting ${notams.length} NOTAMs for display`);
   
-  // Sort NOTAMs by category priority
-  const sortedNotams = notams.sort((a, b) => {
-    const priorityOrder = { 'critical': 0, 'operational': 1, 'informational': 2 };
-    return priorityOrder[a.category] - priorityOrder[b.category];
-  });
+  let output = `NOTAMs for ${icaoCode} (${notams.length} active NOTAMs found)\n`;
+  output += '═'.repeat(60) + '\n\n';
   
-  sortedNotams.forEach((notam, index) => {
-    // Add category indicator
-    const categorySymbol = getCategorySymbol(notam.category);
-    
-    output += `${categorySymbol} ${notam.id} [${notam.type}]\n`;
-    output += `Category: ${notam.category.toUpperCase()}\n`;
-    
-    if (notam.effectiveDate) {
-      output += `Effective: ${formatNotamDate(notam.effectiveDate)}\n`;
-    }
-    
-    if (notam.expiryDate) {
-      output += `Expires: ${formatNotamDate(notam.expiryDate)}\n`;
-    }
-    
-    output += `\nText: ${notam.text}\n`;
-    
-    if (index < sortedNotams.length - 1) {
-      output += '\n' + '-'.repeat(40) + '\n\n';
+  // Group NOTAMs by category
+  const critical = notams.filter(n => n.category === 'critical');
+  const operational = notams.filter(n => n.category === 'operational');
+  const informational = notams.filter(n => n.category === 'informational');
+  
+  // Add category summary
+  if (critical.length > 0) {
+    output += `⚠️  CRITICAL: ${critical.length} NOTAMs (Safety-related)\n`;
+  }
+  if (operational.length > 0) {
+    output += `🔧 OPERATIONAL: ${operational.length} NOTAMs (Affects operations)\n`;
+  }
+  if (informational.length > 0) {
+    output += `ℹ️  INFORMATIONAL: ${informational.length} NOTAMs (General info)\n`;
+  }
+  output += '\n';
+  
+  // Display critical NOTAMs first
+  const categories = [
+    { name: 'CRITICAL', notams: critical, symbol: '⚠️' },
+    { name: 'OPERATIONAL', notams: operational, symbol: '🔧' },
+    { name: 'INFORMATIONAL', notams: informational, symbol: 'ℹ️' }
+  ];
+  
+  categories.forEach(category => {
+    if (category.notams.length > 0) {
+      output += `${category.symbol} ${category.name} NOTAMs\n`;
+      output += '─'.repeat(40) + '\n\n';
+      
+      category.notams.forEach((notam, index) => {
+        output += `NOTAM ${index + 1}: ${notam.id} [${notam.type}-TYPE]\n`;
+        output += '▔'.repeat(35) + '\n';
+        
+        // Format the text with better line breaks
+        const formattedText = formatNotamText(notam.text);
+        output += `${formattedText}\n\n`;
+        
+        if (notam.effectiveDate && notam.expiryDate) {
+          output += `⏰ Effective: ${notam.effectiveDate} - ${notam.expiryDate}\n`;
+        } else if (notam.effectiveDate) {
+          output += `⏰ Effective: ${notam.effectiveDate}\n`;
+        }
+        
+        if (notam.createdDate) {
+          output += `📅 Created: ${notam.createdDate}\n`;
+        }
+        
+        output += '\n';
+      });
     }
   });
   
   return output;
 }
 
-function getCategorySymbol(category: string): string {
-  switch (category) {
-    case 'critical':
-      return '⚠️';
-    case 'operational':
-      return '🔧';
-    case 'informational':
-      return 'ℹ️';
-    default:
-      return '📋';
-  }
-}
-
-function formatNotamDate(dateStr: string): string {
-  // Handle NOTAM date format (DDHHMMYYYY or similar)
-  if (dateStr.length === 8) {
-    const day = dateStr.substring(0, 2);
-    const hour = dateStr.substring(2, 4);
-    const minute = dateStr.substring(4, 6);
-    const year = dateStr.substring(6, 8);
-    
-    return `${day}/${hour}:${minute} (20${year})`;
-  }
-  
-  if (dateStr.length === 10) {
-    const day = dateStr.substring(0, 2);
-    const hour = dateStr.substring(2, 4);
-    const minute = dateStr.substring(4, 6);
-    const year = dateStr.substring(6, 10);
-    
-    return `${day}/${hour}:${minute} (${year})`;
-  }
-  
-  return dateStr; // Return as-is if format is not recognized
+function formatNotamText(text: string): string {
+  // Clean up and format NOTAM text for better readability
+  return text
+    .replace(/\. (?=[A-Z])/g, '.\n• ')
+    .replace(/(\d{2} \w{3} \d{2}:\d{2} \d{4} UNTIL \d{2} \w{3} \d{2}:\d{2} \d{4})/g, '\n⏰ $1')
+    .replace(/(CREATED: \d{2} \w{3} \d{2}:\d{2} \d{4})/g, '\n📅 $1')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
