@@ -47,7 +47,7 @@ const MetarSearch = ({
           <Plane className="w-5 h-5 text-white" />
         </div>
         <div>
-          <Label htmlFor="airport-search" className="text-lg font-bold text-white">Enter ICAO Code, IATA Code, or City</Label>
+          <Label htmlFor="airport-search" className="text-lg font-bold text-white">Enter ICAO , IATA Code, or City</Label>
           <p className="text-slate-300 text-sm">Enter a 4-letter airport code (e.g., KJFK, EGLL, LFPG)
 IATA Code (e.g., FRA, MXP, LGG, BRU, CDG, LHR)
         </p>
