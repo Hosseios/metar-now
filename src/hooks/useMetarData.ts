@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { WeatherData, NotamItem } from "@/types/weather";
-import { fetchSingleDataSource, fetchNotamData } from "@/utils/weatherDataFetcher";
+import { supabase } from "@/integrations/supabase/client";
 
 export type { WeatherData, NotamItem } from "@/types/weather";
 
@@ -12,56 +12,51 @@ export const useMetarData = () => {
   const { toast } = useToast();
 
   const fetchWeatherData = async (icaoCode: string) => {
-    console.log(`Fetching real METAR, TAF, Airport, and NOTAM data for ${icaoCode}`);
+    console.log(`Fetching weather data for ${icaoCode} using Supabase Edge Function`);
     setIsLoading(true);
     setError(null);
 
     try {
-      // Prepare URLs for all data sources
-      const metarProxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(`https://aviationweather.gov/api/data/metar?ids=${icaoCode}&format=raw`)}`;
-      const tafProxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(`https://aviationweather.gov/api/data/taf?ids=${icaoCode}&format=raw`)}`;
-      const airportProxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(`https://aviationweather.gov/api/data/airport?ids=${icaoCode}`)}`;
+      const { data, error: functionError } = await supabase.functions.invoke('fetch-weather-data', {
+        body: { icaoCode: icaoCode.toUpperCase() }
+      });
 
-      // Fetch all data sources in parallel, but handle each independently
-      const [metarResult, tafResult, airportResult, notamResult] = await Promise.all([
-        fetchSingleDataSource(metarProxyUrl, 'METAR'),
-        fetchSingleDataSource(tafProxyUrl, 'TAF'),
-        fetchSingleDataSource(airportProxyUrl, 'Airport'),
-        fetchNotamData(icaoCode)
-      ]);
+      if (functionError) {
+        throw new Error(`Edge Function error: ${functionError.message}`);
+      }
 
-      // Collect any errors that occurred
-      const errors = [
-        metarResult.error,
-        tafResult.error,
-        airportResult.error,
-        notamResult.error
-      ].filter(Boolean);
+      if (!data) {
+        throw new Error('No data received from weather service');
+      }
 
-      // Create weather data object with available data
+      // Handle errors in the response
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
       const weatherData: WeatherData = {
-        metar: metarResult.data || `Error fetching METAR: ${metarResult.error}`,
-        taf: tafResult.data || `Error fetching TAF: ${tafResult.error}`,
-        airport: airportResult.data || `Error fetching Airport data: ${airportResult.error}`,
-        notam: notamResult.data || `Error fetching NOTAM: ${notamResult.error}`
+        metar: data.metar || `No METAR data available for ${icaoCode}`,
+        taf: data.taf || `No TAF data available for ${icaoCode}`,
+        airport: data.airport || `No airport data available for ${icaoCode}`,
+        notam: data.notam || `No current NOTAMs for ${icaoCode}`
       };
       
       setWeatherData(weatherData);
-      console.log(`Successfully fetched available data for ${icaoCode}`);
+      console.log(`Successfully fetched weather data for ${icaoCode}${data.cached ? ' (cached)' : ''}`);
       
-      // Show toast based on success/partial success
-      if (errors.length === 0) {
-        toast({
-          title: "Data Updated",
-          description: `Successfully retrieved METAR, TAF, Airport, and NOTAM data for ${icaoCode}`,
-        });
-      } else if (errors.length < 4) {
+      // Show success toast
+      toast({
+        title: "Data Updated",
+        description: `Successfully retrieved weather data for ${icaoCode}${data.cached ? ' (cached)' : ''}`,
+      });
+
+      // Show warning toast if there were partial errors
+      if (data.errors && data.errors.length > 0) {
         toast({
           title: "Partial Data Retrieved",
-          description: `Retrieved available data for ${icaoCode}. Some data sources may be unavailable.`,
+          description: `Some data sources had issues: ${data.errors.join(', ')}`,
+          variant: "default",
         });
-      } else {
-        throw new Error("Failed to fetch any data");
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to fetch weather data";

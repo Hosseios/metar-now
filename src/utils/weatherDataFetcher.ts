@@ -1,228 +1,54 @@
 
 import { DataFetchResult, WeatherData } from "@/types/weather";
-import { parseNotams } from "./notamParser";
-import { formatNotamsForDisplay } from "./notamFormatter";
+import { supabase } from "@/integrations/supabase/client";
 
-// CORS proxy services with fallback
-const CORS_PROXIES = [
-  'https://api.allorigins.win/get?url=',
-  'https://corsproxy.io/?',
-  'https://api.codetabs.com/v1/proxy?quest='
-];
-
-const fetchWithProxyRetry = async (targetUrl: string, dataType: string): Promise<DataFetchResult> => {
-  for (let proxyIndex = 0; proxyIndex < CORS_PROXIES.length; proxyIndex++) {
-    try {
-      const proxy = CORS_PROXIES[proxyIndex];
-      const proxyUrl = proxy + encodeURIComponent(targetUrl);
-      
-      console.log(`Attempting to fetch ${dataType} data using proxy ${proxyIndex + 1}:`, proxy);
-      
-      const response = await fetch(proxyUrl);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-      
-      // Get response as text first, then try to parse as JSON if it looks like JSON
-      const responseText = await response.text();
-      let content = '';
-      let data = null;
-      
-      // Try to parse as JSON if the response looks like JSON
-      if (responseText.trim().startsWith('{') || responseText.trim().startsWith('[')) {
-        try {
-          data = JSON.parse(responseText);
-          
-          // Handle different proxy response formats
-          if (data.contents) {
-            // allorigins format
-            content = data.contents;
-          } else if (typeof data === 'string') {
-            // corsproxy format or direct string response
-            content = data;
-          } else if (data.content) {
-            // codetabs format
-            content = data.content;
-          } else {
-            // fallback to stringified JSON
-            content = JSON.stringify(data);
-          }
-        } catch (jsonError) {
-          // If JSON parsing fails, use the raw text
-          content = responseText;
-        }
-      } else {
-        // Response is plain text (like METAR/TAF data)
-        content = responseText;
-      }
-      
-      // Check if we got valid response content
-      if (data && data.status && data.status.http_code !== 200) {
-        throw new Error(`Aviation Weather API returned error for ${dataType}: ${data.status.http_code}`);
-      }
-      
-      const trimmedContent = content.trim();
-      if (!trimmedContent) {
-        return {
-          data: `No ${dataType} data available for this station`,
-          error: null
-        };
-      }
-      
-      console.log(`Successfully fetched ${dataType} data using proxy ${proxyIndex + 1}`);
-      return {
-        data: trimmedContent,
-        error: null
-      };
-      
-    } catch (err) {
-      console.warn(`Proxy ${proxyIndex + 1} failed for ${dataType}:`, err);
-      
-      // If this is the last proxy, return the error
-      if (proxyIndex === CORS_PROXIES.length - 1) {
-        return {
-          data: "",
-          error: err instanceof Error ? err.message : `Failed to fetch ${dataType} data`
-        };
-      }
-      
-      // Wait a bit before trying the next proxy
-      await new Promise(resolve => setTimeout(resolve, 500));
-    }
-  }
-  
+// Legacy function kept for backward compatibility
+export const fetchSingleDataSource = async (url: string, dataType: string): Promise<DataFetchResult> => {
+  console.warn(`fetchSingleDataSource is deprecated. Use the Supabase Edge Function instead.`);
   return {
-    data: "",
-    error: `All CORS proxies failed for ${dataType} data`
+    data: `Legacy ${dataType} fetching is no longer supported. Please use the main weather data fetching functionality.`,
+    error: "This function is deprecated"
   };
 };
 
-export const fetchSingleDataSource = async (url: string, dataType: string): Promise<DataFetchResult> => {
-  // Extract the target URL from the proxy URL if it's already proxied
-  let targetUrl = url;
-  if (url.includes('api.allorigins.win/get?url=')) {
-    targetUrl = decodeURIComponent(url.split('url=')[1]);
-  }
-  
-  return await fetchWithProxyRetry(targetUrl, dataType);
-};
-
+// Legacy function kept for backward compatibility  
 export const fetchNotamData = async (icaoCode: string): Promise<DataFetchResult> => {
-  try {
-    const notamUrl = `https://www.notams.faa.gov/dinsQueryWeb/queryRetrievalMapAction.do?reportType=Report&formatType=ICAO&retrieveLocId=${icaoCode}&actionType=notamRetrievalByICAOs`;
-    
-    console.log(`Fetching NOTAM data for ${icaoCode}`);
-    
-    for (let proxyIndex = 0; proxyIndex < CORS_PROXIES.length; proxyIndex++) {
-      try {
-        const proxy = CORS_PROXIES[proxyIndex];
-        const proxyUrl = proxy + encodeURIComponent(notamUrl);
-        
-        console.log(`Attempting to fetch NOTAM data using proxy ${proxyIndex + 1}:`, proxy);
-        
-        const response = await fetch(proxyUrl);
-        
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-        
-        // Get response as text first, then try to parse as JSON if it looks like JSON
-        const responseText = await response.text();
-        let htmlContent = '';
-        let data = null;
-        
-        // Try to parse as JSON if the response looks like JSON
-        if (responseText.trim().startsWith('{') || responseText.trim().startsWith('[')) {
-          try {
-            data = JSON.parse(responseText);
-            
-            // Handle different proxy response formats
-            if (data.contents) {
-              // allorigins format
-              htmlContent = data.contents;
-            } else if (typeof data === 'string') {
-              // corsproxy format or direct string response
-              htmlContent = data;
-            } else if (data.content) {
-              // codetabs format
-              htmlContent = data.content;
-            } else {
-              // fallback to stringified JSON
-              htmlContent = JSON.stringify(data);
-            }
-          } catch (jsonError) {
-            // If JSON parsing fails, use the raw text
-            htmlContent = responseText;
-          }
-        } else {
-          // Response is plain text (HTML from NOTAM service)
-          htmlContent = responseText;
-        }
-        
-        // Check if we got valid response
-        if (data && data.status && data.status.http_code !== 200) {
-          throw new Error(`FAA NOTAM API returned error: ${data.status.http_code}`);
-        }
-        
-        const trimmedContent = htmlContent.trim();
-        
-        if (trimmedContent.includes("No NOTAMs match your criteria") || trimmedContent.includes("No current NOTAMs")) {
-          console.log(`No NOTAMs found for ${icaoCode}`);
-          return {
-            data: `No current NOTAMs for ${icaoCode}`,
-            error: null
-          };
-        }
-        
-        // Parse NOTAMs into structured data
-        const parsedNotams = parseNotams(trimmedContent, icaoCode);
-        
-        if (parsedNotams.length === 0) {
-          return {
-            data: `No current NOTAMs for ${icaoCode}`,
-            error: null
-          };
-        }
-        
-        // Format for display
-        const formattedNotams = formatNotamsForDisplay(parsedNotams, icaoCode);
-        
-        console.log(`Successfully fetched NOTAM data using proxy ${proxyIndex + 1}`);
-        return {
-          data: formattedNotams,
-          error: null
-        };
-        
-      } catch (err) {
-        console.warn(`Proxy ${proxyIndex + 1} failed for NOTAM:`, err);
-        
-        // If this is the last proxy, return the error
-        if (proxyIndex === CORS_PROXIES.length - 1) {
-          return {
-            data: "",
-            error: err instanceof Error ? err.message : "Failed to fetch NOTAM data"
-          };
-        }
-        
-        // Wait a bit before trying the next proxy
-        await new Promise(resolve => setTimeout(resolve, 500));
-      }
-    }
-    
-    return {
-      data: "",
-      error: "All CORS proxies failed for NOTAM data"
-    };
-  } catch (err) {
-    return {
-      data: "",
-      error: err instanceof Error ? err.message : "Failed to fetch NOTAM data"
-    };
-  }
+  console.warn(`fetchNotamData is deprecated. Use the Supabase Edge Function instead.`);
+  return {
+    data: `Legacy NOTAM fetching is no longer supported. Please use the main weather data fetching functionality.`,
+    error: "This function is deprecated"
+  };
 };
 
-// Helper function to generate realistic METAR and TAF data
+// New unified function that uses the Supabase Edge Function
+export const fetchWeatherDataViaEdgeFunction = async (icaoCode: string): Promise<WeatherData> => {
+  console.log(`Fetching weather data for ${icaoCode} via Edge Function`);
+  
+  const { data, error } = await supabase.functions.invoke('fetch-weather-data', {
+    body: { icaoCode: icaoCode.toUpperCase() }
+  });
+
+  if (error) {
+    throw new Error(`Edge Function error: ${error.message}`);
+  }
+
+  if (!data) {
+    throw new Error('No data received from weather service');
+  }
+
+  if (data.error) {
+    throw new Error(data.error);
+  }
+
+  return {
+    metar: data.metar || `No METAR data available for ${icaoCode}`,
+    taf: data.taf || `No TAF data available for ${icaoCode}`,
+    airport: data.airport || `No airport data available for ${icaoCode}`,
+    notam: data.notam || `No current NOTAMs for ${icaoCode}`
+  };
+};
+
+// Helper function to generate realistic METAR and TAF data (kept for testing purposes)
 export const generateMockWeatherData = (icaoCode: string): WeatherData => {
   const timestamp = new Date().toISOString().slice(0, 16).replace(/[-:]/g, '').replace('T', '');
   const day = new Date().getDate().toString().padStart(2, '0');
