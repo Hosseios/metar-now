@@ -44,10 +44,8 @@ const AirportAutocomplete = ({ onSelect, isLoading }: AirportAutocompleteProps) 
   const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setQuery(val);
-    console.log(`Search query changed to: "${val}"`);
 
     if (val.length >= 2) {
-      console.log(`Triggering search for: "${val}"`);
       setSearching(true);
       
       try {
@@ -60,12 +58,10 @@ const AirportAutocomplete = ({ onSelect, isLoading }: AirportAutocompleteProps) 
             iata: a.iata_code,
           }));
         
-        console.log(`Search returned ${formattedResults.length} results:`, formattedResults);
         setSuggestions(formattedResults);
         setShowDropdown(true);
         updateDropdownPosition();
       } catch (error) {
-        console.error('Search failed:', error);
         setSuggestions([]);
         setShowDropdown(false);
       } finally {
@@ -82,7 +78,6 @@ const AirportAutocomplete = ({ onSelect, isLoading }: AirportAutocompleteProps) 
   };
 
   const handleSelect = (icao: string) => {
-    console.log(`Airport selected: ${icao}`);
     setQuery(icao);
     setShowDropdown(false);
     setSuggestions([]);
@@ -101,7 +96,6 @@ const AirportAutocomplete = ({ onSelect, isLoading }: AirportAutocompleteProps) 
   // Allow "Enter" to trigger select if there is only one suggestion
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && suggestions.length > 0) {
-      console.log(`Enter pressed, selecting first result: ${suggestions[0].icao}`);
       handleSelect(suggestions[0].icao);
     }
     if (e.key === "Escape") {
@@ -126,10 +120,8 @@ const AirportAutocomplete = ({ onSelect, isLoading }: AirportAutocompleteProps) 
 
   const handleSearchClick = async () => {
     if (suggestions.length > 0) {
-      console.log(`Search button clicked, selecting first result: ${suggestions[0].icao}`);
       handleSelect(suggestions[0].icao);
     } else {
-      console.log(`Search button clicked, using direct input: ${query.toUpperCase()}`);
       onSelect(query.toUpperCase());
     }
   };
