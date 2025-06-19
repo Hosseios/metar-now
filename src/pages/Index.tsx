@@ -127,7 +127,7 @@ const Index = () => {
                     </p>
                     <div className="flex items-center space-x-2">
                       <Globe className="w-4 h-4 text-slate-400" />
-                      <a href="https://h0ss310.com" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 transition-colors">h0ss310s.com</a>
+                      <a href="https://h0ss310s.com" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 transition-colors">https://h0ss310s.com</a>
                     </div>
                     <div className="flex items-center space-x-2">
                       <Github className="w-4 h-4 text-slate-400" />
