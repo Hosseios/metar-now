@@ -8,6 +8,9 @@ import { useMetarData } from "@/hooks/useMetarData";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Info, Database, Globe, Mail } from "lucide-react";
 
 const Index = () => {
   const [icaoCode, setIcaoCode] = useState("");
@@ -64,6 +67,81 @@ const Index = () => {
               <p className="text-sm md:text-base text-slate-200 drop-shadow">Get real-time METAR & TAF reports with ease.</p>
             </div>
           </div>
+          
+          {/* About Button */}
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20">
+                <Info className="w-4 h-4 mr-2" />
+                About
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl bg-slate-800 border-slate-600 text-white">
+              <DialogHeader>
+                <DialogTitle className="text-xl font-bold text-white">About METAR Now</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-6">
+                {/* About Section */}
+                <div className="p-4 bg-slate-900/40 rounded-xl">
+                  <div className="flex items-center space-x-2 mb-3">
+                    <Info className="w-5 h-5 text-blue-400" />
+                    <p className="text-white font-medium">About METAR Now</p>
+                  </div>
+                  <p className="text-slate-300 text-sm mb-3">
+                    Real-time aviation weather data for pilots and aviation enthusiasts. Get instant access to METAR, TAF, airport information, and NOTAMs worldwide.
+                  </p>
+                  <div className="border-t border-slate-700 pt-3 mt-3">
+                    <p className="text-slate-400 text-xs">Version 1.0.0</p>
+                  </div>
+                </div>
+
+                {/* Data Sources */}
+                <div className="p-4 bg-slate-900/40 rounded-xl">
+                  <div className="flex items-center space-x-2 mb-3">
+                    <Database className="w-5 h-5 text-green-400" />
+                    <p className="text-white font-medium">Data Sources & Credits</p>
+                  </div>
+                  <div className="space-y-2 text-sm text-slate-300">
+                    <div>
+                      <p className="font-medium text-slate-200">Weather Data:</p>
+                      <p>• Aviation Weather Center (AWC) - NOAA</p>
+                      <p>• CheckWX API for real-time METAR/TAF</p>
+                    </div>
+                    <div className="mt-2">
+                      <p className="font-medium text-slate-200">NOTAMs:</p>
+                      <p>• Federal Aviation Administration (FAA)</p>
+                    </div>
+                    <div className="mt-2">
+                      <p className="font-medium text-slate-200">Airport Data:</p>
+                      <p>• Global airport database</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Developer Info */}
+                <div className="p-4 bg-slate-900/40 rounded-xl">
+                  <div className="flex items-center space-x-2 mb-3">
+                    <Globe className="w-5 h-5 text-purple-400" />
+                    <p className="text-white font-medium">Developer</p>
+                  </div>
+                  <div className="space-y-2 text-sm text-slate-300">
+                    <p>
+                      <span className="font-medium text-slate-200">Created by:</span> h0ss310s
+                    </p>
+                    <div className="flex items-center space-x-2">
+                      <Mail className="w-4 h-4 text-slate-400" />
+                      <a 
+                        href="mailto:support@h0ss310.com" 
+                        className="text-blue-400 hover:text-blue-300 transition-colors"
+                      >
+                        support@h0ss310.com
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
           
           {/* Debug toggle for device info - HIDDEN */}
           {/* 
