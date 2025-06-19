@@ -65,7 +65,8 @@ const Index = () => {
             </div>
           </div>
           
-          {/* Debug toggle for device info */}
+          {/* Debug toggle for device info - HIDDEN */}
+          {/* 
           <button
             onClick={() => setShowDeviceInfo(!showDeviceInfo)}
             className="text-xs text-slate-400 hover:text-slate-200 transition-colors"
@@ -73,6 +74,7 @@ const Index = () => {
           >
             Device Info
           </button>
+          */}
         </div>
 
         {/* Device Info Debug Panel */}
