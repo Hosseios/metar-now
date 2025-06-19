@@ -1,3 +1,4 @@
+
 import MetarSearch from "@/components/MetarSearch";
 import MetarDisplay from "@/components/MetarDisplay";
 import FavoritesManager from "@/components/FavoritesManager";
@@ -60,8 +61,8 @@ const Index = () => {
               <img src="/lovable-uploads/2750b808-8ab0-485e-95b6-fd3cbf9517e2.png" alt="METAR Now Logo" className="w-16 h-16 md:w-20 md:h-20" />
             </div>
             <div>
-              <h1 className="text-xl md:text-3xl font-bold text-white drop-shadow-lg">Aviation METAR Weather Viewer</h1>
-              <p className="text-sm md:text-base text-slate-200 drop-shadow">Get real-time METAR & TAF reports with ease.</p>
+              <h1 className="text-xl md:text-3xl font-bold text-white drop-shadow-lg">Aviation METAR Data Viewer</h1>
+              <p className="text-sm md:text-base text-slate-200 drop-shadow">Get real-time METAR, TAF & NOTAM reports with ease.</p>
             </div>
           </div>
           
@@ -85,7 +86,7 @@ const Index = () => {
                     <p className="text-white font-medium">About METAR Now</p>
                   </div>
                   <p className="text-slate-300 text-sm mb-3">
-                    Real-time aviation weather data for pilots and aviation enthusiasts. Get instant access to METAR, TAF, airport information, and NOTAMs worldwide.
+                    Real-time aviation data for pilots and aviation enthusiasts. Get instant access to METAR, TAF, airport information, and NOTAMs worldwide.
                   </p>
                   <div className="border-t border-slate-700 pt-3 mt-3">
                     <p className="text-slate-400 text-xs">Version 1.0.0</p>
@@ -100,7 +101,7 @@ const Index = () => {
                   </div>
                   <div className="space-y-2 text-sm text-slate-300">
                     <div>
-                      <p className="font-medium text-slate-200">Weather Data:</p>
+                      <p className="font-medium text-slate-200">Aviation Data:</p>
                       <p>• Aviation Weather Center (AWC) - NOAA</p>
                       <p>• CheckWX API for real-time METAR/TAF</p>
                     </div>

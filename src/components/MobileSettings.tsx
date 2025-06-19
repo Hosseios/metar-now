@@ -23,7 +23,7 @@ const MobileSettings = () => {
             <p className="text-white font-medium">About METAR Now</p>
           </div>
           <p className="text-slate-300 text-sm mb-3">
-            Real-time aviation weather data for pilots and aviation enthusiasts. Get instant access to METAR, TAF, airport information, and NOTAMs worldwide.
+            Real-time aviation data for pilots and aviation enthusiasts. Get instant access to METAR, TAF, airport information, and NOTAMs worldwide.
           </p>
           <div className="border-t border-slate-700 pt-3 mt-3">
             <p className="text-slate-400 text-xs">Version 1.0.0</p>
@@ -38,7 +38,7 @@ const MobileSettings = () => {
           </div>
           <div className="space-y-2 text-sm text-slate-300">
             <div>
-              <p className="font-medium text-slate-200">Weather Data:</p>
+              <p className="font-medium text-slate-200">Aviation Data:</p>
               <p>• Aviation Weather Center (AWC) - NOAA</p>
               <p>• CheckWX API for real-time METAR/TAF</p>
             </div>
