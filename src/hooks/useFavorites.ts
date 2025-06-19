@@ -13,10 +13,9 @@ export const useFavorites = () => {
         const parsed = JSON.parse(savedFavorites);
         if (Array.isArray(parsed)) {
           setFavorites(parsed);
-          console.log("Loaded favorites from localStorage:", parsed);
         }
       } catch (error) {
-        console.error("Error parsing saved favorites:", error);
+        // Error parsing saved favorites - silently ignore
       }
     }
   }, []);
@@ -24,19 +23,16 @@ export const useFavorites = () => {
   // Save favorites to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem("metarFavorites", JSON.stringify(favorites));
-    console.log("Saved favorites to localStorage:", favorites);
   }, [favorites]);
 
   const addFavorite = (icaoCode: string) => {
     if (!favorites.includes(icaoCode)) {
       setFavorites(prev => [...prev, icaoCode].sort());
-      console.log(`Added ${icaoCode} to favorites`);
     }
   };
 
   const removeFavorite = (icaoCode: string) => {
     setFavorites(prev => prev.filter(code => code !== icaoCode));
-    console.log(`Removed ${icaoCode} from favorites`);
   };
 
   return {

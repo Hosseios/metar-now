@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -6,10 +7,12 @@ import AirportAutocomplete from "./AirportAutocomplete";
 import { useSupabaseFavorites } from "@/hooks/useSupabaseFavorites";
 import { useAuth } from "@/contexts/AuthContext";
 import { findAirportByCode } from "@/utils/airportDatabase";
+
 interface MetarSearchProps {
   onSearch: (icaoCode: string) => void;
   isLoading: boolean;
 }
+
 const MetarSearch = ({
   onSearch,
   isLoading
@@ -35,12 +38,13 @@ const MetarSearch = ({
         resolvedICAO = airport.icao_code.toUpperCase();
       }
     } catch (error) {
-      console.error('Failed to resolve airport code:', error);
+      // Failed to resolve airport code - continue with original input
     }
     if (resolvedICAO.length === 4) {
       onSearch(resolvedICAO);
     }
   };
+
   return <div className="space-y-4">
       <div className="flex items-center space-x-3">
         <div className="p-2 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl shadow-lg">
@@ -57,4 +61,5 @@ IATA Code (e.g., FRA, MXP, LGG, BRU, CDG, LHR)
       <AirportAutocomplete onSelect={handleAirportSelect} isLoading={isLoading} />
     </div>;
 };
+
 export default MetarSearch;

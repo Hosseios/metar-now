@@ -33,7 +33,6 @@ export const useSupabaseFavorites = () => {
         .order('icao_code');
 
       if (error) {
-        console.error("Error loading favorites:", error);
         toast({
           title: "Error",
           description: "Failed to load favorites",
@@ -44,9 +43,8 @@ export const useSupabaseFavorites = () => {
 
       const icaoCodes = data?.map(fav => fav.icao_code) || [];
       setFavorites(icaoCodes);
-      console.log("Loaded favorites from Supabase:", icaoCodes);
     } catch (error) {
-      console.error("Error loading favorites:", error);
+      // Error loading favorites - silently handle
     } finally {
       setLoading(false);
     }
@@ -80,7 +78,6 @@ export const useSupabaseFavorites = () => {
         });
 
       if (error) {
-        console.error("Error adding favorite:", error);
         toast({
           title: "Error",
           description: "Failed to add favorite",
@@ -90,14 +87,13 @@ export const useSupabaseFavorites = () => {
       }
 
       setFavorites(prev => [...prev, icaoCode].sort());
-      console.log(`Added ${icaoCode} to favorites`);
       
       toast({
         title: "Added to Favorites",
         description: `${icaoCode} has been added to your favorites.`,
       });
     } catch (error) {
-      console.error("Error adding favorite:", error);
+      // Error adding favorite - silently handle
     }
   };
 
@@ -112,7 +108,6 @@ export const useSupabaseFavorites = () => {
         .eq('icao_code', icaoCode);
 
       if (error) {
-        console.error("Error removing favorite:", error);
         toast({
           title: "Error",
           description: "Failed to remove favorite",
@@ -125,9 +120,8 @@ export const useSupabaseFavorites = () => {
       if (selectedFavorite === icaoCode) {
         setSelectedFavorite("");
       }
-      console.log(`Removed ${icaoCode} from favorites`);
     } catch (error) {
-      console.error("Error removing favorite:", error);
+      // Error removing favorite - silently handle
     }
   };
 

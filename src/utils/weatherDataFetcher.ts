@@ -4,7 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 
 // Legacy function kept for backward compatibility
 export const fetchSingleDataSource = async (url: string, dataType: string): Promise<DataFetchResult> => {
-  console.warn(`fetchSingleDataSource is deprecated. Use the Supabase Edge Function instead.`);
   return {
     data: `Legacy ${dataType} fetching is no longer supported. Please use the main weather data fetching functionality.`,
     error: "This function is deprecated"
@@ -13,7 +12,6 @@ export const fetchSingleDataSource = async (url: string, dataType: string): Prom
 
 // Legacy function kept for backward compatibility  
 export const fetchNotamData = async (icaoCode: string): Promise<DataFetchResult> => {
-  console.warn(`fetchNotamData is deprecated. Use the Supabase Edge Function instead.`);
   return {
     data: `Legacy NOTAM fetching is no longer supported. Please use the main weather data fetching functionality.`,
     error: "This function is deprecated"
@@ -22,8 +20,6 @@ export const fetchNotamData = async (icaoCode: string): Promise<DataFetchResult>
 
 // New unified function that uses the Supabase Edge Function
 export const fetchWeatherDataViaEdgeFunction = async (icaoCode: string): Promise<WeatherData> => {
-  console.log(`Fetching weather data for ${icaoCode} via Edge Function`);
-  
   const { data, error } = await supabase.functions.invoke('fetch-weather-data', {
     body: { icaoCode: icaoCode.toUpperCase() }
   });
