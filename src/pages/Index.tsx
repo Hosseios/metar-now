@@ -1,4 +1,3 @@
-
 import MetarSearch from "@/components/MetarSearch";
 import MetarDisplay from "@/components/MetarDisplay";
 import FavoritesManager from "@/components/FavoritesManager";
@@ -11,7 +10,6 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Info, Database, Globe, Mail, Github } from "lucide-react";
-
 const Index = () => {
   const [icaoCode, setIcaoCode] = useState("");
   const [showDeviceInfo, setShowDeviceInfo] = useState(false);
@@ -25,7 +23,6 @@ const Index = () => {
     loading: authLoading
   } = useAuth();
   const isMobile = useIsMobile();
-
   const handleSearch = (code: string) => {
     setIcaoCode(code);
     fetchWeatherData(code);
@@ -35,13 +32,11 @@ const Index = () => {
   if (isMobile) {
     return <MobileIndex />;
   }
-
   if (authLoading) {
     return <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
         <div className="text-white text-lg">Loading...</div>
       </div>;
   }
-
   return <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative">
       {/* Large Background Banner */}
       <div className="absolute inset-0 overflow-hidden">
@@ -57,7 +52,9 @@ const Index = () => {
       {/* Content Layer */}
       <div className="relative z-10 flex flex-col min-h-screen">
         {/* Header with Logo - Added safe-area padding for mobile */}
-        <div className="flex items-center justify-between p-4 md:p-6 pt-8 md:pt-6" style={{ paddingTop: 'max(2rem, env(safe-area-inset-top, 2rem))' }}>
+        <div className="flex items-center justify-between p-4 md:p-6 pt-8 md:pt-6" style={{
+        paddingTop: 'max(2rem, env(safe-area-inset-top, 2rem))'
+      }}>
           <div className="flex items-center space-x-3 md:space-x-4">
             <div className="relative">
               <img src="/lovable-uploads/2750b808-8ab0-485e-95b6-fd3cbf9517e2.png" alt="METAR Now Logo" className="w-16 h-16 md:w-20 md:h-20" />
@@ -130,32 +127,17 @@ const Index = () => {
                     </p>
                     <div className="flex items-center space-x-2">
                       <Globe className="w-4 h-4 text-slate-400" />
-                      <a 
-                        href="https://h0ss310.com" 
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-400 hover:text-blue-300 transition-colors"
-                      >
-                        h0ss310.com
-                      </a>
+                      <a href="https://h0ss310.com" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 transition-colors">h0ss310s.com</a>
                     </div>
                     <div className="flex items-center space-x-2">
                       <Github className="w-4 h-4 text-slate-400" />
-                      <a 
-                        href="https://github.com/hosseios" 
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-400 hover:text-blue-300 transition-colors"
-                      >
+                      <a href="https://github.com/hosseios" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 transition-colors">
                         github.com/hosseios
                       </a>
                     </div>
                     <div className="flex items-center space-x-2">
                       <Mail className="w-4 h-4 text-slate-400" />
-                      <a 
-                        href="mailto:support@h0ss310.com" 
-                        className="text-blue-400 hover:text-blue-300 transition-colors"
-                      >
+                      <a href="mailto:support@h0ss310.com" className="text-blue-400 hover:text-blue-300 transition-colors">
                         support@h0ss310.com
                       </a>
                     </div>
@@ -167,23 +149,21 @@ const Index = () => {
           
           {/* Debug toggle for device info - HIDDEN */}
           {/* 
-          <button
+           <button
             onClick={() => setShowDeviceInfo(!showDeviceInfo)}
             className="text-xs text-slate-400 hover:text-slate-200 transition-colors"
             title="Toggle device info"
-          >
+           >
             Device Info
-          </button>
-          */}
+           </button>
+           */}
         </div>
 
         {/* Device Info Debug Panel */}
-        {showDeviceInfo && (
-          <div className="mx-4 md:mx-6 mb-4 bg-slate-800/90 backdrop-blur-xl rounded-xl p-4 border border-white/20">
+        {showDeviceInfo && <div className="mx-4 md:mx-6 mb-4 bg-slate-800/90 backdrop-blur-xl rounded-xl p-4 border border-white/20">
             <h3 className="text-white font-semibold mb-2">Device Detection Debug</h3>
             <DeviceInfo />
-          </div>
-        )}
+          </div>}
 
         {/* Main Content - Flex-grow to fill remaining space */}
         <div className="flex-1 flex flex-col p-3 md:p-6 space-y-3 md:space-y-4 max-w-6xl mx-auto w-full">
@@ -208,5 +188,4 @@ const Index = () => {
       </div>
     </div>;
 };
-
 export default Index;
