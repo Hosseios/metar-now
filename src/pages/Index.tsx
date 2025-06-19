@@ -10,7 +10,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Info, Database, Globe, Mail } from "lucide-react";
+import { Info, Database, Globe, Mail, Github } from "lucide-react";
 
 const Index = () => {
   const [icaoCode, setIcaoCode] = useState("");
@@ -128,6 +128,28 @@ const Index = () => {
                     <p>
                       <span className="font-medium text-slate-200">Created by:</span> h0ss310s
                     </p>
+                    <div className="flex items-center space-x-2">
+                      <Globe className="w-4 h-4 text-slate-400" />
+                      <a 
+                        href="https://h0ss310.com" 
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-400 hover:text-blue-300 transition-colors"
+                      >
+                        h0ss310.com
+                      </a>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Github className="w-4 h-4 text-slate-400" />
+                      <a 
+                        href="https://github.com/hosseios" 
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-400 hover:text-blue-300 transition-colors"
+                      >
+                        github.com/hosseios
+                      </a>
+                    </div>
                     <div className="flex items-center space-x-2">
                       <Mail className="w-4 h-4 text-slate-400" />
                       <a 
