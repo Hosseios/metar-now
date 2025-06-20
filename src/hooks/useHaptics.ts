@@ -1,6 +1,6 @@
 
 import { useCallback } from 'react';
-import { Haptics, ImpactStyle } from '@capacitor/haptics';
+import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics';
 import { Capacitor } from '@capacitor/core';
 
 export const useHaptics = () => {
@@ -46,7 +46,10 @@ export const useHaptics = () => {
     }
     
     try {
-      await Haptics.notification({ type });
+      const notificationType = type === 'success' ? NotificationType.Success : 
+                              type === 'warning' ? NotificationType.Warning : 
+                              NotificationType.Error;
+      await Haptics.notification({ type: notificationType });
     } catch (error) {
       console.warn('Notification haptic feedback failed:', error);
     }

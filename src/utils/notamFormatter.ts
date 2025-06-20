@@ -17,7 +17,7 @@ export const formatNotamsForDisplay = (notams: NotamItem[], icaoCode: string): s
   const mainSeparator = isMobile ? '═'.repeat(30) : '═'.repeat(60);
   const categorySeparator = isMobile ? '─'.repeat(25) : '─'.repeat(40);
 
-  let formattedOutput = `NOTAMs for ${icaoCode} (${notams.length} active NOTAMs found)\n`;
+  let formattedOutput = `=== NOTAMs for ${icaoCode} (${notams.length} active NOTAMs found) ===\n`;
   formattedOutput += `${mainSeparator}\n\n`;
 
   // Add category summary with professional text markers
@@ -41,19 +41,13 @@ export const formatNotamsForDisplay = (notams: NotamItem[], icaoCode: string): s
 
   categories.forEach(category => {
     if (category.notams.length > 0) {
-      formattedOutput += `${category.prefix} NOTAMs\n`;
+      formattedOutput += `=== ${category.prefix} NOTAMs ===\n`;
       formattedOutput += `${categorySeparator}\n\n`;
 
       category.notams.forEach((notam, index) => {
         const overallIndex = notams.findIndex(n => n.id === notam.id) + 1;
         
-        const notamHeader = `NOTAM ${overallIndex}: ${notam.id} [${notam.type}-TYPE]`;
-        formattedOutput += `${notamHeader}\n`;
-        
-        // Create underline that matches the header length exactly
-        const headerLength = notamHeader.length;
-        const dynamicSeparator = '▔'.repeat(Math.min(headerLength, isMobile ? 35 : 50));
-        formattedOutput += `${dynamicSeparator}\n`;
+        formattedOutput += `=== NOTAM ${overallIndex}: ${notam.id} [${notam.type}-TYPE] ===\n`;
         
         // Format the main text with better line breaks
         const formattedText = notam.text
