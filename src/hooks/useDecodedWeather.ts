@@ -59,19 +59,50 @@ export const useDecodedWeather = (icaoCode: string, isActive: boolean) => {
           throw new Error(`HTTP ${response.status}`);
         }
         
-        const data = await response.json();
-        
-        // Handle different proxy response formats
+        const contentType = response.headers.get('content-type') || '';
         let content = '';
-        if (data.contents) {
-          // allorigins format
-          content = data.contents;
-        } else if (typeof data === 'string') {
-          // corsproxy format
-          content = data;
+        
+        // Check if response is HTML or JSON based on content type or response text
+        if (contentType.includes('application/json')) {
+          // Response is JSON, parse it
+          const data = await response.json();
+          
+          // Handle different proxy response formats
+          if (data.contents) {
+            // allorigins format
+            content = data.contents;
+          } else if (data.content) {
+            // codetabs format
+            content = data.content;
+          } else if (typeof data === 'string') {
+            content = data;
+          } else {
+            content = JSON.stringify(data);
+          }
         } else {
-          // codetabs format
-          content = data.content || JSON.stringify(data);
+          // Response is likely HTML or plain text, get it directly
+          const textResponse = await response.text();
+          
+          // Check if it looks like JSON (starts with { or [)
+          const trimmedText = textResponse.trim();
+          if (trimmedText.startsWith('{') || trimmedText.startsWith('[')) {
+            try {
+              const data = JSON.parse(trimmedText);
+              if (data.contents) {
+                content = data.contents;
+              } else if (data.content) {
+                content = data.content;
+              } else {
+                content = textResponse;
+              }
+            } catch {
+              // Not valid JSON, use as-is
+              content = textResponse;
+            }
+          } else {
+            // Direct HTML/text response
+            content = textResponse;
+          }
         }
         
         if (content.trim()) {
@@ -81,6 +112,8 @@ export const useDecodedWeather = (icaoCode: string, isActive: boolean) => {
         }
         
       } catch (err) {
+        console.log(`Proxy ${proxyIndex + 1} failed:`, err);
+        
         // If this is the last proxy, throw the error
         if (proxyIndex === CORS_PROXIES.length - 1) {
           throw err;
