@@ -49,8 +49,8 @@ export function formatNotamsForDisplay(notams: NotamItem[], icaoCode: string): s
       output += '─'.repeat(40) + '\n\n';
       
       category.notams.forEach((notam, index) => {
-        output += `NOTAM ${index + 1}: ${notam.id} [${notam.type}-TYPE]\n`;
-        output += '▔'.repeat(35) + '\n';
+        const notamHeader = `NOTAM ${index + 1}: ${notam.id} [${notam.type}-TYPE]`;
+        output += `=== ${notamHeader} ===\n`;
         
         // Format the text with better line breaks
         const formattedText = formatNotamText(notam.text);
