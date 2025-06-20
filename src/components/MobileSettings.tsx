@@ -1,8 +1,12 @@
 
 import React from "react";
-import { Bell, Info, Mail, Globe, Database, Github } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Bell, Info, Mail, Globe, Database, Github, Shield, FileText } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const MobileSettings = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="bg-slate-800/90 backdrop-blur-xl rounded-2xl p-4 border border-white/20 shadow-lg">
       <div className="flex items-center space-x-3 mb-4">
@@ -16,6 +20,32 @@ const MobileSettings = () => {
       </div>
       
       <div className="space-y-4">
+        {/* Legal Section */}
+        <div className="p-4 bg-slate-900/40 rounded-xl">
+          <div className="flex items-center space-x-2 mb-3">
+            <Shield className="w-5 h-5 text-cyan-400" />
+            <p className="text-white font-medium">Legal & Support</p>
+          </div>
+          <div className="space-y-2">
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-slate-300 hover:text-white hover:bg-white/10 p-2"
+              onClick={() => navigate('/privacy-policy')}
+            >
+              <Shield className="w-4 h-4 mr-3" />
+              Privacy Policy
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-slate-300 hover:text-white hover:bg-white/10 p-2"
+              onClick={() => navigate('/terms-of-service')}
+            >
+              <FileText className="w-4 h-4 mr-3" />
+              Terms of Service
+            </Button>
+          </div>
+        </div>
+
         {/* About Section */}
         <div className="p-4 bg-slate-900/40 rounded-xl">
           <div className="flex items-center space-x-2 mb-3">
