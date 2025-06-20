@@ -1,4 +1,3 @@
-
 import { DataFetchResult, WeatherData } from "@/types/weather";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -40,7 +39,8 @@ export const fetchWeatherDataViaEdgeFunction = async (icaoCode: string): Promise
     metar: data.metar || `No METAR data available for ${icaoCode}`,
     taf: data.taf || `No TAF data available for ${icaoCode}`,
     airport: data.airport || `No airport data available for ${icaoCode}`,
-    notam: data.notam || `No current NOTAMs for ${icaoCode}`
+    notam: data.notam || `No current NOTAMs for ${icaoCode}`,
+    decoded: data.decoded || `No decoded weather data available for ${icaoCode}`
   };
 };
 

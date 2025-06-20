@@ -1,11 +1,9 @@
-
 import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CloudRain, Bell, Plane, FileText, AlertTriangle } from "lucide-react";
-import { useDecodedWeather } from "@/hooks/useDecodedWeather";
 import { isDataAvailable, getDisplayContent } from "@/utils/weatherDataUtils";
 
 interface MobileWeatherTabsProps {
@@ -25,15 +23,11 @@ const MobileWeatherTabs = ({
   error,
   icaoCode
 }: MobileWeatherTabsProps) => {
-  const { decodedHtml, isLoadingDecoded, decodedError } = useDecodedWeather(
-    icaoCode,
-    weatherTab === "decoded"
-  );
-
   const hasMetarData = weatherData ? isDataAvailable(weatherData.metar) : false;
   const hasTafData = weatherData ? isDataAvailable(weatherData.taf) : false;
   const hasAirportData = weatherData ? isDataAvailable(weatherData.airport) : false;
   const hasNotamData = weatherData ? isDataAvailable(weatherData.notam) : false;
+  const hasDecodedData = weatherData ? isDataAvailable(weatherData.decoded) : false;
   const hasWeatherData = hasMetarData || hasTafData;
 
   return (
@@ -42,10 +36,13 @@ const MobileWeatherTabs = ({
         <TabsList className="grid w-full grid-cols-4 bg-slate-900/60 rounded-none h-12">
           <TabsTrigger 
             value="decoded" 
-            className="flex items-center gap-1 text-xs data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-200"
+            className="flex items-center gap-1 text-xs data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-200 relative"
           >
             <FileText className="w-4 h-4" />
             Decoded
+            {hasDecodedData && (
+              <div className="absolute -top-1 -right-1 w-2 h-2 bg-orange-400 rounded-full shadow-sm shadow-orange-400/50"></div>
+            )}
           </TabsTrigger>
           <TabsTrigger 
             value="raw" 
@@ -84,11 +81,16 @@ const MobileWeatherTabs = ({
             <div className="flex items-center gap-2 mb-3">
               <FileText className="w-5 h-5 text-cyan-400" />
               <h3 className="text-lg font-bold text-white">Decoded Weather</h3>
-              {isLoadingDecoded && (
+              {isLoading && (
                 <div className="flex items-center space-x-2">
                   <div className="w-4 h-4 border-2 border-orange-400 border-t-transparent rounded-full animate-spin"></div>
                   <span className="text-sm text-orange-300">Loading...</span>
                 </div>
+              )}
+              {hasDecodedData && (
+                <Badge variant="outline" className="text-xs bg-orange-400/20 border-orange-400/50 text-orange-200">
+                  Live Data
+                </Badge>
               )}
             </div>
             <ScrollArea className="h-[400px] w-full [&>[data-radix-scroll-area-viewport]]:scrollbar-thin [&>[data-radix-scroll-area-viewport]]:scrollbar-track-black [&>[data-radix-scroll-area-viewport]]:scrollbar-thumb-orange-400/50 [&>[data-radix-scroll-area-viewport]]:scrollbar-thumb-rounded">
@@ -108,19 +110,19 @@ const MobileWeatherTabs = ({
                       Decoded weather provides human-readable explanations of METAR and TAF codes
                     </pre>
                   </div>
-                ) : decodedError ? (
+                ) : error ? (
                   <Alert className="bg-red-500/20 border-red-400/50 text-red-100">
                     <AlertTriangle className="h-4 w-4" />
                     <AlertDescription className="text-red-100">
-                      {decodedError}
+                      {error}
                     </AlertDescription>
                   </Alert>
-                ) : decodedHtml ? (
+                ) : weatherData?.decoded ? (
                   <div 
                     className="text-orange-400 font-mono text-sm flex-1"
-                    dangerouslySetInnerHTML={{ __html: decodedHtml }}
+                    dangerouslySetInnerHTML={{ __html: weatherData.decoded }}
                   />
-                ) : !isLoadingDecoded ? (
+                ) : !isLoading ? (
                   <div className="flex-1 flex items-center justify-center">
                     <pre className="whitespace-pre-wrap font-mono text-center">
                       Decoded weather will appear here automatically

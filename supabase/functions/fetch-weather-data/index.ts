@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { parseNotams } from "./notamParser.ts"
 import { formatNotamsForDisplay } from "./notamFormatter.ts"
@@ -17,6 +16,7 @@ interface WeatherResponse {
   taf: string;
   airport: string;
   notam: string;
+  decoded: string;
   errors?: string[];
 }
 
@@ -211,8 +211,31 @@ async function fetchNotamData(icaoCode: string): Promise<{ data: string; error: 
   }
 }
 
+async function fetchDecodedData(icaoCode: string): Promise<{ data: string; error: string | null }> {
+  try {
+    console.log(`Fetching Decoded weather data for ${icaoCode}`);
+    const url = `https://aviationweather.gov/api/data/taf?ids=${icaoCode}&format=html&metar=true`;
+    const response = await fetchWithTimeout(url, 15000); // 15 second timeout
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    const htmlContent = await response.text();
+    if (!htmlContent.trim()) {
+      return { data: `No decoded weather data available for ${icaoCode}`, error: null };
+    }
+    
+    console.log(`Successfully fetched decoded weather data for ${icaoCode}`);
+    return { data: htmlContent.trim(), error: null };
+  } catch (error) {
+    console.error(`Error fetching decoded weather for ${icaoCode}:`, error);
+    return { data: "", error: error instanceof Error ? error.message : "Failed to fetch decoded weather data" };
+  }
+}
+
 serve(async (req) => {
-  // Handle CORS preflight requests
+  // Handle CORS preflight requests  
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
@@ -252,12 +275,13 @@ serve(async (req) => {
     
     console.log(`Fetching fresh data for ${upperIcaoCode}`);
     
-    // Fetch all data sources in parallel
-    const [metarResult, tafResult, airportResult, notamResult] = await Promise.all([
+    // Fetch all data sources in parallel including decoded
+    const [metarResult, tafResult, airportResult, notamResult, decodedResult] = await Promise.all([
       fetchMetarData(upperIcaoCode),
       fetchTafData(upperIcaoCode),
       fetchAirportData(upperIcaoCode),
-      fetchNotamData(upperIcaoCode)
+      fetchNotamData(upperIcaoCode),
+      fetchDecodedData(upperIcaoCode)
     ]);
     
     // Collect errors
@@ -265,7 +289,8 @@ serve(async (req) => {
       metarResult.error,
       tafResult.error,
       airportResult.error,
-      notamResult.error
+      notamResult.error,
+      decodedResult.error
     ].filter(Boolean) as string[];
     
     // Build response
@@ -274,6 +299,7 @@ serve(async (req) => {
       taf: tafResult.data || `Error fetching TAF: ${tafResult.error}`,
       airport: airportResult.data || `Error fetching Airport data: ${airportResult.error}`,
       notam: notamResult.data || `Error fetching NOTAM: ${notamResult.error}`,
+      decoded: decodedResult.data || `Error fetching decoded weather: ${decodedResult.error}`,
       ...(errors.length > 0 && { errors })
     };
     
@@ -307,7 +333,8 @@ serve(async (req) => {
         metar: 'Error fetching data',
         taf: 'Error fetching data', 
         airport: 'Error fetching data',
-        notam: 'Error fetching data'
+        notam: 'Error fetching data',
+        decoded: 'Error fetching data'
       }),
       { 
         status: 500, 

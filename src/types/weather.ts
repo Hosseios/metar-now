@@ -4,6 +4,7 @@ export interface WeatherData {
   taf: string;
   airport: string;
   notam: string;
+  decoded: string;
 }
 
 export interface DataFetchResult {
