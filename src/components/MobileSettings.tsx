@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Bell, Info, Mail, Globe, Database, Github } from "lucide-react";
+import { Bell, Info, Mail, Globe, Database } from "lucide-react";
 
 const MobileSettings = () => {
   return (
@@ -64,34 +64,12 @@ const MobileSettings = () => {
               <span className="font-medium text-slate-200">Created by:</span> h0ss310s
             </p>
             <div className="flex items-center space-x-2">
-              <Globe className="w-4 h-4 text-slate-400" />
-              <a 
-                href="https://h0ss310s.com" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="text-blue-400 hover:text-blue-300 transition-colors"
-              >
-                https://h0ss310s.com
-              </a>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Github className="w-4 h-4 text-slate-400" />
-              <a 
-                href="https://github.com/hosseios" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="text-blue-400 hover:text-blue-300 transition-colors"
-              >
-                github.com/hosseios
-              </a>
-            </div>
-            <div className="flex items-center space-x-2">
               <Mail className="w-4 h-4 text-slate-400" />
               <a 
-                href="mailto:support@h0ss310s.com" 
+                href="mailto:support@h0ss310.com" 
                 className="text-blue-400 hover:text-blue-300 transition-colors"
               >
-                support@h0ss310s.com
+                support@h0ss310.com
               </a>
             </div>
           </div>

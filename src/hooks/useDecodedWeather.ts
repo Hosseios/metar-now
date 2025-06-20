@@ -59,28 +59,19 @@ export const useDecodedWeather = (icaoCode: string, isActive: boolean) => {
           throw new Error(`HTTP ${response.status}`);
         }
         
-        // Try to parse as JSON first (for allorigins and codetabs)
-        let content = '';
-        const contentType = response.headers.get('content-type') || '';
+        const data = await response.json();
         
-        if (contentType.includes('application/json')) {
-          const data = await response.json();
-          
-          // Handle different proxy response formats
-          if (data.contents) {
-            // allorigins format
-            content = data.contents;
-          } else if (data.content) {
-            // codetabs format
-            content = data.content;
-          } else if (typeof data === 'string') {
-            content = data;
-          } else {
-            content = JSON.stringify(data);
-          }
+        // Handle different proxy response formats
+        let content = '';
+        if (data.contents) {
+          // allorigins format
+          content = data.contents;
+        } else if (typeof data === 'string') {
+          // corsproxy format
+          content = data;
         } else {
-          // Handle direct HTML response (corsproxy format)
-          content = await response.text();
+          // codetabs format
+          content = data.content || JSON.stringify(data);
         }
         
         if (content.trim()) {
