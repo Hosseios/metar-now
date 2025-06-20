@@ -1,5 +1,4 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import MetarSearch from "@/components/MetarSearch";
 import FavoritesManager from "@/components/FavoritesManager";
 import RecentSearches from "@/components/RecentSearches";
@@ -10,6 +9,7 @@ import MobileSettings from "@/components/MobileSettings";
 import RetroRadar from "@/components/RetroRadar";
 import { useMetarData } from "@/hooks/useMetarData";
 import { useAuth } from "@/contexts/AuthContext";
+import { useHaptics } from "@/hooks/useHaptics";
 
 const MobileIndex = () => {
   const [icaoCode, setIcaoCode] = useState("");
@@ -22,6 +22,20 @@ const MobileIndex = () => {
     fetchWeatherData
   } = useMetarData();
   const { loading: authLoading } = useAuth();
+  const { triggerNotification } = useHaptics();
+
+  // Add haptic feedback for successful data fetch or errors
+  useEffect(() => {
+    if (!isLoading) {
+      if (weatherData && !error) {
+        // Success haptic
+        triggerNotification('success');
+      } else if (error) {
+        // Error haptic
+        triggerNotification('error');
+      }
+    }
+  }, [isLoading, weatherData, error, triggerNotification]);
 
   const handleSearch = (code: string) => {
     setIcaoCode(code);

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -7,6 +6,7 @@ import AirportAutocomplete from "./AirportAutocomplete";
 import { useSupabaseFavorites } from "@/hooks/useSupabaseFavorites";
 import { useAuth } from "@/contexts/AuthContext";
 import { findAirportByCode } from "@/utils/airportDatabase";
+import { useHaptics } from "@/hooks/useHaptics";
 
 interface MetarSearchProps {
   onSearch: (icaoCode: string) => void;
@@ -25,11 +25,15 @@ const MetarSearch = ({
   const {
     user
   } = useAuth();
+  const { triggerMedium } = useHaptics();
   const [lastInput, setLastInput] = useState("");
 
   // Respond to autocomplete/select
   const handleAirportSelect = async (input: string) => {
     setLastInput(input);
+    // Trigger haptic feedback when search is initiated
+    await triggerMedium();
+    
     // Try to resolve code (handles ICAO or IATA)
     let resolvedICAO = input.toUpperCase();
     try {
@@ -45,7 +49,8 @@ const MetarSearch = ({
     }
   };
 
-  return <div className="space-y-4">
+  return (
+    <div className="space-y-4">
       <div className="flex items-center space-x-3">
         <div className="p-2 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl shadow-lg">
           <Plane className="w-5 h-5 text-white" />
@@ -59,7 +64,8 @@ IATA Code (e.g., FRA, MXP, LGG, BRU, CDG, LHR)
       </div>
       {/* Compact autocomplete search */}
       <AirportAutocomplete onSelect={handleAirportSelect} isLoading={isLoading} />
-    </div>;
+    </div>
+  );
 };
 
 export default MetarSearch;
