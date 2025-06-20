@@ -119,7 +119,7 @@ const Privacy = () => {
             </Card>
           ))}
 
-          <Card className="bg-gradient-to-r from-blue-500/10 to-purple-600/10 backdrop-blur-xl border-blue-400/20 shadow-lg">
+          <Card className="bg-white/5 backdrop-blur-xl border-white/20 shadow-lg">
             <CardHeader>
               <CardTitle className="flex items-center space-x-3 text-white">
                 <div className="p-2 bg-gradient-to-br from-blue-500/20 to-purple-600/20 rounded-lg">

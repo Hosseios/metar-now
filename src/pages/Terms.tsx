@@ -101,17 +101,17 @@ const Terms = () => {
         </div>
 
         <div className="grid gap-6">
-          <Card className="bg-gradient-to-r from-amber-500/10 to-red-500/10 backdrop-blur-xl border-amber-400/30 shadow-lg">
+          <Card className="bg-white/5 backdrop-blur-xl border-white/20 shadow-lg">
             <CardHeader>
               <CardTitle className="flex items-center space-x-3 text-white">
-                <div className="p-2 bg-gradient-to-br from-amber-500/20 to-red-500/20 rounded-lg">
+                <div className="p-2 bg-gradient-to-br from-amber-500/20 to-orange-600/20 rounded-lg">
                   <AlertTriangle className="w-5 h-5 text-amber-400" />
                 </div>
-                <span>⚠️ Aviation Safety Notice</span>
+                <span>Aviation Safety Notice</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-amber-200 font-medium">
+              <p className="text-slate-300">
                 This app is for reference only. Never use it as your sole source for flight planning or critical aviation decisions. Always consult official sources and follow proper aviation procedures.
               </p>
             </CardContent>
@@ -133,7 +133,7 @@ const Terms = () => {
             </Card>
           ))}
 
-          <Card className="bg-gradient-to-r from-amber-500/10 to-orange-600/10 backdrop-blur-xl border-amber-400/20 shadow-lg">
+          <Card className="bg-white/5 backdrop-blur-xl border-white/20 shadow-lg">
             <CardHeader>
               <CardTitle className="flex items-center space-x-3 text-white">
                 <div className="p-2 bg-gradient-to-br from-amber-500/20 to-orange-600/20 rounded-lg">
