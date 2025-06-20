@@ -14,11 +14,9 @@ export const formatNotamsForDisplay = (notams: NotamItem[], icaoCode: string): s
 
   // Use shorter lines for mobile-friendly display
   const isMobile = window.innerWidth <= 768;
-  const mainSeparator = isMobile ? '═'.repeat(30) : '═'.repeat(60);
   const categorySeparator = isMobile ? '─'.repeat(25) : '─'.repeat(40);
 
-  let formattedOutput = `=== NOTAMs for ${icaoCode} (${notams.length} active NOTAMs found) ===\n`;
-  formattedOutput += `${mainSeparator}\n\n`;
+  let formattedOutput = `=== NOTAMs for ${icaoCode} (${notams.length} active NOTAMs found) ===\n\n`;
 
   // Add category summary with professional text markers
   if (notamsByCategory.critical.length > 0) {

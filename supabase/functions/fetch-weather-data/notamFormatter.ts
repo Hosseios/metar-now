@@ -1,3 +1,4 @@
+
 interface NotamItem {
   id: string;
   type: 'A' | 'B' | 'H' | 'J' | 'V';
@@ -15,8 +16,7 @@ export function formatNotamsForDisplay(notams: NotamItem[], icaoCode: string): s
   
   console.log(`Formatting ${notams.length} NOTAMs for display`);
   
-  let output = `=== NOTAMs for ${icaoCode} (${notams.length} active NOTAMs found) ===\n`;
-  output += '═'.repeat(60) + '\n\n';
+  let output = `=== NOTAMs for ${icaoCode} (${notams.length} active NOTAMs found) ===\n\n`;
   
   // Group NOTAMs by category
   const critical = notams.filter(n => n.category === 'critical');
