@@ -23,41 +23,47 @@ const Privacy = () => {
 
         <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-8 border border-white/20 shadow-2xl">
           <h1 className="text-3xl font-bold text-white mb-6">Privacy Policy</h1>
-          <div className="text-slate-200 space-y-4">
-            <p className="text-sm text-slate-300">Last updated: {new Date().toLocaleDateString()}</p>
+          <div className="text-slate-200 space-y-6">
+            <p className="text-sm text-slate-400">Last updated: {new Date().toLocaleDateString()}</p>
             
-            <h2 className="text-xl font-semibold text-white mt-6">Information We Collect</h2>
-            <p>METAR Now collects minimal information to provide aviation weather services:</p>
-            <ul className="list-disc pl-6 space-y-1">
-              <li>Airport codes you search for</li>
-              <li>Favorite airports you save (stored locally)</li>
-              <li>Recent search history (stored locally)</li>
-            </ul>
+            <div>
+              <h2 className="text-xl font-semibold text-white mb-3">What We Collect</h2>
+              <p className="mb-2">METAR Now respects your privacy. We only collect:</p>
+              <ul className="list-disc pl-6 space-y-1 text-slate-300">
+                <li>Airport codes you search (stored locally on your device)</li>
+                <li>Your favorite airports (stored locally on your device)</li>
+                <li>Recent searches for convenience (stored locally on your device)</li>
+              </ul>
+            </div>
 
-            <h2 className="text-xl font-semibold text-white mt-6">How We Use Information</h2>
-            <p>We use the collected information to:</p>
-            <ul className="list-disc pl-6 space-y-1">
-              <li>Provide real-time aviation weather data</li>
-              <li>Improve user experience with saved favorites</li>
-              <li>Maintain search history for convenience</li>
-            </ul>
+            <div>
+              <h2 className="text-xl font-semibold text-white mb-3">How We Use Your Data</h2>
+              <p className="text-slate-300">Your data stays on your device. We use it to provide personalized aviation weather services and improve your experience with saved favorites and search history.</p>
+            </div>
 
-            <h2 className="text-xl font-semibold text-white mt-6">Data Sources</h2>
-            <p>Weather data is sourced from:</p>
-            <ul className="list-disc pl-6 space-y-1">
-              <li>Aviation Weather Center (AWC) - NOAA</li>
-              <li>CheckWX API for real-time METAR/TAF</li>
-              <li>Federal Aviation Administration (FAA) for NOTAMs</li>
-            </ul>
+            <div>
+              <h2 className="text-xl font-semibold text-white mb-3">Weather Data Sources</h2>
+              <ul className="list-disc pl-6 space-y-1 text-slate-300">
+                <li>NOAA Aviation Weather Center (AWC)</li>
+                <li>CheckWX API for real-time METAR/TAF data</li>
+                <li>FAA for NOTAMs and airport information</li>
+              </ul>
+            </div>
 
-            <h2 className="text-xl font-semibold text-white mt-6">Data Storage</h2>
-            <p>Your personal data (favorites, recent searches) is stored locally on your device. We do not store personal information on our servers.</p>
+            <div>
+              <h2 className="text-xl font-semibold text-white mb-3">Your Privacy Rights</h2>
+              <p className="text-slate-300">Since all personal data is stored locally on your device, you have complete control. Clear your browser data or app storage to remove all information.</p>
+            </div>
 
-            <h2 className="text-xl font-semibold text-white mt-6">Third-Party Services</h2>
-            <p>We use third-party services to provide weather data. These services may have their own privacy policies.</p>
+            <div>
+              <h2 className="text-xl font-semibold text-white mb-3">Third-Party Services</h2>
+              <p className="text-slate-300">We integrate with aviation weather APIs to provide real-time data. These services have their own privacy policies and may collect anonymous usage statistics.</p>
+            </div>
 
-            <h2 className="text-xl font-semibold text-white mt-6">Contact</h2>
-            <p>For privacy-related questions, contact us at: support@h0ss310s.com</p>
+            <div>
+              <h2 className="text-xl font-semibold text-white mb-3">Contact Us</h2>
+              <p className="text-slate-300">Questions about privacy? Reach out to us at: <span className="text-blue-400">support@h0ss310s.com</span></p>
+            </div>
           </div>
         </div>
       </div>
