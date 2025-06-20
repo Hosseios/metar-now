@@ -11,10 +11,10 @@ const decodedCache = new Map<string, {
 // Cache duration: 10 minutes
 const CACHE_DURATION = 10 * 60 * 1000;
 
-// CORS proxy services with fallback
+// CORS proxy services with fallback - reordered based on reliability
 const CORS_PROXIES = [
-  'https://api.allorigins.win/get?url=',
   'https://corsproxy.io/?',
+  'https://api.allorigins.win/get?url=',
   'https://api.codetabs.com/v1/proxy?quest='
 ];
 
@@ -53,7 +53,16 @@ export const useDecodedWeather = (icaoCode: string, isActive: boolean) => {
         const proxy = CORS_PROXIES[proxyIndex];
         const proxyUrl = proxy + encodeURIComponent(aviationWeatherUrl);
         
-        const response = await fetch(proxyUrl, { signal });
+        // Reduce timeout for faster failure detection
+        const timeoutController = new AbortController();
+        const timeoutId = setTimeout(() => timeoutController.abort(), 10000); // 10 seconds instead of default
+        
+        const combinedSignal = AbortSignal.any ? 
+          AbortSignal.any([signal, timeoutController.signal]) : 
+          signal;
+        
+        const response = await fetch(proxyUrl, { signal: combinedSignal });
+        clearTimeout(timeoutId);
         
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}`);
@@ -119,8 +128,8 @@ export const useDecodedWeather = (icaoCode: string, isActive: boolean) => {
           throw err;
         }
         
-        // Wait a bit before trying the next proxy
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Reduce wait time between proxies from 500ms to 100ms
+        await new Promise(resolve => setTimeout(resolve, 100));
       }
     }
     
@@ -175,10 +184,10 @@ export const useDecodedWeather = (icaoCode: string, isActive: boolean) => {
       clearTimeout(debounceTimeoutRef.current);
     }
     
-    // Set new debounce timeout
+    // Reduce debounce from 300ms to 150ms for faster response
     debounceTimeoutRef.current = setTimeout(() => {
       fetchDecodedWeather(icao);
-    }, 300); // 300ms debounce
+    }, 150);
   }, [fetchDecodedWeather]);
 
   // Effect to handle fetching when ICAO code changes or tab becomes active
