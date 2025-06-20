@@ -16,7 +16,8 @@ export function formatNotamsForDisplay(notams: NotamItem[], icaoCode: string): s
   
   console.log(`Formatting ${notams.length} NOTAMs for display`);
   
-  let output = `=== NOTAMs for ${icaoCode} (${notams.length} active NOTAMs found) ===\n\n`;
+  let output = `NOTAMs for ${icaoCode} (${notams.length} active NOTAMs found)\n`;
+  output += '═'.repeat(60) + '\n\n';
   
   // Group NOTAMs by category
   const critical = notams.filter(n => n.category === 'critical');
@@ -44,11 +45,12 @@ export function formatNotamsForDisplay(notams: NotamItem[], icaoCode: string): s
   
   categories.forEach(category => {
     if (category.notams.length > 0) {
-      output += `=== ${category.prefix} NOTAMs ===\n`;
+      output += `${category.prefix} ${category.name} NOTAMs\n`;
       output += '─'.repeat(40) + '\n\n';
       
       category.notams.forEach((notam, index) => {
-        output += `=== NOTAM ${index + 1}: ${notam.id} [${notam.type}-TYPE] ===\n`;
+        output += `NOTAM ${index + 1}: ${notam.id} [${notam.type}-TYPE]\n`;
+        output += '▔'.repeat(35) + '\n';
         
         // Format the text with better line breaks
         const formattedText = formatNotamText(notam.text);

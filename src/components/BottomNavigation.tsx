@@ -1,7 +1,6 @@
 
 import { Home, Plus, Clock, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useHaptics } from "@/hooks/useHaptics";
 
 interface BottomNavigationProps {
   activeTab: string;
@@ -9,21 +8,12 @@ interface BottomNavigationProps {
 }
 
 const BottomNavigation = ({ activeTab, onTabChange }: BottomNavigationProps) => {
-  const { triggerLight } = useHaptics();
-  
   const tabs = [
     { id: 'search', label: 'Search', icon: Home },
     { id: 'favorites', label: 'Favorites', icon: Plus },
     { id: 'recent', label: 'Recent', icon: Clock },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
-
-  const handleTabChange = async (tabId: string) => {
-    if (tabId !== activeTab) {
-      await triggerLight();
-      onTabChange(tabId);
-    }
-  };
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-white/20 z-[9999] safe-area-bottom" style={{ position: 'fixed' }}>
@@ -34,7 +24,7 @@ const BottomNavigation = ({ activeTab, onTabChange }: BottomNavigationProps) => 
           return (
             <button
               key={tab.id}
-              onClick={() => handleTabChange(tab.id)}
+              onClick={() => onTabChange(tab.id)}
               className={cn(
                 "flex flex-col items-center justify-center min-h-[60px] px-3 py-2 rounded-lg transition-all duration-200 flex-1 max-w-[80px]",
                 "active:scale-95 touch-manipulation",
