@@ -1,100 +1,113 @@
-
 import React from "react";
-import { Bell, Info, Mail, Globe, Database, Github } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import {
+  Settings,
+  Moon,
+  Sun,
+  Scale,
+  Shield,
+  FileText,
+  Mail,
+  Info,
+  Github,
+  Globe,
+} from "lucide-react";
+import { useTheme } from "@/hooks/use-theme";
+import { Button } from "@/components/ui/button";
 
 const MobileSettings = () => {
+  const navigate = useNavigate();
+  const { theme, setTheme } = useTheme();
+
   return (
-    <div className="bg-slate-800/90 backdrop-blur-xl rounded-2xl p-4 border border-white/20 shadow-lg">
-      <div className="flex items-center space-x-3 mb-4">
-        <div className="p-3 bg-gradient-to-br from-gray-500 to-slate-500 rounded-2xl shadow-lg">
-          <Bell className="w-6 h-6 text-white" />
-        </div>
-        <div>
-          <h2 className="text-xl font-bold text-white">Settings</h2>
-          <p className="text-slate-300">App preferences and configuration</p>
+    <div className="space-y-6">
+      {/* General Settings Section */}
+      <div className="bg-slate-800/90 backdrop-blur-xl rounded-2xl p-4 border border-white/20 shadow-lg">
+        <h3 className="text-white font-bold mb-4 flex items-center">
+          <Settings className="w-5 h-5 mr-2 text-cyan-400" />
+          General Settings
+        </h3>
+        <div className="space-y-3">
+          {/* Theme Toggle */}
+          <Button
+            variant="ghost"
+            className="w-full justify-start text-slate-300 hover:text-white hover:bg-white/10"
+            onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+          >
+            {theme === "light" ? (
+              <>
+                <Moon className="w-4 h-4 mr-3" />
+                Dark Mode
+              </>
+            ) : (
+              <>
+                <Sun className="w-4 h-4 mr-3" />
+                Light Mode
+              </>
+            )}
+          </Button>
+          {/* Add more general settings here */}
         </div>
       </div>
-      
-      <div className="space-y-4">
-        {/* About Section */}
-        <div className="p-4 bg-slate-900/40 rounded-xl">
-          <div className="flex items-center space-x-2 mb-3">
-            <Info className="w-5 h-5 text-blue-400" />
-            <p className="text-white font-medium">About METAR Now</p>
-          </div>
-          <p className="text-slate-300 text-sm mb-3">
-            Real-time aviation data for pilots and aviation enthusiasts. Get instant access to METAR, TAF, airport information, and NOTAMs worldwide.
-          </p>
-          <div className="border-t border-slate-700 pt-3 mt-3">
-            <p className="text-slate-400 text-xs">Version 1.0.0</p>
-          </div>
-        </div>
 
-        {/* Data Sources */}
-        <div className="p-4 bg-slate-900/40 rounded-xl">
-          <div className="flex items-center space-x-2 mb-3">
-            <Database className="w-5 h-5 text-green-400" />
-            <p className="text-white font-medium">Data Sources & Credits</p>
-          </div>
-          <div className="space-y-2 text-sm text-slate-300">
-            <div>
-              <p className="font-medium text-slate-200">Aviation Data:</p>
-              <p>• Aviation Weather Center (AWC) - NOAA</p>
-              <p>• CheckWX API for real-time METAR/TAF</p>
-            </div>
-            <div className="mt-2">
-              <p className="font-medium text-slate-200">NOTAMs:</p>
-              <p>• Federal Aviation Administration (FAA)</p>
-            </div>
-            <div className="mt-2">
-              <p className="font-medium text-slate-200">Airport Data:</p>
-              <p>• Global airport database</p>
-            </div>
-          </div>
+      {/* Legal & Support Section */}
+      <div className="bg-slate-800/90 backdrop-blur-xl rounded-2xl p-4 border border-white/20 shadow-lg">
+        <h3 className="text-white font-bold mb-4 flex items-center">
+          <Scale className="w-5 h-5 mr-2 text-cyan-400" />
+          Legal & Support
+        </h3>
+        <div className="space-y-3">
+          <Button
+            variant="ghost"
+            className="w-full justify-start text-slate-300 hover:text-white hover:bg-white/10"
+            onClick={() => navigate('/privacy-policy')}
+          >
+            <Shield className="w-4 h-4 mr-3" />
+            Privacy Policy
+          </Button>
+          <Button
+            variant="ghost"
+            className="w-full justify-start text-slate-300 hover:text-white hover:bg-white/10"
+            onClick={() => navigate('/terms-of-service')}
+          >
+            <FileText className="w-4 h-4 mr-3" />
+            Terms of Service
+          </Button>
+          <Button
+            variant="ghost"
+            className="w-full justify-start text-slate-300 hover:text-white hover:bg-white/10"
+            onClick={() => window.open('mailto:support@h0ss310s.com', '_blank')}
+          >
+            <Mail className="w-4 h-4 mr-3" />
+            Contact Support
+          </Button>
         </div>
+      </div>
 
-        {/* Developer Info */}
-        <div className="p-4 bg-slate-900/40 rounded-xl">
-          <div className="flex items-center space-x-2 mb-3">
-            <Globe className="w-5 h-5 text-purple-400" />
-            <p className="text-white font-medium">Developer</p>
-          </div>
-          <div className="space-y-2 text-sm text-slate-300">
-            <p>
-              <span className="font-medium text-slate-200">Created by:</span> h0ss310s
-            </p>
-            <div className="flex items-center space-x-2">
-              <Globe className="w-4 h-4 text-slate-400" />
-              <a 
-                href="https://h0ss310s.com" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="text-blue-400 hover:text-blue-300 transition-colors"
-              >
-                https://h0ss310s.com
-              </a>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Github className="w-4 h-4 text-slate-400" />
-              <a 
-                href="https://github.com/hosseios" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="text-blue-400 hover:text-blue-300 transition-colors"
-              >
-                github.com/hosseios
-              </a>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Mail className="w-4 h-4 text-slate-400" />
-              <a 
-                href="mailto:support@h0ss310s.com" 
-                className="text-blue-400 hover:text-blue-300 transition-colors"
-              >
-                support@h0ss310s.com
-              </a>
-            </div>
-          </div>
+      {/* About Section */}
+      <div className="bg-slate-800/90 backdrop-blur-xl rounded-2xl p-4 border border-white/20 shadow-lg">
+        <h3 className="text-white font-bold mb-4 flex items-center">
+          <Info className="w-5 h-5 mr-2 text-cyan-400" />
+          About
+        </h3>
+        <div className="space-y-3">
+          <Button
+            variant="ghost"
+            className="w-full justify-start text-slate-300 hover:text-white hover:bg-white/10"
+            onClick={() => window.open('https://h0ss310s.com', '_blank')}
+          >
+            <Globe className="w-4 h-4 mr-3" />
+            Developer Website
+          </Button>
+          <Button
+            variant="ghost"
+            className="w-full justify-start text-slate-300 hover:text-white hover:bg-white/10"
+            onClick={() => window.open('https://github.com/hosseios', '_blank')}
+          >
+            <Github className="w-4 h-4 mr-3" />
+            GitHub Profile
+          </Button>
+          {/* Add more about info here */}
         </div>
       </div>
     </div>
