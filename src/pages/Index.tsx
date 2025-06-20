@@ -10,7 +10,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Info, Database, Globe, Mail, Github } from "lucide-react";
+import { Info, Database, Globe, Mail, Github, Shield, FileText } from "lucide-react";
+
 const Index = () => {
   const [icaoCode, setIcaoCode] = useState("");
   const [showDeviceInfo, setShowDeviceInfo] = useState(false);
@@ -38,7 +39,7 @@ const Index = () => {
         <div className="text-white text-lg">Loading...</div>
       </div>;
   }
-  return <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative">
+  return <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative flex flex-col">
       {/* Large Background Banner */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{
@@ -51,7 +52,7 @@ const Index = () => {
       </div>
 
       {/* Content Layer */}
-      <div className="relative z-10 flex flex-col min-h-screen">
+      <div className="relative z-10 flex flex-col flex-1">
         {/* Header with Logo - Added safe-area padding for mobile */}
         <div className="flex items-center justify-between p-4 md:p-6 pt-8 md:pt-6" style={{
         paddingTop: 'max(2rem, env(safe-area-inset-top, 2rem))'
@@ -183,6 +184,39 @@ const Index = () => {
             {/* Favorites Section */}
             <div className="bg-white/10 backdrop-blur-xl rounded-2xl md:rounded-3xl p-4 md:p-6 border border-white/20 shadow-2xl">
               <FavoritesManager currentIcao={icaoCode} onSelectFavorite={handleSearch} />
+            </div>
+          </div>
+        </div>
+
+        {/* Footer with Privacy and Terms */}
+        <div className="relative z-10 p-4 md:p-6">
+          <div className="max-w-6xl mx-auto">
+            <div className="bg-white/5 backdrop-blur-xl rounded-xl p-4 border border-white/10">
+              <div className="flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0">
+                <div className="text-slate-300 text-sm">
+                  © 2024 METAR Now - Aviation Weather Data
+                </div>
+                <div className="flex items-center space-x-4 text-sm">
+                  <a 
+                    href="https://h0ss310s.com/privacy" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-slate-300 hover:text-white transition-colors flex items-center space-x-1"
+                  >
+                    <Shield className="w-3 h-3" />
+                    <span>Privacy Policy</span>
+                  </a>
+                  <a 
+                    href="https://h0ss310s.com/terms" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-slate-300 hover:text-white transition-colors flex items-center space-x-1"
+                  >
+                    <FileText className="w-3 h-3" />
+                    <span>Terms of Service</span>
+                  </a>
+                </div>
+              </div>
             </div>
           </div>
         </div>

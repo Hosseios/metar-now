@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { WeatherData, NotamItem } from "@/types/weather";
@@ -38,7 +39,8 @@ export const useMetarData = () => {
         metar: data.metar || `No METAR data available for ${icaoCode}`,
         taf: data.taf || `No TAF data available for ${icaoCode}`,
         airport: data.airport || `No airport data available for ${icaoCode}`,
-        notam: data.notam || `No current NOTAMs for ${icaoCode}`
+        notam: data.notam || `No current NOTAMs for ${icaoCode}`,
+        decoded: data.decoded || `No decoded weather data available for ${icaoCode}`
       };
       
       setWeatherData(weatherData);
@@ -148,10 +150,20 @@ Control Tower: ${Math.random() > 0.5 ? 'Yes' : 'No'}`;
   // Generate sample NOTAM data
   const notam = `No current NOTAMs for ${icaoCode}`;
 
+  // Generate decoded data
+  const decoded = `Decoded Weather for ${icaoCode}:
+Wind: ${wind}
+Visibility: ${vis}
+Weather: ${wx || 'Clear'}
+Temperature: ${temp}°C
+Dewpoint: ${dewpoint}°C
+Altimeter: ${altimeter}" Hg`;
+
   return {
     metar,
     taf,
     airport,
-    notam
+    notam,
+    decoded
   };
 };

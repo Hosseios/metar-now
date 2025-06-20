@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Bell, Info, Mail, Globe, Database } from "lucide-react";
+import { Bell, Info, Mail, Globe, Database, Shield, FileText } from "lucide-react";
 
 const MobileSettings = () => {
   return (
@@ -27,6 +27,38 @@ const MobileSettings = () => {
           </p>
           <div className="border-t border-slate-700 pt-3 mt-3">
             <p className="text-slate-400 text-xs">Version 1.0.0</p>
+          </div>
+        </div>
+
+        {/* Privacy & Terms Section */}
+        <div className="p-4 bg-slate-900/40 rounded-xl">
+          <div className="flex items-center space-x-2 mb-3">
+            <Shield className="w-5 h-5 text-amber-400" />
+            <p className="text-white font-medium">Privacy & Terms</p>
+          </div>
+          <div className="space-y-2">
+            <div className="flex items-center space-x-2">
+              <Shield className="w-4 h-4 text-slate-400" />
+              <a 
+                href="https://h0ss310s.com/privacy" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-blue-400 hover:text-blue-300 transition-colors text-sm"
+              >
+                Privacy Policy
+              </a>
+            </div>
+            <div className="flex items-center space-x-2">
+              <FileText className="w-4 h-4 text-slate-400" />
+              <a 
+                href="https://h0ss310s.com/terms" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-blue-400 hover:text-blue-300 transition-colors text-sm"
+              >
+                Terms of Service
+              </a>
+            </div>
           </div>
         </div>
 

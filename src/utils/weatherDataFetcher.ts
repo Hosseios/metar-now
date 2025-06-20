@@ -1,3 +1,4 @@
+
 import { DataFetchResult, WeatherData } from "@/types/weather";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -112,6 +113,13 @@ Control Tower: ${Math.random() > 0.5 ? 'Yes' : 'No'}`;
     metar,
     taf,
     airport,
-    notam
+    notam,
+    decoded: `Decoded Weather for ${icaoCode}:
+Wind: ${wind}
+Visibility: ${vis}
+Weather: ${wx || 'Clear'}
+Temperature: ${temp}°C
+Dewpoint: ${dewpoint}°C
+Altimeter: ${altimeter}" Hg`
   };
 };
