@@ -1,6 +1,7 @@
 
 import React from "react";
-import { Bell, Info, Mail, Globe, Database, Shield, FileText } from "lucide-react";
+import { Bell, Info, Mail, Globe, Database, Shield, FileText, Github } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const MobileSettings = () => {
   return (
@@ -39,25 +40,21 @@ const MobileSettings = () => {
           <div className="space-y-2">
             <div className="flex items-center space-x-2">
               <Shield className="w-4 h-4 text-slate-400" />
-              <a 
-                href="https://h0ss310s.com/privacy" 
-                target="_blank" 
-                rel="noopener noreferrer"
+              <Link 
+                to="/privacy"
                 className="text-blue-400 hover:text-blue-300 transition-colors text-sm"
               >
                 Privacy Policy
-              </a>
+              </Link>
             </div>
             <div className="flex items-center space-x-2">
               <FileText className="w-4 h-4 text-slate-400" />
-              <a 
-                href="https://h0ss310s.com/terms" 
-                target="_blank" 
-                rel="noopener noreferrer"
+              <Link 
+                to="/terms"
                 className="text-blue-400 hover:text-blue-300 transition-colors text-sm"
               >
                 Terms of Service
-              </a>
+              </Link>
             </div>
           </div>
         </div>
@@ -96,12 +93,34 @@ const MobileSettings = () => {
               <span className="font-medium text-slate-200">Created by:</span> h0ss310s
             </p>
             <div className="flex items-center space-x-2">
-              <Mail className="w-4 h-4 text-slate-400" />
+              <Globe className="w-4 h-4 text-slate-400" />
               <a 
-                href="mailto:support@h0ss310.com" 
+                href="https://h0ss310s.com" 
+                target="_blank" 
+                rel="noopener noreferrer"
                 className="text-blue-400 hover:text-blue-300 transition-colors"
               >
-                support@h0ss310.com
+                h0ss310s.com
+              </a>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Github className="w-4 h-4 text-slate-400" />
+              <a 
+                href="https://github.com/hosseios" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-blue-400 hover:text-blue-300 transition-colors"
+              >
+                github.com/hosseios
+              </a>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Mail className="w-4 h-4 text-slate-400" />
+              <a 
+                href="mailto:support@h0ss310s.com" 
+                className="text-blue-400 hover:text-blue-300 transition-colors"
+              >
+                support@h0ss310s.com
               </a>
             </div>
           </div>

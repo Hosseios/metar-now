@@ -1,4 +1,3 @@
-
 import MetarSearch from "@/components/MetarSearch";
 import MetarDisplay from "@/components/MetarDisplay";
 import FavoritesManager from "@/components/FavoritesManager";
@@ -11,6 +10,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Info, Database, Globe, Mail, Github, Shield, FileText } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Index = () => {
   const [icaoCode, setIcaoCode] = useState("");
@@ -129,7 +129,7 @@ const Index = () => {
                     </p>
                     <div className="flex items-center space-x-2">
                       <Globe className="w-4 h-4 text-slate-400" />
-                      <a href="https://h0ss310s.com" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 transition-colors">https://h0ss310s.com</a>
+                      <a href="https://h0ss310s.com" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 transition-colors">h0ss310s.com</a>
                     </div>
                     <div className="flex items-center space-x-2">
                       <Github className="w-4 h-4 text-slate-400" />
@@ -139,7 +139,7 @@ const Index = () => {
                     </div>
                     <div className="flex items-center space-x-2">
                       <Mail className="w-4 h-4 text-slate-400" />
-                      <a href="mailto:support@h0ss310.com" className="text-blue-400 hover:text-blue-300 transition-colors">
+                      <a href="mailto:support@h0ss310s.com" className="text-blue-400 hover:text-blue-300 transition-colors">
                         support@h0ss310s.com
                       </a>
                     </div>
@@ -197,24 +197,20 @@ const Index = () => {
                   © 2024 METAR Now - Aviation Weather Data
                 </div>
                 <div className="flex items-center space-x-4 text-sm">
-                  <a 
-                    href="https://h0ss310s.com/privacy" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
+                  <Link 
+                    to="/privacy"
                     className="text-slate-300 hover:text-white transition-colors flex items-center space-x-1"
                   >
                     <Shield className="w-3 h-3" />
                     <span>Privacy Policy</span>
-                  </a>
-                  <a 
-                    href="https://h0ss310s.com/terms" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
+                  </Link>
+                  <Link 
+                    to="/terms"
                     className="text-slate-300 hover:text-white transition-colors flex items-center space-x-1"
                   >
                     <FileText className="w-3 h-3" />
                     <span>Terms of Service</span>
-                  </a>
+                  </Link>
                 </div>
               </div>
             </div>
