@@ -1,12 +1,8 @@
 
 import React from "react";
-import { useNavigate } from "react-router-dom";
-import { Bell, Info, Mail, Globe, Database, Github, Shield, FileText } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Bell, Info, Mail, Globe, Database } from "lucide-react";
 
 const MobileSettings = () => {
-  const navigate = useNavigate();
-
   return (
     <div className="bg-slate-800/90 backdrop-blur-xl rounded-2xl p-4 border border-white/20 shadow-lg">
       <div className="flex items-center space-x-3 mb-4">
@@ -20,32 +16,6 @@ const MobileSettings = () => {
       </div>
       
       <div className="space-y-4">
-        {/* Legal Section */}
-        <div className="p-4 bg-slate-900/40 rounded-xl">
-          <div className="flex items-center space-x-2 mb-3">
-            <Shield className="w-5 h-5 text-cyan-400" />
-            <p className="text-white font-medium">Legal & Support</p>
-          </div>
-          <div className="space-y-2">
-            <Button
-              variant="ghost"
-              className="w-full justify-start text-slate-300 hover:text-white hover:bg-white/10 p-2"
-              onClick={() => navigate('/privacy-policy')}
-            >
-              <Shield className="w-4 h-4 mr-3" />
-              Privacy Policy
-            </Button>
-            <Button
-              variant="ghost"
-              className="w-full justify-start text-slate-300 hover:text-white hover:bg-white/10 p-2"
-              onClick={() => navigate('/terms-of-service')}
-            >
-              <FileText className="w-4 h-4 mr-3" />
-              Terms of Service
-            </Button>
-          </div>
-        </div>
-
         {/* About Section */}
         <div className="p-4 bg-slate-900/40 rounded-xl">
           <div className="flex items-center space-x-2 mb-3">
@@ -94,34 +64,12 @@ const MobileSettings = () => {
               <span className="font-medium text-slate-200">Created by:</span> h0ss310s
             </p>
             <div className="flex items-center space-x-2">
-              <Globe className="w-4 h-4 text-slate-400" />
-              <a 
-                href="https://h0ss310s.com" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="text-blue-400 hover:text-blue-300 transition-colors"
-              >
-                https://h0ss310s.com
-              </a>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Github className="w-4 h-4 text-slate-400" />
-              <a 
-                href="https://github.com/hosseios" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="text-blue-400 hover:text-blue-300 transition-colors"
-              >
-                github.com/hosseios
-              </a>
-            </div>
-            <div className="flex items-center space-x-2">
               <Mail className="w-4 h-4 text-slate-400" />
               <a 
-                href="mailto:support@h0ss310s.com" 
+                href="mailto:support@h0ss310.com" 
                 className="text-blue-400 hover:text-blue-300 transition-colors"
               >
-                support@h0ss310s.com
+                support@h0ss310.com
               </a>
             </div>
           </div>

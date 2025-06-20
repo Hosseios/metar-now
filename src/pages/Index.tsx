@@ -8,15 +8,12 @@ import { useMetarData } from "@/hooks/useMetarData";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Info, Database, Globe, Mail, Github } from "lucide-react";
-
 const Index = () => {
   const [icaoCode, setIcaoCode] = useState("");
   const [showDeviceInfo, setShowDeviceInfo] = useState(false);
-  const navigate = useNavigate();
   const {
     weatherData,
     isLoading,
@@ -27,7 +24,6 @@ const Index = () => {
     loading: authLoading
   } = useAuth();
   const isMobile = useIsMobile();
-  
   const handleSearch = (code: string) => {
     setIcaoCode(code);
     fetchWeatherData(code);
@@ -37,13 +33,11 @@ const Index = () => {
   if (isMobile) {
     return <MobileIndex />;
   }
-  
   if (authLoading) {
     return <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
         <div className="text-white text-lg">Loading...</div>
       </div>;
   }
-  
   return <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative">
       {/* Large Background Banner */}
       <div className="absolute inset-0 overflow-hidden">
@@ -144,7 +138,7 @@ const Index = () => {
                     </div>
                     <div className="flex items-center space-x-2">
                       <Mail className="w-4 h-4 text-slate-400" />
-                      <a href="mailto:support@h0ss310s.com" className="text-blue-400 hover:text-blue-300 transition-colors">
+                      <a href="mailto:support@h0ss310.com" className="text-blue-400 hover:text-blue-300 transition-colors">
                         support@h0ss310s.com
                       </a>
                     </div>
@@ -192,31 +186,7 @@ const Index = () => {
             </div>
           </div>
         </div>
-
-        {/* Footer with Legal Links */}
-        <div className="p-4 md:p-6 border-t border-white/10">
-          <div className="flex flex-col md:flex-row items-center justify-between max-w-6xl mx-auto">
-            <p className="text-slate-400 text-sm mb-2 md:mb-0">
-              © 2024 METAR Now by h0ss310s
-            </p>
-            <div className="flex space-x-4 text-sm">
-              <button
-                onClick={() => navigate('/privacy-policy')}
-                className="text-slate-400 hover:text-white transition-colors"
-              >
-                Privacy Policy
-              </button>
-              <button
-                onClick={() => navigate('/terms-of-service')}
-                className="text-slate-400 hover:text-white transition-colors"
-              >
-                Terms of Service
-              </button>
-            </div>
-          </div>
-        </div>
       </div>
     </div>;
 };
-
 export default Index;
