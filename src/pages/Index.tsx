@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Info, Database, Globe, Mail, Github, Shield, FileText } from "lucide-react";
 import { Link } from "react-router-dom";
-
 const Index = () => {
   const [icaoCode, setIcaoCode] = useState("");
   const [showDeviceInfo, setShowDeviceInfo] = useState(false);
@@ -193,21 +192,13 @@ const Index = () => {
           <div className="max-w-6xl mx-auto">
             <div className="bg-white/5 backdrop-blur-xl rounded-xl p-4 border border-white/10">
               <div className="flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0">
-                <div className="text-slate-300 text-sm">
-                  © 2024 METAR Now - Aviation Weather Data
-                </div>
+                <div className="text-slate-300 text-sm">© 2024 METAR Now - Aviation METAR Data Viewer</div>
                 <div className="flex items-center space-x-4 text-sm">
-                  <Link 
-                    to="/privacy"
-                    className="text-slate-300 hover:text-white transition-colors flex items-center space-x-1"
-                  >
+                  <Link to="/privacy" className="text-slate-300 hover:text-white transition-colors flex items-center space-x-1">
                     <Shield className="w-3 h-3" />
                     <span>Privacy Policy</span>
                   </Link>
-                  <Link 
-                    to="/terms"
-                    className="text-slate-300 hover:text-white transition-colors flex items-center space-x-1"
-                  >
+                  <Link to="/terms" className="text-slate-300 hover:text-white transition-colors flex items-center space-x-1">
                     <FileText className="w-3 h-3" />
                     <span>Terms of Service</span>
                   </Link>
