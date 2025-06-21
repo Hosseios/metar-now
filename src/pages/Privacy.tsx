@@ -1,9 +1,9 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Shield, Database, Eye, Users, Globe, Mail, Clock, Baby, Cookie, Lock, MapPin, Smartphone, Bell } from "lucide-react";
+import { ArrowLeft, Shield, Database, Eye, Clock, Lock, Globe, Mail, Baby, Cookie, Smartphone } from "lucide-react";
 
 const Privacy = () => {
   const navigate = useNavigate();
@@ -11,104 +11,98 @@ const Privacy = () => {
   const sections = [
     {
       icon: Eye,
-      title: "What We Collect",
+      title: "What We Collect & Why",
       content: (
-        <div>
-          <p className="mb-3">METAR Now respects your privacy. We only collect:</p>
+        <div className="space-y-3">
+          <p className="text-slate-300">METAR Now respects your privacy. We only collect data necessary for functionality:</p>
           <div className="space-y-2">
             <div className="flex items-center space-x-2 text-slate-300">
               <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-              <span>Airport codes you search (stored locally)</span>
+              <span><strong>Search History:</strong> Airport searches you make (stored locally)</span>
             </div>
             <div className="flex items-center space-x-2 text-slate-300">
               <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-              <span>Your favorite airports (stored locally)</span>
+              <span><strong>Favorites:</strong> Your saved airports (stored locally)</span>
             </div>
             <div className="flex items-center space-x-2 text-slate-300">
               <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-              <span>Recent searches for convenience (stored locally)</span>
-            </div>
-            <div className="flex items-center space-x-2 text-slate-300">
-              <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-              <span>Device information for mobile app functionality</span>
+              <span><strong>Device Info:</strong> Basic device data for mobile app functionality</span>
             </div>
           </div>
+          <p className="text-sm text-slate-400 mt-3">No personal information is transmitted to our servers.</p>
         </div>
       )
     },
     {
       icon: Database,
-      title: "How We Use Your Data",
-      content: (
-        <p className="text-slate-300">Your data stays on your device. We use it to provide personalized aviation weather services and improve your experience with saved favorites and search history. No personal data is transmitted to our servers.</p>
-      )
-    },
-    {
-      icon: Clock,
-      title: "Data Retention",
+      title: "Local Storage & Your Control",
       content: (
         <div className="space-y-2">
-          <p className="text-slate-300 mb-2">Since data is stored locally on your device:</p>
-          <div className="flex items-center space-x-2 text-slate-300">
-            <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
-            <span>Search history: Retained until you clear it</span>
+          <p className="text-slate-300">Your data stays on your device using browser technologies:</p>
+          <div className="space-y-2">
+            <div className="flex items-center space-x-2 text-slate-300">
+              <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+              <span>Local Storage for favorites and preferences</span>
+            </div>
+            <div className="flex items-center space-x-2 text-slate-300">
+              <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+              <span>Session Storage for temporary search data</span>
+            </div>
+            <div className="flex items-center space-x-2 text-slate-300">
+              <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+              <span>No tracking cookies - only functional storage</span>
+            </div>
           </div>
-          <div className="flex items-center space-x-2 text-slate-300">
-            <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
-            <span>Favorites: Retained until you remove them</span>
-          </div>
-          <div className="flex items-center space-x-2 text-slate-300">
-            <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
-            <span>Clear all data by clearing browser storage or app data</span>
-          </div>
+          <p className="text-sm text-slate-400 mt-2">Clear all data anytime through browser settings or app storage.</p>
         </div>
       )
     },
     {
-      icon: Cookie,
-      title: "Browser Storage & Technologies",
+      icon: Globe,
+      title: "Your GDPR Rights (EU Users)",
       content: (
         <div className="space-y-2">
-          <p className="text-slate-300 mb-2">We use browser technologies to enhance your experience:</p>
-          <div className="flex items-center space-x-2 text-slate-300">
-            <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
-            <span>Local Storage for favorites and preferences</span>
-          </div>
-          <div className="flex items-center space-x-2 text-slate-300">
-            <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
-            <span>Session Storage for temporary data</span>
-          </div>
-          <div className="flex items-center space-x-2 text-slate-300">
-            <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
-            <span>No tracking cookies or analytics</span>
+          <p className="text-slate-300 mb-2">As an EU user, you have full control:</p>
+          <div className="space-y-2">
+            <div className="flex items-center space-x-2 text-slate-300">
+              <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+              <span><strong>Access:</strong> View all your stored data (it's on your device)</span>
+            </div>
+            <div className="flex items-center space-x-2 text-slate-300">
+              <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+              <span><strong>Delete:</strong> Clear browser/app storage to remove everything</span>
+            </div>
+            <div className="flex items-center space-x-2 text-slate-300">
+              <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+              <span><strong>Portability:</strong> Export your favorites list anytime</span>
+            </div>
+            <div className="flex items-center space-x-2 text-slate-300">
+              <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+              <span><strong>No Consent Needed:</strong> We don't process personal data</span>
+            </div>
           </div>
         </div>
-      )
-    },
-    {
-      icon: Baby,
-      title: "Children's Privacy",
-      content: (
-        <p className="text-slate-300">METAR Now is designed for aviation professionals and enthusiasts. We do not knowingly collect information from children under 13. If you're under 18, please get parental permission before using our app.</p>
       )
     },
     {
       icon: Lock,
-      title: "Data Security",
+      title: "Security & Weather Data",
       content: (
         <div className="space-y-2">
-          <p className="text-slate-300 mb-2">We protect your data through:</p>
-          <div className="flex items-center space-x-2 text-slate-300">
-            <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-            <span>Local-only data storage (no server transmission)</span>
-          </div>
-          <div className="flex items-center space-x-2 text-slate-300">
-            <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-            <span>HTTPS encryption for all weather data requests</span>
-          </div>
-          <div className="flex items-center space-x-2 text-slate-300">
-            <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-            <span>No account creation required</span>
+          <p className="text-slate-300 mb-2">We protect your experience through:</p>
+          <div className="space-y-2">
+            <div className="flex items-center space-x-2 text-slate-300">
+              <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
+              <span>HTTPS encryption for all weather data requests</span>
+            </div>
+            <div className="flex items-center space-x-2 text-slate-300">
+              <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
+              <span>Official sources: NOAA, FAA, CheckWX API</span>
+            </div>
+            <div className="flex items-center space-x-2 text-slate-300">
+              <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
+              <span>No account creation or login required</span>
+            </div>
           </div>
         </div>
       )
@@ -118,82 +112,50 @@ const Privacy = () => {
       title: "Mobile App Permissions",
       content: (
         <div className="space-y-2">
-          <p className="text-slate-300 mb-2">Our mobile app may request:</p>
-          <div className="flex items-center space-x-2 text-slate-300">
-            <div className="w-2 h-2 bg-cyan-400 rounded-full"></div>
-            <span>Network access for weather data</span>
-          </div>
-          <div className="flex items-center space-x-2 text-slate-300">
-            <div className="w-2 h-2 bg-cyan-400 rounded-full"></div>
-            <span>Location (optional) for nearby airports</span>
-          </div>
-          <div className="flex items-center space-x-2 text-slate-300">
-            <div className="w-2 h-2 bg-cyan-400 rounded-full"></div>
-            <span>Storage for local data and caching</span>
+          <p className="text-slate-300 mb-2">Mobile app may request:</p>
+          <div className="space-y-2">
+            <div className="flex items-center space-x-2 text-slate-300">
+              <div className="w-2 h-2 bg-cyan-400 rounded-full"></div>
+              <span><strong>Network:</strong> Required for weather data</span>
+            </div>
+            <div className="flex items-center space-x-2 text-slate-300">
+              <div className="w-2 h-2 bg-cyan-400 rounded-full"></div>
+              <span><strong>Location:</strong> Optional, for nearby airports only</span>
+            </div>
+            <div className="flex items-center space-x-2 text-slate-300">
+              <div className="w-2 h-2 bg-cyan-400 rounded-full"></div>
+              <span><strong>Storage:</strong> For local data and offline caching</span>
+            </div>
           </div>
         </div>
       )
     },
     {
-      icon: Globe,
-      title: "Weather Data Sources",
+      icon: Baby,
+      title: "Age Requirements & Children",
+      content: (
+        <p className="text-slate-300">
+          This app is designed for aviation professionals and enthusiasts. Users under 13 are not permitted. 
+          If you're under 18, please get parental permission before use.
+        </p>
+      )
+    },
+    {
+      icon: Clock,
+      title: "Updates & Contact",
       content: (
         <div className="space-y-2">
-          <div className="flex items-center space-x-2 text-slate-300">
-            <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-            <span>NOAA Aviation Weather Center (AWC)</span>
-          </div>
-          <div className="flex items-center space-x-2 text-slate-300">
-            <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-            <span>CheckWX API for real-time METAR/TAF data</span>
-          </div>
-          <div className="flex items-center space-x-2 text-slate-300">
-            <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-            <span>FAA for NOTAMs and airport information</span>
-          </div>
+          <p className="text-slate-300">
+            We may update this policy occasionally. Continued use means acceptance of changes. 
+            Check this page periodically for updates.
+          </p>
+          <p className="text-slate-300 mt-3">
+            Questions? Contact us at:{" "}
+            <a href="mailto:support@h0ss310s.com" className="text-blue-400 hover:text-blue-300 transition-colors font-medium">
+              support@h0ss310s.com
+            </a>
+          </p>
         </div>
-      )
-    },
-    {
-      icon: MapPin,
-      title: "International Users & GDPR",
-      content: (
-        <div className="space-y-2">
-          <p className="text-slate-300 mb-2">For users in the EU and other regions:</p>
-          <div className="flex items-center space-x-2 text-slate-300">
-            <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-            <span>Right to access your data (stored locally on your device)</span>
-          </div>
-          <div className="flex items-center space-x-2 text-slate-300">
-            <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-            <span>Right to delete (clear browser/app storage)</span>
-          </div>
-          <div className="flex items-center space-x-2 text-slate-300">
-            <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-            <span>No cross-border data transfers (local storage only)</span>
-          </div>
-        </div>
-      )
-    },
-    {
-      icon: Shield,
-      title: "Your Privacy Rights",
-      content: (
-        <p className="text-slate-300">Since all personal data is stored locally on your device, you have complete control. Clear your browser data or app storage to remove all information. No account deletion needed as we don't store accounts.</p>
-      )
-    },
-    {
-      icon: Users,
-      title: "Third-Party Services",
-      content: (
-        <p className="text-slate-300">We integrate with aviation weather APIs to provide real-time data. These services have their own privacy policies and may collect anonymous usage statistics. We don't share any personal information with them.</p>
-      )
-    },
-    {
-      icon: Bell,
-      title: "Policy Updates",
-      content: (
-        <p className="text-slate-300">We may update this privacy policy occasionally to reflect changes in our practices or legal requirements. Continued use of the app after changes means you accept the updated policy. Check this page periodically for updates.</p>
       )
     }
   ];
@@ -219,10 +181,16 @@ const Privacy = () => {
             </div>
             <div>
               <h1 className="text-3xl font-bold text-white">Privacy Policy</h1>
-              <p className="text-slate-400">How we protect and handle your data</p>
+              <p className="text-slate-400">Simple, transparent, and privacy-focused</p>
             </div>
           </div>
-          <p className="text-sm text-slate-500 mb-6">Last updated: {new Date().toLocaleDateString()}</p>
+          <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
+            <p className="text-blue-200 text-sm">
+              <strong>🇪🇺 EU/Belgium Users:</strong> This policy complies with GDPR. 
+              Your data stays local - we don't collect or process personal information on our servers.
+            </p>
+          </div>
+          <p className="text-sm text-slate-500 mt-4">Last updated: {new Date().toLocaleDateString()}</p>
         </div>
 
         <div className="grid gap-6">
@@ -241,25 +209,6 @@ const Privacy = () => {
               </CardContent>
             </Card>
           ))}
-
-          <Card className="bg-white/5 backdrop-blur-xl border-white/20 shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-3 text-white">
-                <div className="p-2 bg-gradient-to-br from-blue-500/20 to-purple-600/20 rounded-lg">
-                  <Mail className="w-5 h-5 text-blue-400" />
-                </div>
-                <span>Contact Us</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-slate-300">
-                Questions about privacy? Reach out to us at:{" "}
-                <a href="mailto:support@h0ss310s.com" className="text-blue-400 hover:text-blue-300 transition-colors font-medium">
-                  support@h0ss310s.com
-                </a>
-              </p>
-            </CardContent>
-          </Card>
         </div>
       </div>
     </div>

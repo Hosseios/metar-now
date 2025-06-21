@@ -1,9 +1,9 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, FileText, Plane, AlertTriangle, Database, Shield, RefreshCw, Mail, UserCheck, CreditCard, Copyright, Ban, Server, Scale, Globe2, DollarSign } from "lucide-react";
+import { ArrowLeft, FileText, Plane, AlertTriangle, Shield, Scale, Ban, Server, Globe2, RefreshCw, Mail } from "lucide-react";
 
 const Terms = () => {
   const navigate = useNavigate();
@@ -11,49 +11,23 @@ const Terms = () => {
   const sections = [
     {
       icon: FileText,
-      title: "Agreement",
+      title: "Agreement & Eligibility",
       content: (
-        <p className="text-slate-300">By using METAR Now, you agree to these terms. If you don't agree, please don't use our service.</p>
-      )
-    },
-    {
-      icon: UserCheck,
-      title: "Eligibility & Age Requirements",
-      content: (
-        <div className="space-y-2">
-          <p className="text-slate-300 mb-2">To use METAR Now:</p>
-          <div className="flex items-center space-x-2 text-slate-300">
-            <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-            <span>You must be 13 years or older</span>
-          </div>
-          <div className="flex items-center space-x-2 text-slate-300">
-            <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-            <span>If under 18, you need parental consent</span>
-          </div>
-          <div className="flex items-center space-x-2 text-slate-300">
-            <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-            <span>Must comply with aviation regulations in your area</span>
-          </div>
-        </div>
-      )
-    },
-    {
-      icon: CreditCard,
-      title: "Account & Service Terms",
-      content: (
-        <div className="space-y-2">
-          <p className="text-slate-300 mb-2">Service usage:</p>
-          <div className="flex items-center space-x-2 text-slate-300">
-            <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-            <span>No account registration required</span>
-          </div>
-          <div className="flex items-center space-x-2 text-slate-300">
-            <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-            <span>Free service with no subscription fees</span>
-          </div>
-          <div className="flex items-center space-x-2 text-slate-300">
-            <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-            <span>We may limit usage to prevent abuse</span>
+        <div className="space-y-3">
+          <p className="text-slate-300">By using METAR Now, you agree to these terms.</p>
+          <div className="space-y-2">
+            <div className="flex items-center space-x-2 text-slate-300">
+              <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+              <span>Must be 13+ years old (18+ without parental consent)</span>
+            </div>
+            <div className="flex items-center space-x-2 text-slate-300">
+              <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+              <span>Comply with aviation regulations in your area</span>
+            </div>
+            <div className="flex items-center space-x-2 text-slate-300">
+              <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+              <span>Free service, no registration required</span>
+            </div>
           </div>
         </div>
       )
@@ -62,171 +36,170 @@ const Terms = () => {
       icon: Plane,
       title: "What We Provide",
       content: (
-        <div>
-          <p className="mb-3 text-slate-300">Real-time aviation weather information including:</p>
+        <div className="space-y-2">
+          <p className="text-slate-300 mb-2">Real-time aviation weather information:</p>
           <div className="space-y-2">
             <div className="flex items-center space-x-2 text-slate-300">
               <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-              <span>METAR reports and TAF forecasts</span>
+              <span>METAR reports, TAF forecasts, and NOTAMs</span>
             </div>
             <div className="flex items-center space-x-2 text-slate-300">
               <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-              <span>NOTAMs and airport information</span>
+              <span>Airport information and weather visualization</span>
             </div>
             <div className="flex items-center space-x-2 text-slate-300">
               <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-              <span>Weather data visualization</span>
+              <span>Personal favorites and search history (local storage)</span>
             </div>
-            <div className="flex items-center space-x-2 text-slate-300">
-              <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-              <span>Favorites and search history</span>
-            </div>
-          </div>
-        </div>
-      )
-    },
-    {
-      icon: Copyright,
-      title: "Intellectual Property",
-      content: (
-        <div className="space-y-2">
-          <p className="text-slate-300 mb-2">Rights and ownership:</p>
-          <div className="flex items-center space-x-2 text-slate-300">
-            <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
-            <span>METAR Now app and design are our property</span>
-          </div>
-          <div className="flex items-center space-x-2 text-slate-300">
-            <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
-            <span>Weather data sourced from public aviation authorities</span>
-          </div>
-          <div className="flex items-center space-x-2 text-slate-300">
-            <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
-            <span>You may use data for personal aviation purposes</span>
           </div>
         </div>
       )
     },
     {
       icon: Ban,
-      title: "Prohibited Activities",
+      title: "Usage Rules & Restrictions",
       content: (
         <div className="space-y-2">
-          <p className="text-slate-300 mb-2">You may not:</p>
-          <div className="flex items-center space-x-2 text-slate-300">
-            <div className="w-2 h-2 bg-red-400 rounded-full"></div>
-            <span>Use the service for illegal activities</span>
+          <p className="text-slate-300 mb-2">You agree to:</p>
+          <div className="space-y-2">
+            <div className="flex items-center space-x-2 text-slate-300">
+              <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+              <span>Use the service for legitimate aviation purposes only</span>
+            </div>
+            <div className="flex items-center space-x-2 text-slate-300">
+              <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+              <span>Respect our infrastructure and other users</span>
+            </div>
           </div>
-          <div className="flex items-center space-x-2 text-slate-300">
-            <div className="w-2 h-2 bg-red-400 rounded-full"></div>
-            <span>Attempt to hack or disrupt our services</span>
-          </div>
-          <div className="flex items-center space-x-2 text-slate-300">
-            <div className="w-2 h-2 bg-red-400 rounded-full"></div>
-            <span>Redistribute or resell our data without permission</span>
-          </div>
-          <div className="flex items-center space-x-2 text-slate-300">
-            <div className="w-2 h-2 bg-red-400 rounded-full"></div>
-            <span>Violate aviation regulations or safety protocols</span>
+          <p className="text-slate-300 mb-2 mt-3">You may not:</p>
+          <div className="space-y-2">
+            <div className="flex items-center space-x-2 text-slate-300">
+              <div className="w-2 h-2 bg-red-400 rounded-full"></div>
+              <span>Attempt to hack, disrupt, or abuse our services</span>
+            </div>
+            <div className="flex items-center space-x-2 text-slate-300">
+              <div className="w-2 h-2 bg-red-400 rounded-full"></div>
+              <span>Redistribute or resell weather data commercially</span>
+            </div>
+            <div className="flex items-center space-x-2 text-slate-300">
+              <div className="w-2 h-2 bg-red-400 rounded-full"></div>
+              <span>Use the service for illegal activities</span>
+            </div>
           </div>
         </div>
       )
     },
     {
-      icon: Database,
-      title: "Data Accuracy",
-      content: (
-        <p className="text-slate-300">We source data from reliable aviation authorities, but weather can change rapidly. Data may contain delays or errors. Always verify with official sources for flight planning and critical decisions.</p>
-      )
-    },
-    {
       icon: Server,
-      title: "Service Availability",
+      title: "Service & Data Disclaimers",
       content: (
         <div className="space-y-2">
-          <p className="text-slate-300 mb-2">Service limitations:</p>
-          <div className="flex items-center space-x-2 text-slate-300">
-            <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
-            <span>Service provided "as is" without guarantees</span>
-          </div>
-          <div className="flex items-center space-x-2 text-slate-300">
-            <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
-            <span>May experience downtime for maintenance</span>
-          </div>
-          <div className="flex items-center space-x-2 text-slate-300">
-            <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
-            <span>Weather data depends on third-party sources</span>
+          <p className="text-slate-300 mb-2">Important limitations:</p>
+          <div className="space-y-2">
+            <div className="flex items-center space-x-2 text-slate-300">
+              <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
+              <span>Service provided "as is" without guarantees</span>
+            </div>
+            <div className="flex items-center space-x-2 text-slate-300">
+              <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
+              <span>Weather data may contain delays or errors</span>
+            </div>
+            <div className="flex items-center space-x-2 text-slate-300">
+              <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
+              <span>Always verify with official sources for flight planning</span>
+            </div>
+            <div className="flex items-center space-x-2 text-slate-300">
+              <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
+              <span>May experience downtime for maintenance</span>
+            </div>
           </div>
         </div>
       )
     },
     {
       icon: Shield,
-      title: "Acceptable Use",
+      title: "Liability & Responsibility",
       content: (
-        <p className="text-slate-300">Use METAR Now responsibly and in compliance with aviation regulations in your area. Don't misuse the service or attempt to harm our infrastructure. Respect other users and follow aviation best practices.</p>
-      )
-    },
-    {
-      icon: AlertTriangle,
-      title: "Limitations & Liability",
-      content: (
-        <p className="text-slate-300">METAR Now is provided "as is." We're not liable for any issues arising from your use of weather data or the app. Use your best judgment and follow aviation best practices. We disclaim all warranties to the fullest extent permitted by law.</p>
-      )
-    },
-    {
-      icon: DollarSign,
-      title: "Indemnification",
-      content: (
-        <p className="text-slate-300">You agree to indemnify and hold us harmless from any claims, damages, or expenses arising from your use of METAR Now, violation of these terms, or infringement of any rights of another party.</p>
+        <div className="space-y-2">
+          <p className="text-slate-300 mb-2"><strong>Important:</strong> You use this app at your own risk.</p>
+          <div className="space-y-2">
+            <div className="flex items-center space-x-2 text-slate-300">
+              <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
+              <span>We're not liable for decisions based on our weather data</span>
+            </div>
+            <div className="flex items-center space-x-2 text-slate-300">
+              <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
+              <span>You indemnify us from claims arising from your use</span>
+            </div>
+            <div className="flex items-center space-x-2 text-slate-300">
+              <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
+              <span>Always follow aviation best practices and regulations</span>
+            </div>
+          </div>
+        </div>
       )
     },
     {
       icon: Globe2,
-      title: "Export & International Use",
+      title: "Intellectual Property & Data",
       content: (
         <div className="space-y-2">
-          <p className="text-slate-300 mb-2">International considerations:</p>
-          <div className="flex items-center space-x-2 text-slate-300">
-            <div className="w-2 h-2 bg-cyan-400 rounded-full"></div>
-            <span>Aviation data subject to export control laws</span>
-          </div>
-          <div className="flex items-center space-x-2 text-slate-300">
-            <div className="w-2 h-2 bg-cyan-400 rounded-full"></div>
-            <span>Comply with local aviation regulations</span>
-          </div>
-          <div className="flex items-center space-x-2 text-slate-300">
-            <div className="w-2 h-2 bg-cyan-400 rounded-full"></div>
-            <span>Service may not be available in all regions</span>
+          <div className="space-y-2">
+            <div className="flex items-center space-x-2 text-slate-300">
+              <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+              <span>METAR Now app and design are our property</span>
+            </div>
+            <div className="flex items-center space-x-2 text-slate-300">
+              <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+              <span>Weather data sourced from public aviation authorities</span>
+            </div>
+            <div className="flex items-center space-x-2 text-slate-300">
+              <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+              <span>Aviation data subject to export control laws</span>
+            </div>
           </div>
         </div>
       )
     },
     {
       icon: Scale,
-      title: "Governing Law & Disputes",
+      title: "Legal & Dispute Resolution",
       content: (
         <div className="space-y-2">
-          <p className="text-slate-300 mb-2">Legal framework:</p>
-          <div className="flex items-center space-x-2 text-slate-300">
-            <div className="w-2 h-2 bg-indigo-400 rounded-full"></div>
-            <span>Governed by laws of the United States</span>
-          </div>
-          <div className="flex items-center space-x-2 text-slate-300">
-            <div className="w-2 h-2 bg-indigo-400 rounded-full"></div>
-            <span>Disputes resolved through binding arbitration</span>
-          </div>
-          <div className="flex items-center space-x-2 text-slate-300">
-            <div className="w-2 h-2 bg-indigo-400 rounded-full"></div>
-            <span>Class action lawsuits waived</span>
+          <p className="text-slate-300 mb-2">For Belgian/EU users:</p>
+          <div className="space-y-2">
+            <div className="flex items-center space-x-2 text-slate-300">
+              <div className="w-2 h-2 bg-indigo-400 rounded-full"></div>
+              <span>EU consumer protection laws apply where applicable</span>
+            </div>
+            <div className="flex items-center space-x-2 text-slate-300">
+              <div className="w-2 h-2 bg-indigo-400 rounded-full"></div>
+              <span>Disputes resolved through appropriate legal channels</span>
+            </div>
+            <div className="flex items-center space-x-2 text-slate-300">
+              <div className="w-2 h-2 bg-indigo-400 rounded-full"></div>
+              <span>Governed by laws of service provider jurisdiction</span>
+            </div>
           </div>
         </div>
       )
     },
     {
       icon: RefreshCw,
-      title: "Updates",
+      title: "Updates & Contact",
       content: (
-        <p className="text-slate-300">We may update these terms occasionally to reflect changes in our service or legal requirements. Continued use means you accept any changes. We'll notify users of material changes when possible.</p>
+        <div className="space-y-2">
+          <p className="text-slate-300">
+            We may update these terms to reflect service changes or legal requirements. 
+            Continued use means acceptance of updates.
+          </p>
+          <p className="text-slate-300 mt-3">
+            Questions? Contact us at:{" "}
+            <a href="mailto:support@h0ss310s.com" className="text-amber-400 hover:text-amber-300 transition-colors font-medium">
+              support@h0ss310s.com
+            </a>
+          </p>
+        </div>
       )
     }
   ];
@@ -252,29 +225,20 @@ const Terms = () => {
             </div>
             <div>
               <h1 className="text-3xl font-bold text-white">Terms of Service</h1>
-              <p className="text-slate-400">Your agreement for using METAR Now</p>
+              <p className="text-slate-400">Clear terms for using METAR Now</p>
             </div>
           </div>
-          <p className="text-sm text-slate-500 mb-6">Last updated: {new Date().toLocaleDateString()}</p>
+          <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4 mb-4">
+            <p className="text-amber-200 text-sm">
+              <strong>⚠️ Aviation Safety Notice:</strong> This app is for reference only. 
+              Never use as your sole source for flight planning or critical aviation decisions. 
+              Always consult official sources and follow proper aviation procedures.
+            </p>
+          </div>
+          <p className="text-sm text-slate-500">Last updated: {new Date().toLocaleDateString()}</p>
         </div>
 
         <div className="grid gap-6">
-          <Card className="bg-white/5 backdrop-blur-xl border-white/20 shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-3 text-white">
-                <div className="p-2 bg-gradient-to-br from-amber-500/20 to-orange-600/20 rounded-lg">
-                  <AlertTriangle className="w-5 h-5 text-amber-400" />
-                </div>
-                <span>Aviation Safety Notice</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-slate-300">
-                This app is for reference only. Never use it as your sole source for flight planning or critical aviation decisions. Always consult official sources and follow proper aviation procedures.
-              </p>
-            </CardContent>
-          </Card>
-
           {sections.map((section, index) => (
             <Card key={index} className="bg-white/5 backdrop-blur-xl border-white/20 shadow-lg">
               <CardHeader>
@@ -290,25 +254,6 @@ const Terms = () => {
               </CardContent>
             </Card>
           ))}
-
-          <Card className="bg-white/5 backdrop-blur-xl border-white/20 shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-3 text-white">
-                <div className="p-2 bg-gradient-to-br from-amber-500/20 to-orange-600/20 rounded-lg">
-                  <Mail className="w-5 h-5 text-amber-400" />
-                </div>
-                <span>Questions?</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-slate-300">
-                Contact us at:{" "}
-                <a href="mailto:support@h0ss310s.com" className="text-amber-400 hover:text-amber-300 transition-colors font-medium">
-                  support@h0ss310s.com
-                </a>
-              </p>
-            </CardContent>
-          </Card>
         </div>
       </div>
     </div>
