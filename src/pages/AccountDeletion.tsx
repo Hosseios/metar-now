@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -37,22 +36,32 @@ const AccountDeletion = () => {
         .eq('user_id', user.id);
 
       if (favoritesError) {
-        throw favoritesError;
+        console.error('Error deleting favorites:', favoritesError);
+        // Continue with account deletion even if favorites deletion fails
       }
 
-      // Sign out and redirect
+      // Delete the user account from Supabase Auth
+      const { error: deleteError } = await supabase.rpc('delete_user');
+      
+      if (deleteError) {
+        console.error('Error deleting user account:', deleteError);
+        throw deleteError;
+      }
+
+      // Sign out after successful deletion
       await signOut();
       
       toast({
-        title: "Account Deletion Initiated",
-        description: "Your account and data have been deleted. We're sorry to see you go.",
+        title: "Account Deleted Successfully",
+        description: "Your account and all associated data have been permanently deleted.",
       });
       
       navigate('/');
     } catch (error) {
+      console.error('Account deletion error:', error);
       toast({
         title: "Deletion Failed",
-        description: "There was an error deleting your account. Please contact support.",
+        description: "There was an error deleting your account. Please contact support for assistance.",
         variant: "destructive",
       });
     } finally {
