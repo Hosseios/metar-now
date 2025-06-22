@@ -1,9 +1,8 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Shield, Database, Eye, Clock, Lock, Globe, Mail, Baby, Cookie, Smartphone } from "lucide-react";
+import { ArrowLeft, Shield, Database, Eye, Clock, Lock, Globe, Mail, Baby, Cookie, Smartphone, Trash2 } from "lucide-react";
 
 const Privacy = () => {
   const navigate = useNavigate();
@@ -54,6 +53,50 @@ const Privacy = () => {
             </div>
           </div>
           <p className="text-sm text-slate-400 mt-2">Clear all data anytime through browser settings or app storage.</p>
+        </div>
+      )
+    },
+    {
+      icon: Trash2,
+      title: "Account & Data Deletion",
+      content: (
+        <div className="space-y-3">
+          <p className="text-slate-300 mb-2">You have full control over your account and data:</p>
+          <div className="space-y-2">
+            <div className="flex items-center space-x-2 text-slate-300">
+              <div className="w-2 h-2 bg-red-400 rounded-full"></div>
+              <span><strong>Account Deletion:</strong> Delete your account permanently anytime</span>
+            </div>
+            <div className="flex items-center space-x-2 text-slate-300">
+              <div className="w-2 h-2 bg-red-400 rounded-full"></div>
+              <span><strong>Data Removal:</strong> All your data is deleted immediately</span>
+            </div>
+            <div className="flex items-center space-x-2 text-slate-300">
+              <div className="w-2 h-2 bg-red-400 rounded-full"></div>
+              <span><strong>No Recovery:</strong> Deletion is permanent and cannot be undone</span>
+            </div>
+          </div>
+          <div className="mt-3 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+            <p className="text-red-300 text-sm mb-2">
+              <strong>What gets deleted:</strong>
+            </p>
+            <ul className="text-red-300 text-sm space-y-1">
+              <li>• Your user account and login credentials</li>
+              <li>• All saved favorite airports</li>
+              <li>• Account preferences and settings</li>
+            </ul>
+            <div className="mt-2">
+              <Button
+                onClick={() => navigate('/account-deletion')}
+                variant="outline"
+                size="sm"
+                className="bg-red-500/20 border-red-500/40 text-red-300 hover:bg-red-500/30 text-xs"
+              >
+                <Trash2 className="w-3 h-3 mr-1" />
+                Delete Account
+              </Button>
+            </div>
+          </div>
         </div>
       )
     },

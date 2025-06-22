@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Bell, Info, Mail, Globe, Database, Shield, FileText, Github } from "lucide-react";
+import { Bell, Info, Mail, Globe, Database, Shield, FileText, Github, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const MobileSettings = () => {
@@ -56,6 +56,15 @@ const MobileSettings = () => {
                 Terms of Service
               </Link>
             </div>
+            <div className="flex items-center space-x-2">
+              <Trash2 className="w-4 h-4 text-slate-400" />
+              <Link 
+                to="/account-deletion"
+                className="text-red-400 hover:text-red-300 transition-colors text-sm"
+              >
+                Delete Account
+              </Link>
+            </div>
           </div>
         </div>
 
@@ -68,7 +77,7 @@ const MobileSettings = () => {
           <div className="space-y-2 text-sm text-slate-300">
             <div>
               <p className="font-medium text-slate-200">Aviation Data:</p>
-              <p>• Aviation Weather Center (AWC) - NOAA</p>
+              <p>• Aviation Weather Center (AWC)  - NOAA</p>
               <p>• CheckWX API for real-time METAR/TAF</p>
             </div>
             <div className="mt-2">
