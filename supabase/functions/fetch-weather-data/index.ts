@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { parseNotams } from "./notamParser.ts"
 import { formatNotamsForDisplay } from "./notamFormatter.ts"
@@ -137,22 +138,23 @@ async function fetchNotamData(icaoCode: string): Promise<{ data: string; error: 
   try {
     console.log(`Fetching NOTAM data for ${icaoCode}`);
     
-    // Try multiple NOTAM sources with different timeout strategies
+    // Simplified NOTAM sources with shorter timeouts to prevent blocking
     const notamSources = [
       {
         name: 'FAA NOTAM Service',
         url: `https://www.notams.faa.gov/dinsQueryWeb/queryRetrievalMapAction.do?reportType=Report&formatType=ICAO&retrieveLocId=${icaoCode}&actionType=notamRetrievalByICAOs`,
-        timeout: 20000 // 20 seconds for FAA
+        timeout: 8000 // Reduced from 20s to 8s
       },
       {
         name: 'Alternative NOTAM Service',
         url: `https://pilotweb.nas.faa.gov/PilotWeb/notamRetrievalByICAOAction.do?method=displayByICAOs&reportType=RAW&formatType=ICAO&retrieveLocId=${icaoCode}`,
-        timeout: 15000 // 15 seconds for alternative
+        timeout: 6000 // Reduced from 15s to 6s
       }
     ];
 
     let lastError = null;
     
+    // Try sources with reduced timeout and fail fast approach
     for (const source of notamSources) {
       try {
         console.log(`Trying ${source.name} for ${icaoCode} (timeout: ${source.timeout}ms)`);
@@ -166,14 +168,16 @@ async function fetchNotamData(icaoCode: string): Promise<{ data: string; error: 
         const htmlContent = await response.text();
         console.log(`${source.name} returned ${htmlContent.length} characters for ${icaoCode}`);
         
+        // Quick check for no NOTAMs before parsing
         if (htmlContent.includes("No NOTAMs match your criteria") || 
             htmlContent.includes("No current NOTAMs") ||
-            htmlContent.includes("No NOTAMs were found")) {
+            htmlContent.includes("No NOTAMs were found") ||
+            htmlContent.length < 500) { // Very short responses likely mean no data
           console.log(`No NOTAMs found via ${source.name} for ${icaoCode}`);
           return { data: `No current NOTAMs for ${icaoCode}`, error: null };
         }
         
-        // Parse NOTAMs into structured data
+        // Parse NOTAMs with improved logic
         const parsedNotams = parseNotams(htmlContent, icaoCode);
         console.log(`Parsed ${parsedNotams.length} NOTAMs from ${source.name} for ${icaoCode}`);
         
@@ -191,22 +195,22 @@ async function fetchNotamData(icaoCode: string): Promise<{ data: string; error: 
       } catch (sourceError) {
         console.error(`${source.name} failed for ${icaoCode}:`, sourceError);
         lastError = sourceError;
-        continue; // Try next source
+        continue; // Try next source quickly
       }
     }
     
-    // If all sources failed
-    console.error(`All NOTAM sources failed for ${icaoCode}. Last error:`, lastError);
+    // If all sources failed, return gracefully without error
+    console.log(`All NOTAM sources failed for ${icaoCode}. Returning no NOTAMs.`);
     return { 
       data: `No current NOTAMs for ${icaoCode}`, 
-      error: null // Don't treat as error if we can't fetch NOTAMs - just return empty
+      error: null // Don't treat as error - NOTAMs are often unavailable
     };
     
   } catch (error) {
     console.error(`Critical error fetching NOTAM data for ${icaoCode}:`, error);
     return { 
       data: `No current NOTAMs for ${icaoCode}`, 
-      error: null // Don't treat as error - NOTAMs are often unavailable
+      error: null // Don't treat as error - NOTAMs are bonus data
     };
   }
 }
@@ -215,7 +219,7 @@ async function fetchDecodedData(icaoCode: string): Promise<{ data: string; error
   try {
     console.log(`Fetching Decoded weather data for ${icaoCode}`);
     const url = `https://aviationweather.gov/api/data/taf?ids=${icaoCode}&format=html&metar=true`;
-    const response = await fetchWithTimeout(url, 15000); // 15 second timeout
+    const response = await fetchWithTimeout(url, 10000); // Reduced from 15s to 10s
     
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -275,22 +279,51 @@ serve(async (req) => {
     
     console.log(`Fetching fresh data for ${upperIcaoCode}`);
     
-    // Fetch all data sources in parallel including decoded
-    const [metarResult, tafResult, airportResult, notamResult, decodedResult] = await Promise.all([
+    // Fetch all data sources in parallel with optimized approach
+    // Critical data (METAR, TAF, Airport) vs Optional data (NOTAM, Decoded)
+    const [
+      metarResult, 
+      tafResult, 
+      airportResult
+    ] = await Promise.all([
       fetchMetarData(upperIcaoCode),
       fetchTafData(upperIcaoCode),
-      fetchAirportData(upperIcaoCode),
+      fetchAirportData(upperIcaoCode)
+    ]);
+    
+    // Fetch optional data with race condition - don't wait too long
+    const optionalDataPromise = Promise.allSettled([
       fetchNotamData(upperIcaoCode),
       fetchDecodedData(upperIcaoCode)
     ]);
     
-    // Collect errors
+    // Set a max wait time for optional data (don't block the response)
+    const timeoutPromise = new Promise<never>((_, reject) => 
+      setTimeout(() => reject(new Error('Optional data timeout')), 12000) // 12 seconds max
+    );
+    
+    let notamResult = { data: `No current NOTAMs for ${upperIcaoCode}`, error: null };
+    let decodedResult = { data: `No decoded weather data available for ${upperIcaoCode}`, error: null };
+    
+    try {
+      const optionalResults = await Promise.race([optionalDataPromise, timeoutPromise]);
+      
+      // Extract results if they completed
+      if (optionalResults[0].status === 'fulfilled') {
+        notamResult = optionalResults[0].value;
+      }
+      if (optionalResults[1].status === 'fulfilled') {
+        decodedResult = optionalResults[1].value;
+      }
+    } catch (timeoutError) {
+      console.log(`Optional data fetch timed out for ${upperIcaoCode}, proceeding with essential data`);
+    }
+    
+    // Collect errors from essential data only
     const errors = [
       metarResult.error,
       tafResult.error,
-      airportResult.error,
-      notamResult.error,
-      decodedResult.error
+      airportResult.error
     ].filter(Boolean) as string[];
     
     // Build response
@@ -298,8 +331,8 @@ serve(async (req) => {
       metar: metarResult.data || `Error fetching METAR: ${metarResult.error}`,
       taf: tafResult.data || `Error fetching TAF: ${tafResult.error}`,
       airport: airportResult.data || `Error fetching Airport data: ${airportResult.error}`,
-      notam: notamResult.data || `Error fetching NOTAM: ${notamResult.error}`,
-      decoded: decodedResult.data || `Error fetching decoded weather: ${decodedResult.error}`,
+      notam: notamResult.data || `No current NOTAMs for ${upperIcaoCode}`,
+      decoded: decodedResult.data || `No decoded weather data available for ${upperIcaoCode}`,
       ...(errors.length > 0 && { errors })
     };
     
