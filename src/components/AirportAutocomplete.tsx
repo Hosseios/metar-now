@@ -51,10 +51,10 @@ const AirportAutocomplete = ({ onSelect, isLoading }: AirportAutocompleteProps) 
       try {
         const results = await searchAirports(val);
         const formattedResults = results
-          .filter(a => a.icao_code)
+          .filter(a => a.ident) // Use ident as primary ICAO
           .map(a => ({
-            display: `${a.name} (${a.iata_code || "—"}, ${a.icao_code}) - ${a.municipality}, ${a.iso_country}`,
-            icao: a.icao_code,
+            display: `${a.name} (${a.iata_code || "—"}, ${a.ident}) - ${a.municipality}, ${a.iso_country}`,
+            icao: a.ident, // Use ident as the primary ICAO code
             iata: a.iata_code,
           }));
         

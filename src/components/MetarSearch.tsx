@@ -34,11 +34,11 @@ const MetarSearch = ({
     let resolvedICAO = input.toUpperCase();
     try {
       const airport = await findAirportByCode(input);
-      if (airport && airport.icao_code) {
-        resolvedICAO = airport.icao_code.toUpperCase();
+      if (airport && airport.ident) {
+        resolvedICAO = airport.ident.toUpperCase(); // Use ident as primary ICAO
       }
     } catch (error) {
-      // Failed to resolve airport code - continue with original input
+      console.log('Failed to resolve airport code - continuing with original input:', error);
     }
     if (resolvedICAO.length === 4) {
       onSearch(resolvedICAO);
